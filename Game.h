@@ -85,4 +85,16 @@ protected:
 	// objects
 	sf::Sprite m_sprite;
 	sf::Texture m_texture;
+
+	// keeps track of the tank heading
+	float m_tankHeadingDegrees;
+	float m_tankHeadingRadians;
+
+	sf::Vector2f m_movementVector;
+
+	// how rapidly the tank can turn
+	float m_turnRate;
+
+	// how quickly the tank can move forward
+	float m_moveSpeed;
 };

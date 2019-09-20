@@ -11,8 +11,13 @@ Game::Game()
 	m_window.setVerticalSyncEnabled(true);
 
 	loadTextures();
-
 	setupSprites();
+
+	m_tankHeadingDegrees = 0.0f;
+	m_turnRate = 1.0f;
+	m_moveSpeed = 1.5f;
+
+	m_movementVector = { 0.0f,0.0f };
 }
 
 ////////////////////////////////////////////////////////////
@@ -102,7 +107,47 @@ void Game::processGameEvents(sf::Event& event)
 ////////////////////////////////////////////////////////////
 void Game::update(double dt)
 {
+	// rotate our tank clockwise and counter-clockwise
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
+	{
+		m_tankHeadingDegrees -= m_turnRate;
+	}
 
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
+	{
+		m_tankHeadingDegrees += m_turnRate;
+	}
+
+	// Normalise our heading to the range 0 - 360
+	if (m_tankHeadingDegrees > 360.0f)
+	{
+		m_tankHeadingDegrees -= 360.0f;
+	}
+
+	if (m_tankHeadingDegrees < 0.0f)
+	{
+		m_tankHeadingDegrees += 360.0f;
+	}
+
+	// set the rotation of our sprite based on our heading
+	m_sprite.setRotation(m_tankHeadingDegrees);
+
+	// get our heading in radians to pass to cos/sin
+	m_tankHeadingRadians = m_tankHeadingDegrees * (3.14159f / 180.0f);
+
+	// determine a movement vector based off out movement speed, and our heading
+	m_movementVector = { m_moveSpeed * cos(m_tankHeadingRadians), m_moveSpeed * sin(m_tankHeadingRadians) };
+
+	// move our tank forward and backward along its movement vector
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
+	{
+		m_sprite.move(m_movementVector);
+	}
+
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
+	{
+		m_sprite.move(-m_movementVector);
+	}
 }
 
 ////////////////////////////////////////////////////////////
