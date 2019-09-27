@@ -14,7 +14,7 @@
 #pragma comment(lib,"opengl32.lib") 
 #pragma comment(lib,"glu32.lib") 
 
-
+#pragma comment(lib,"libyaml-cppmdd")
 #include "Game.h"
 
 /// <summary>

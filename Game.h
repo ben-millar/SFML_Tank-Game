@@ -19,6 +19,8 @@
 ///		game.run();
 /// </summary>
 
+#include "LevelLoader.h"
+
 class Game
 {
 public:
@@ -43,15 +45,33 @@ public:
 private: 
 
 	/// <summary>
-	/// @brief Load in our textures from file and assign them to SF texture objects
+	/// @brief Loads all game textures from file
 	/// </summary>
 	void loadTextures();
 
 	/// <summary>
-	/// @brief Setup the attributes of our sprites
+	/// @brief Assigns textures to sprites and sets up sprite parameters
 	/// </summary>
 	void setupSprites();
 
+	// stores the data for our level
+	LevelData m_level;
+
+	// tank sprite
+	sf::Texture m_tankTexture;
+	sf::Sprite m_tankSprite;
+
+	// background sprite
+	sf::Texture m_bgTexture;
+	sf::Sprite m_bgSprite;
+
+	// obstacle sprites
+	std::vector<sf::Sprite> m_sprites;
+	// A texture for the spritesheet
+	sf::Texture m_spriteSheetTexture;
+
+	sf::Sprite m_wallSprite;
+	sf::IntRect m_wallRect{ 1, 129, 33, 23 };
 
 protected:
 	/// <summary>
@@ -81,20 +101,4 @@ protected:
 
 	// main window
 	sf::RenderWindow m_window;
-
-	// objects
-	sf::Sprite m_sprite;
-	sf::Texture m_texture;
-
-	// keeps track of the tank heading
-	float m_tankHeadingDegrees;
-	float m_tankHeadingRadians;
-
-	sf::Vector2f m_movementVector;
-
-	// how rapidly the tank can turn
-	float m_turnRate;
-
-	// how quickly the tank can move forward
-	float m_moveSpeed;
 };

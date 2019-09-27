@@ -20,11 +20,16 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Game.cpp" />
+    <ClCompile Include="LevelLoader.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game.h" />
+    <ClInclude Include="LevelLoader.h" />
     <ClInclude Include="ScreenSize.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="level1.yaml" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{F10133B9-852C-4A93-A994-DC0D1C009AD5}</ProjectGuid>

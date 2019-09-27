@@ -10,14 +10,23 @@ Game::Game()
 {
 	m_window.setVerticalSyncEnabled(true);
 
+	int currentLevel = 1;
+
+	// Will generate an exception if level loading fails
+	try
+	{
+		LevelLoader::load(currentLevel, m_level);
+	}
+	catch (std::exception& e)
+	{
+		std::cout << "Level loading failure" << std::endl;
+		std::cout << e.what() << std::endl;
+		throw e;
+	}
+
 	loadTextures();
+
 	setupSprites();
-
-	m_tankHeadingDegrees = 0.0f;
-	m_turnRate = 1.0f;
-	m_moveSpeed = 1.5f;
-
-	m_movementVector = { 0.0f,0.0f };
 }
 
 ////////////////////////////////////////////////////////////
@@ -37,7 +46,7 @@ void Game::run()
 		while (lag > MS_PER_UPDATE)
 		{
 			update(MS_PER_UPDATE);
-			lag -= MS_PER_UPDATE;
+			lag -= static_cast<sf::Int32>(MS_PER_UPDATE);
 		}
 
 		// this could run faster than 100ups, but still passes 10ms to the update loop
@@ -48,26 +57,54 @@ void Game::run()
 	}
 }
 
-////////////////////////////////////////////////////////////
+/// <summary>
+/// @brief Loads all game textures from file
+/// </summary>
 void Game::loadTextures()
 {
-	// load texture from file
-	if (!m_texture.loadFromFile("E-100.png"))
+	try
 	{
-		std::string s("Error loading texture 'E-100.png' to myTexture");
-		throw std::exception(s.c_str());
+		if (!m_tankTexture.loadFromFile("E-100.png"))
+		{
+			throw std::exception("Error loading tank texture from file");
+		}
+
+		if (!m_bgTexture.loadFromFile(m_level.m_background.m_fileName))
+		{
+			throw std::exception("Error loading background texture from file");
+		}
+		if (!m_spriteSheetTexture.loadFromFile("SpriteSheet.png"))
+		{
+			throw std::exception("Error loading SpriteSheet texture from file");
+		}
+	}
+	catch(std::exception& e)
+	{
+		std::cout << e.what();
 	}
 }
 
-////////////////////////////////////////////////////////////
+/// <summary>
+/// @brief Assigns textures to sprites and sets up sprite parameters
+/// </summary>
 void Game::setupSprites()
 {
-	// apply texture to sprite
-	m_sprite.setTexture(m_texture);
+	m_tankSprite.setTexture(m_tankTexture);
+	m_tankSprite.setPosition(m_level.m_tank.m_position);
 
-	m_sprite.setOrigin({ m_sprite.getGlobalBounds().width / 2.0f, m_sprite.getGlobalBounds().height / 2.0f });
-	m_sprite.setPosition({ 400.0f, 400.0f });
-	m_sprite.setRotation(90.0f);
+	m_bgSprite.setTexture(m_bgTexture);
+	m_bgSprite.setPosition({ 0.0f,0.0f });
+
+	m_wallSprite.setTexture(m_spriteSheetTexture);
+	m_wallSprite.setTextureRect(m_wallRect);
+
+	for (auto& obstacle : m_level.m_obstacles)
+	{
+		// Position the wall sprite using the obstacle data
+		m_wallSprite.setPosition(obstacle.m_position);
+		m_wallSprite.rotate(obstacle.m_rotation);
+		m_sprites.push_back(m_wallSprite);
+	}
 }
 
 ////////////////////////////////////////////////////////////
@@ -107,47 +144,8 @@ void Game::processGameEvents(sf::Event& event)
 ////////////////////////////////////////////////////////////
 void Game::update(double dt)
 {
-	// rotate our tank clockwise and counter-clockwise
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
-	{
-		m_tankHeadingDegrees -= m_turnRate;
-	}
+	
 
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
-	{
-		m_tankHeadingDegrees += m_turnRate;
-	}
-
-	// Normalise our heading to the range 0 - 360
-	if (m_tankHeadingDegrees > 360.0f)
-	{
-		m_tankHeadingDegrees -= 360.0f;
-	}
-
-	if (m_tankHeadingDegrees < 0.0f)
-	{
-		m_tankHeadingDegrees += 360.0f;
-	}
-
-	// set the rotation of our sprite based on our heading
-	m_sprite.setRotation(m_tankHeadingDegrees);
-
-	// get our heading in radians to pass to cos/sin
-	m_tankHeadingRadians = m_tankHeadingDegrees * (3.14159f / 180.0f);
-
-	// determine a movement vector based off out movement speed, and our heading
-	m_movementVector = { m_moveSpeed * cos(m_tankHeadingRadians), m_moveSpeed * sin(m_tankHeadingRadians) };
-
-	// move our tank forward and backward along its movement vector
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
-	{
-		m_sprite.move(m_movementVector);
-	}
-
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
-	{
-		m_sprite.move(-m_movementVector);
-	}
 }
 
 ////////////////////////////////////////////////////////////
@@ -155,7 +153,13 @@ void Game::render()
 {
 	m_window.clear(sf::Color(0, 0, 0, 0));
 
-	m_window.draw(m_sprite);
+	m_window.draw(m_bgSprite);
+	m_window.draw(m_tankSprite);
+
+	for (auto& sprite : m_sprites)
+	{
+		m_window.draw(sprite);
+	}
 
 	m_window.display();
 }
