@@ -19,17 +19,21 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Game.cpp" />
-    <ClCompile Include="LevelLoader.cpp" />
-    <ClCompile Include="main.cpp" />
+    <ClInclude Include="include\Game.h" />
+    <ClInclude Include="include\LevelLoader.h" />
+    <ClInclude Include="include\MathUtility.h" />
+    <ClInclude Include="include\ScreenSize.h" />
+    <ClInclude Include="include\Tank.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Game.h" />
-    <ClInclude Include="LevelLoader.h" />
-    <ClInclude Include="ScreenSize.h" />
+    <ClCompile Include="src\Game.cpp" />
+    <ClCompile Include="src\LevelLoader.cpp" />
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\MathUtility.cpp" />
+    <ClCompile Include="src\Tank.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="level1.yaml" />
+    <None Include="resources\levels\level1.yaml" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{F10133B9-852C-4A93-A994-DC0D1C009AD5}</ProjectGuid>
@@ -94,7 +98,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SFML_SDK)\include; .\include; .</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SFML_SDK)\include;.\include;.</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(SFML_SDK)\lib; .\lib</AdditionalLibraryDirectories>

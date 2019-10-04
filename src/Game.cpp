@@ -6,7 +6,8 @@ static double const MS_PER_UPDATE = 10.0;
 
 ////////////////////////////////////////////////////////////
 Game::Game()
-	: m_window(sf::VideoMode(ScreenSize::s_height, ScreenSize::s_width, 32), "SFML Playground", sf::Style::Default)
+	: m_window(sf::VideoMode(ScreenSize::s_height, ScreenSize::s_width, 32), "SFML Playground", sf::Style::Default),
+	m_tank(m_tankTexture, m_level.m_tank.m_position)
 {
 	m_window.setVerticalSyncEnabled(true);
 
@@ -64,7 +65,7 @@ void Game::loadTextures()
 {
 	try
 	{
-		if (!m_tankTexture.loadFromFile("E-100.png"))
+		if (!m_tankTexture.loadFromFile(".\\resources\\images\\SpriteSheet.png"))
 		{
 			throw std::exception("Error loading tank texture from file");
 		}
@@ -73,10 +74,10 @@ void Game::loadTextures()
 		{
 			throw std::exception("Error loading background texture from file");
 		}
-		if (!m_spriteSheetTexture.loadFromFile("SpriteSheet.png"))
-		{
-			throw std::exception("Error loading SpriteSheet texture from file");
-		}
+		//if (!m_spriteSheetTexture.loadFromFile(".\\resources\\images\\SpriteSheet.png"))
+		//{
+		//	throw std::exception("Error loading SpriteSheet texture from file");
+		//}
 	}
 	catch(std::exception& e)
 	{
@@ -89,21 +90,21 @@ void Game::loadTextures()
 /// </summary>
 void Game::setupSprites()
 {
-	m_tankSprite.setTexture(m_tankTexture);
-	m_tankSprite.setPosition(m_level.m_tank.m_position);
+	// Now the level data is loaded, set the tank position.
+	m_tank.setPosition(m_level.m_tank.m_position);
 
 	m_bgSprite.setTexture(m_bgTexture);
 	m_bgSprite.setPosition({ 0.0f,0.0f });
 
-	m_wallSprite.setTexture(m_spriteSheetTexture);
-	m_wallSprite.setTextureRect(m_wallRect);
+	/*m_wallSprite.setTexture(m_spriteSheetTexture);
+	m_wallSprite.setTextureRect(m_wallRect);*/
 
 	for (auto& obstacle : m_level.m_obstacles)
 	{
 		// Position the wall sprite using the obstacle data
 		m_wallSprite.setPosition(obstacle.m_position);
-		m_wallSprite.rotate(obstacle.m_rotation);
-		m_sprites.push_back(m_wallSprite);
+		m_wallSprite.rotate(static_cast<float>(obstacle.m_rotation));
+	//	m_sprites.push_back(m_wallSprite);
 	}
 }
 
@@ -133,7 +134,16 @@ void Game::processGameEvents(sf::Event& event)
 			m_window.close();
 			break;
 		case sf::Keyboard::Up:
-			// Up key was pressed...
+			m_tank.increaseSpeed();
+			break;
+		case sf::Keyboard::Down:
+			m_tank.decreaseSpeed();
+			break;
+		case sf::Keyboard::Left:
+			m_tank.decreaseRotation();
+			break;
+		case sf::Keyboard::Right:
+			m_tank.increaseRotation();
 			break;
 		default:
 			break;
@@ -144,8 +154,7 @@ void Game::processGameEvents(sf::Event& event)
 ////////////////////////////////////////////////////////////
 void Game::update(double dt)
 {
-	
-
+	m_tank.update(dt);
 }
 
 ////////////////////////////////////////////////////////////
@@ -154,12 +163,14 @@ void Game::render()
 	m_window.clear(sf::Color(0, 0, 0, 0));
 
 	m_window.draw(m_bgSprite);
-	m_window.draw(m_tankSprite);
+	//m_window.draw(m_tankSprite);
 
-	for (auto& sprite : m_sprites)
+	/*for (auto& sprite : m_sprites)
 	{
 		m_window.draw(sprite);
-	}
+	}*/
+
+	m_tank.render(m_window);
 
 	m_window.display();
 }

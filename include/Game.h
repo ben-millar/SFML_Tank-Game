@@ -2,6 +2,7 @@
 
 #include <SFML/Graphics.hpp>
 #include "ScreenSize.h"
+#include "Tank.h"
 
 /// <summary>
 /// @author RP
@@ -59,19 +60,22 @@ private:
 
 	// tank sprite
 	sf::Texture m_tankTexture;
-	sf::Sprite m_tankSprite;
+	//sf::Sprite m_tankSprite;
 
 	// background sprite
 	sf::Texture m_bgTexture;
 	sf::Sprite m_bgSprite;
 
 	// obstacle sprites
-	std::vector<sf::Sprite> m_sprites;
+	//std::vector<sf::Sprite> m_sprites;
 	// A texture for the spritesheet
-	sf::Texture m_spriteSheetTexture;
+	//sf::Texture m_spriteSheetTexture;
 
 	sf::Sprite m_wallSprite;
 	sf::IntRect m_wallRect{ 1, 129, 33, 23 };
+
+	// An instance representing the player controlled tank.
+	Tank m_tank;
 
 protected:
 	/// <summary>
