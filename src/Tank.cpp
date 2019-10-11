@@ -9,7 +9,7 @@ Tank::Tank(sf::Texture const & texture, sf::Vector2f const & pos)
 
 void Tank::increaseSpeed()
 {
-	if (m_speed < M_MAX_SPEED)
+	//if (m_speed < M_MAX_SPEED)
 	{
 		m_speed += 1.0;
 	}
@@ -17,7 +17,7 @@ void Tank::increaseSpeed()
 
 void Tank::decreaseSpeed()
 {
-	if (m_speed > M_MIN_SPEED)
+	//if (m_speed > M_MIN_SPEED)
 	{
 		m_speed -= 1.0;
 	}
@@ -67,6 +67,8 @@ void Tank::update(double dt)
 	{
 		m_speed += M_FRICTION;
 	}
+
+	m_speed = std::clamp(m_speed, M_MIN_SPEED, M_MAX_SPEED);
 }
 
 void Tank::render(sf::RenderWindow & window) 
