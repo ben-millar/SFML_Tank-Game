@@ -64,5 +64,5 @@ private:
 	// The current rotation as applied to turret base.
 	double m_turretRotation{ 0.0 };
 	// Controls whether or not the turret can rotate independent of the base.
-	bool m_turretFree{ true };
+	bool m_turretFree{ false };
 };
