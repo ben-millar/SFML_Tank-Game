@@ -55,6 +55,16 @@ private:
 	/// </summary>
 	void setupSprites();
 
+	/// <summary>
+	/// Gets the angle between the mouse and the tank, and assign the turret that angle
+	/// </summary>
+	void getTurretRotation();
+
+	/// <summary>
+	/// Poll SF keyboard to check current state of keys
+	/// </summary>
+	void handleKeyInput();
+
 	// stores the data for our level
 	LevelData m_level;
 

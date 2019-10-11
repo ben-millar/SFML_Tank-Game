@@ -8,6 +8,7 @@ namespace MathUtility
 {
 	// A constant to convert from Degrees to Radians.
 	double const DEG_TO_RAD = thor::Pi / 180.0f;
+	double const RAD_TO_DEG = 180.0f / thor::Pi;
 
 	/// <summary>
 	/// @brief Returns the Euclidean distance between two points.

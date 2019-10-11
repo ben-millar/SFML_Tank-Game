@@ -25,21 +25,38 @@ void Tank::decreaseSpeed()
 
 void Tank::increaseRotation()
 {
-	(m_rotation > 360.0) ? m_rotation -= 360.0 : m_rotation += 1.0;
+	(m_baseRotation > 360.0) ? m_baseRotation -= 360.0 : m_baseRotation += 1.0;
 }
 
 void Tank::decreaseRotation()
 {
-	(m_rotation < 0.0) ? m_rotation += 360.0 : m_rotation -= 1.0;
+	(m_baseRotation < 0.0) ? m_baseRotation += 360.0 : m_baseRotation -= 1.0;
+}
+
+void Tank::setTurretHeading(float t_heading)
+{
+	if (m_turretFree)
+	{
+		m_turretRotation = t_heading * MathUtility::RAD_TO_DEG;
+	}
+	else
+	{
+		m_turretRotation = m_baseRotation;
+	}
+}
+
+void Tank::toggleTurretFree()
+{
+	(m_turretFree) ? m_turretFree = false : m_turretFree = true;
 }
 
 void Tank::update(double dt)
 {
-	m_tankBase.move(cos(MathUtility::DEG_TO_RAD * m_rotation) * m_speed * (dt / 1000.0), sin(MathUtility::DEG_TO_RAD * m_rotation) * m_speed * (dt / 1000.0));
-	m_turret.move(cos(MathUtility::DEG_TO_RAD * m_rotation) * m_speed * (dt / 1000.0), sin(MathUtility::DEG_TO_RAD * m_rotation) * m_speed * (dt / 1000.0));
+	m_tankBase.move(cos(MathUtility::DEG_TO_RAD * m_baseRotation) * m_speed * (dt / 1000.0), sin(MathUtility::DEG_TO_RAD * m_baseRotation) * m_speed * (dt / 1000.0));
+	m_turret.move(cos(MathUtility::DEG_TO_RAD * m_baseRotation) * m_speed * (dt / 1000.0), sin(MathUtility::DEG_TO_RAD * m_baseRotation) * m_speed * (dt / 1000.0));
 
-	m_tankBase.setRotation(m_rotation);
-	m_turret.setRotation(m_rotation);
+	m_tankBase.setRotation(m_baseRotation);
+	m_turret.setRotation(m_turretRotation);
 
 	if (m_speed > 0.0)
 	{

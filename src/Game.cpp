@@ -9,6 +9,8 @@ Game::Game()
 	: m_window(sf::VideoMode(ScreenSize::s_height, ScreenSize::s_width, 32), "SFML Playground", sf::Style::Default),
 	m_tank(m_tankTexture, m_level.m_tank.m_position)
 {
+	// Game runs much faster with this commented out. Why?
+	// Seems to limit our refresh rate to that of the monitor
 	m_window.setVerticalSyncEnabled(true);
 
 	int currentLevel = 1;
@@ -109,6 +111,18 @@ void Game::setupSprites()
 }
 
 ////////////////////////////////////////////////////////////
+
+void Game::getTurretRotation()
+{
+	sf::Vector2f tankPos = m_tank.position();
+	sf::Vector2i mousePos = sf::Mouse::getPosition(m_window);
+
+	sf::Vector2f vec = { mousePos.x - tankPos.x, mousePos.y - tankPos.y };
+
+	m_tank.setTurretHeading(atan2(vec.y, vec.x));
+}
+
+////////////////////////////////////////////////////////////
 void Game::processEvents()
 {
 	sf::Event event;
@@ -133,17 +147,17 @@ void Game::processGameEvents(sf::Event& event)
 		case sf::Keyboard::Escape:
 			m_window.close();
 			break;
-		case sf::Keyboard::Up:
-			m_tank.increaseSpeed();
+		default:
 			break;
-		case sf::Keyboard::Down:
-			m_tank.decreaseSpeed();
-			break;
-		case sf::Keyboard::Left:
-			m_tank.decreaseRotation();
-			break;
-		case sf::Keyboard::Right:
-			m_tank.increaseRotation();
+		}
+	}
+
+	if (sf::Event::KeyReleased == event.type)
+	{
+		switch (event.key.code)
+		{
+		case sf::Keyboard::C:
+			m_tank.toggleTurretFree();
 			break;
 		default:
 			break;
@@ -152,8 +166,40 @@ void Game::processGameEvents(sf::Event& event)
 }
 
 ////////////////////////////////////////////////////////////
+void Game::handleKeyInput()
+{
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) || // UP or W
+		sf::Keyboard::isKeyPressed(sf::Keyboard::W))
+	{
+		m_tank.increaseSpeed();
+	}
+
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down) || // DOWN or S
+		sf::Keyboard::isKeyPressed(sf::Keyboard::S))
+	{
+		m_tank.decreaseSpeed();
+	}
+
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left) || // LEFT or A
+		sf::Keyboard::isKeyPressed(sf::Keyboard::A))
+	{
+		m_tank.decreaseRotation();
+	}
+
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right) || // RIGHT or D
+		sf::Keyboard::isKeyPressed(sf::Keyboard::D))
+	{
+		m_tank.increaseRotation();
+	}
+}
+
+////////////////////////////////////////////////////////////
 void Game::update(double dt)
 {
+	handleKeyInput();
+
+	getTurretRotation();
+
 	m_tank.update(dt);
 }
 
