@@ -26,10 +26,12 @@
     <ClInclude Include="include\Tank.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\CollisionDetector.cpp" />
     <ClCompile Include="src\Game.cpp" />
     <ClCompile Include="src\LevelLoader.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\MathUtility.cpp" />
+    <ClCompile Include="src\OrientedBoundingBox.cpp" />
     <ClCompile Include="src\Tank.cpp" />
   </ItemGroup>
   <ItemGroup>

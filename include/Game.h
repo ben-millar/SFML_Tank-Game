@@ -56,6 +56,11 @@ private:
 	void setupSprites();
 
 	/// <summary>
+	/// @brief Pull our wall data to file and assign it to our obstacles
+	/// </summary>
+	void generateWalls();
+
+	/// <summary>
 	/// Gets the angle between the mouse and the tank, and assign the turret that angle
 	/// </summary>
 	void getTurretRotation();
@@ -77,12 +82,9 @@ private:
 	sf::Sprite m_bgSprite;
 
 	// obstacle sprites
-	//std::vector<sf::Sprite> m_sprites;
+	std::vector<sf::Sprite> m_sprites;
 	// A texture for the spritesheet
-	//sf::Texture m_spriteSheetTexture;
-
-	sf::Sprite m_wallSprite;
-	sf::IntRect m_wallRect{ 1, 129, 33, 23 };
+	sf::Texture m_spriteSheetTexture;
 
 	// An instance representing the player controlled tank.
 	Tank m_tank;

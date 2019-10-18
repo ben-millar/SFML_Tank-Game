@@ -1,5 +1,6 @@
 #pragma once
 #include <SFML/Graphics.hpp>
+#include "CollisionDetector.h"
 
 /// <summary>
 /// @brief A simple tank controller.
@@ -9,9 +10,23 @@
 class Tank
 {
 public:	
-	Tank(sf::Texture const & texture, sf::Vector2f const & pos);
-	inline void setPosition(sf::Vector2f const& m_pos) { initSprites(m_pos); }
+/// <summary>
+/// @brief Constructor that stores drawable state (texture, sprite) for the tank.
+/// Stores references to the texture and container of wall sprites. 
+/// Creates sprites for the tank base and turret from the supplied texture.
+/// </summary>
+/// <param name="texture">A reference to the sprite sheet texture</param>
+///< param name="texture">A reference to the container of wall sprites</param>
+	Tank(sf::Texture const & texture, std::vector<sf::Sprite> & wallSprites);
+
 	inline sf::Vector2f position() { return m_tankBase.getPosition(); }
+
+	/// <summary>
+	/// @brief Sets the initial position of our tank and turret
+	/// </summary>
+	/// <param name="m_pos">Position for tank and turret</param>
+	void setPosition(sf::Vector2f const& m_pos);
+
 
 	/// <summary>
 	/// @brief Increases the speed by 1, max speed is capped at 100.
@@ -47,22 +62,67 @@ public:
 	void render(sf::RenderWindow & window);
 	
 private:
-	void initSprites(sf::Vector2f const & pos);
+
+	/// <summary>
+	/// @brief Checks for collisions between the tank and the walls.
+	/// </summary>
+	/// <returns>True if collision detected between tank and wall.</returns>
+	bool checkWallCollision();
+
+	/// <summary>
+	/// @brief Stops the tank if moving and applies a small increase in speed in the opposite direction of travel.
+	/// - If the tank speed is currently 0, the rotation is set to a value that is less than the previous rotation value
+	///   (scenario: tank is stopped and rotates into a wall, so it gets rotated towards the opposite direction).
+	/// - If the tank is moving, further rotations are disabled and the previous tank position is restored.
+	///   The tank speed is adjusted so that it will travel slowly in the opposite direction. The tank rotation 
+	///   is also adjusted as above if necessary (scenario: tank is both moving and rotating, upon wall collision it's 
+	///   speed is reversed but with a smaller magnitude, while it is rotated in the opposite direction of it's 
+	///   pre-collision rotation).
+	/// </summary>
+	void deflect();
+
+	/// <summary>
+	/// @brief Adjusts the rotation of the tank following a collision with an obstacle
+	/// </summary>
+	void adjustRotation();
+
+	/// <summary>
+	/// @brief
+	/// </summary>
+	void initSprites();
+
+
 	sf::Sprite m_tankBase;
 	sf::Sprite m_turret;
 	sf::Texture const & m_texture;
 
+	// A reference to the container of wall sprites.
+	std::vector<sf::Sprite>& m_wallSprites;
+
 	static constexpr double M_MAX_SPEED = 100.0;
 	static constexpr double M_MIN_SPEED = -100.0;
-	static constexpr double M_FRICTION = 0.05;
+	static constexpr double M_FRICTION = 0.1;
 
 	// The tank speed.
 	double m_speed{ 0.0 };
 
 	// The current rotation as applied to tank base.
 	double m_baseRotation{ 0.0 };
+	double m_previousBaseRotation{ 0.0 };
+
 	// The current rotation as applied to turret base.
 	double m_turretRotation{ 0.0 };
+	double m_previousTurretRotation{ 0.0 };
+
 	// Controls whether or not the turret can rotate independent of the base.
 	bool m_turretFree{ false };
+
+	// can our tank rotate?
+	bool m_enableRotation{ true };
+
+	// rolling storage of our last position
+	sf::Vector2f m_previousPosition{ 0.0f,0.0f };
+	
+	// rolling storage of our last speed
+	double m_previousSpeed;
 };

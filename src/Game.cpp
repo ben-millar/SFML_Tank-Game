@@ -2,12 +2,12 @@
 #include <iostream>
 
 // Updates per milliseconds
-static double const MS_PER_UPDATE = 10.0;
+static double const MS_PER_UPDATE = (1000.0 / 60.0);
 
 ////////////////////////////////////////////////////////////
 Game::Game()
 	: m_window(sf::VideoMode(ScreenSize::s_height, ScreenSize::s_width, 32), "SFML Playground", sf::Style::Default),
-	m_tank(m_tankTexture, m_level.m_tank.m_position)
+	m_tank(m_tankTexture, m_sprites)
 {
 	// Game runs much faster with this commented out. Why?
 	// Seems to limit our refresh rate to that of the monitor
@@ -28,7 +28,7 @@ Game::Game()
 	}
 
 	loadTextures();
-
+	generateWalls();
 	setupSprites();
 }
 
@@ -54,7 +54,7 @@ void Game::run()
 
 		// this could run faster than 100ups, but still passes 10ms to the update loop
 		// could this mess up game logic that relies on dTime?
-		update(MS_PER_UPDATE);
+		update(lag);
 
 		render();
 	}
@@ -76,10 +76,10 @@ void Game::loadTextures()
 		{
 			throw std::exception("Error loading background texture from file");
 		}
-		//if (!m_spriteSheetTexture.loadFromFile(".\\resources\\images\\SpriteSheet.png"))
-		//{
-		//	throw std::exception("Error loading SpriteSheet texture from file");
-		//}
+		if (!m_spriteSheetTexture.loadFromFile(".\\resources\\images\\SpriteSheet.png"))
+		{
+			throw std::exception("Error loading SpriteSheet texture from file");
+		}
 	}
 	catch(std::exception& e)
 	{
@@ -97,16 +97,21 @@ void Game::setupSprites()
 
 	m_bgSprite.setTexture(m_bgTexture);
 	m_bgSprite.setPosition({ 0.0f,0.0f });
+}
 
-	/*m_wallSprite.setTexture(m_spriteSheetTexture);
-	m_wallSprite.setTextureRect(m_wallRect);*/
-
-	for (auto& obstacle : m_level.m_obstacles)
+void Game::generateWalls()
+{
+	sf::IntRect wallRect(2, 129, 33, 23);
+	// Create the Walls 
+	for (ObstacleData const& obstacle : m_level.m_obstacles)
 	{
-		// Position the wall sprite using the obstacle data
-		m_wallSprite.setPosition(obstacle.m_position);
-		m_wallSprite.rotate(static_cast<float>(obstacle.m_rotation));
-	//	m_sprites.push_back(m_wallSprite);
+		sf::Sprite sprite;
+		sprite.setTexture(m_spriteSheetTexture);
+		sprite.setTextureRect(wallRect);
+		sprite.setOrigin(wallRect.width / 2.0, wallRect.height / 2.0);
+		sprite.setPosition(obstacle.m_position);
+		sprite.setRotation(obstacle.m_rotation);
+		m_sprites.push_back(sprite);
 	}
 }
 
@@ -209,12 +214,11 @@ void Game::render()
 	m_window.clear(sf::Color(0, 0, 0, 0));
 
 	m_window.draw(m_bgSprite);
-	//m_window.draw(m_tankSprite);
 
-	/*for (auto& sprite : m_sprites)
+	for (auto& sprite : m_sprites)
 	{
 		m_window.draw(sprite);
-	}*/
+	}
 
 	m_tank.render(m_window);
 
