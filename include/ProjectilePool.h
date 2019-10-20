@@ -20,7 +20,7 @@ public:
 	/// <summary>
 	/// 
 	/// </summary>
-	void update(double t_dT);
+	void update(sf::Time dt);
 
 	/// <summary>
 	/// @brief Iterate through our projectile array and draw them

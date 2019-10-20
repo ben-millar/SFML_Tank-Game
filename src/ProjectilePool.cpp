@@ -43,7 +43,7 @@ void ProjectilePool::create(sf::Vector2f t_pos, sf::Vector2f t_vel, int t_timeTo
 	std::cout << "FIRING" << std::endl;
 }
 
-void ProjectilePool::update(double t_dT)
+void ProjectilePool::update(sf::Time dt)
 {
 	// for all projectiles
 	for (Projectile& i : m_projectiles)
@@ -52,7 +52,7 @@ void ProjectilePool::update(double t_dT)
 		if (i.m_active)
 		{
 			// if can't update, then our projectile died this frame
-			if (!i.update(t_dT))
+			if (!i.update(dt))
 			{
 				// add back to our linked list
 				i.setNext(m_firstAvailable);

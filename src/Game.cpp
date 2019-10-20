@@ -2,7 +2,7 @@
 #include <iostream>
 
 // Updates per milliseconds
-static double const MS_PER_UPDATE = (1000.0 / 60.0);
+static const sf::Time MS_PER_UPDATE = sf::seconds(1.0f/60.0f);
 
 ////////////////////////////////////////////////////////////
 Game::Game()
@@ -36,25 +36,25 @@ Game::Game()
 void Game::run()
 {
 	sf::Clock clock;
-	sf::Int32 lag = 0;
+	sf::Time lag = sf::Time::Zero;
 
 	while (m_window.isOpen())
 	{
 		sf::Time dt = clock.restart();
 
-		lag += dt.asMilliseconds();
+		lag += dt;
 
 		processEvents();
 
 		while (lag > MS_PER_UPDATE)
 		{
 			update(MS_PER_UPDATE);
-			lag -= static_cast<sf::Int32>(MS_PER_UPDATE);
+			lag -= MS_PER_UPDATE;
 		}
 
 		// this could run faster than 100ups, but still passes 10ms to the update loop
 		// could this mess up game logic that relies on dTime?
-		update(lag);
+		update(dt);
 
 		render();
 	}
@@ -209,7 +209,7 @@ void Game::handleKeyInput()
 }
 
 ////////////////////////////////////////////////////////////
-void Game::update(double dt)
+void Game::update(sf::Time dt)
 {
 	handleKeyInput();
 

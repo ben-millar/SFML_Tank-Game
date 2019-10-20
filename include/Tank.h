@@ -1,5 +1,7 @@
 #pragma once
 #include <SFML/Graphics.hpp>
+#include <Thor/Particles.hpp>
+#include <Thor/Math.hpp>
 #include "CollisionDetector.h"
 #include "ProjectilePool.h"
 
@@ -64,7 +66,7 @@ public:
 	/// </summary>
 	void fire();
 
-	void update(double dt);
+	void update(sf::Time dt);
 	void render(sf::RenderWindow & window);
 	
 private:
@@ -97,21 +99,54 @@ private:
 	/// </summary>
 	void initSprites();
 
+	/// <summary>
+	/// @brief Set up THOR particle system/emitters
+	/// </summary>
+	void initParticles();
+
+	// ########## THOR PARTICLES ##########
+	
+	sf::Texture m_particleTexture;
+	thor::ParticleSystem m_particleSystem;
+
+	thor::UniversalEmitter m_emitter = thor::UniversalEmitter();
+
+	// ####################################
+
+
+	// ####### SPRITES AND TEXTURES #######
+
 	sf::Sprite m_tankBase;
 	sf::Sprite m_turret;
 	sf::Texture const & m_texture;
 
-	ProjectilePool m_projectilePool = ProjectilePool();
-
 	// A reference to the container of wall sprites.
 	std::vector<sf::Sprite>& m_wallSprites;
 
+	// ####################################
+
+
+	// ########### PROJECTILES ############
+
+	ProjectilePool m_projectilePool = ProjectilePool();
+
+	// ####################################
+
+
+	// ########## TANK ATTRIBUTES #########
+	
 	static constexpr double M_MAX_SPEED = 100.0;
 	static constexpr double M_MIN_SPEED = -100.0;
 	static constexpr double M_FRICTION = 0.1;
 
 	// The tank speed.
 	double m_speed{ 0.0 };
+
+	// can our tank rotate?
+	bool m_enableRotation{ true };
+
+	// Controls whether or not the turret can rotate independent of the base.
+	bool m_turretFree{ false };
 
 	// The current rotation as applied to tank base.
 	double m_baseRotation{ 0.0 };
@@ -121,15 +156,11 @@ private:
 	double m_turretRotation{ 0.0 };
 	double m_previousTurretRotation{ 0.0 };
 
-	// Controls whether or not the turret can rotate independent of the base.
-	bool m_turretFree{ false };
-
-	// can our tank rotate?
-	bool m_enableRotation{ true };
-
 	// rolling storage of our last position
 	sf::Vector2f m_previousPosition{ 0.0f,0.0f };
 	
 	// rolling storage of our last speed
 	double m_previousSpeed;
+
+	// ####################################
 };

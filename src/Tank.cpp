@@ -1,11 +1,14 @@
 #include "Tank.h"
 #include "MathUtility.h"
+#include "Thor/Animations.hpp"
+#include <iostream>
 
 Tank::Tank(sf::Texture const& texture, std::vector<sf::Sprite>& wallSprites)
 : m_texture(texture)
 , m_wallSprites(wallSprites)
 {
 	initSprites();
+	initParticles();
 }
 
 void Tank::setPosition(sf::Vector2f const& m_pos)
@@ -128,18 +131,33 @@ void Tank::fire()
 	};
 
 	m_projectilePool.create(m_turret.getPosition(), targetVector, 180);
+	
+	m_emitter.setParticlePosition(m_tankBase.getPosition() + targetVector*60.0f);
+	m_emitter.setEmissionRate(500);
+	m_emitter.setParticleVelocity(thor::Distributions::deflect(targetVector*60.0f, 120.0f));
+	m_emitter.setParticleLifetime(sf::seconds(1));
+
+	thor::FadeAnimation fade{ 0.0f,1.0f };
+	thor::ScaleAffector scale({ 1.1f,1.1f });
+
+	m_particleSystem.addAffector(thor::AnimationAffector(fade));
+	m_particleSystem.addAffector(scale, sf::seconds(1));
+	m_particleSystem.addEmitter(m_emitter, sf::seconds(0.1f));
 }
 
-void Tank::update(double dt)
+void Tank::update(sf::Time dt)
 {
 	// update projectiles
 	m_projectilePool.update(dt);
 
+	// update particles
+	m_particleSystem.update(dt);
+
 	// keep track of previous position
 	m_previousPosition = m_tankBase.getPosition();
 
-	m_tankBase.move(cos(MathUtility::DEG_TO_RAD * m_baseRotation) * m_speed * (dt / 1000.0), sin(MathUtility::DEG_TO_RAD * m_baseRotation) * m_speed * (dt / 1000.0));
-	m_turret.move(cos(MathUtility::DEG_TO_RAD * m_baseRotation) * m_speed * (dt / 1000.0), sin(MathUtility::DEG_TO_RAD * m_baseRotation) * m_speed * (dt / 1000.0));
+	m_tankBase.move(cos(MathUtility::DEG_TO_RAD * m_baseRotation) * m_speed * dt.asSeconds(), sin(MathUtility::DEG_TO_RAD * m_baseRotation) * m_speed * dt.asSeconds());
+	m_turret.move(cos(MathUtility::DEG_TO_RAD * m_baseRotation) * m_speed * dt.asSeconds(), sin(MathUtility::DEG_TO_RAD * m_baseRotation) * m_speed * dt.asSeconds());
 
 	m_tankBase.setRotation(m_baseRotation);
 	m_turret.setRotation(m_turretRotation);
@@ -166,16 +184,18 @@ void Tank::update(double dt)
 		m_speed += M_FRICTION;
 	}
 
-	m_speed = std::clamp(m_speed, M_MIN_SPEED, M_MAX_SPEED);
+	//m_speed = std::clamp(m_speed, M_MIN_SPEED, M_MAX_SPEED);
 }
 
 void Tank::render(sf::RenderWindow & window) 
 {
+	window.draw(m_particleSystem);
+
 	// draw projectiles
 	m_projectilePool.render(window);
 
 	window.draw(m_tankBase);
-	window.draw(m_turret);
+	window.draw(m_turret);	
 }
 
 
@@ -196,4 +216,21 @@ void Tank::initSprites()
 	//m_turret.setPosition(pos);
 
 	m_projectilePool.setTexture(m_texture);
+}
+
+void Tank::initParticles()
+{
+	try
+	{
+		if (!m_particleTexture.loadFromFile(".\\resources\\images\\particle.png"))
+		{
+			throw std::exception("Error loading 'particle.png' from within Tank.cpp >> initParticles");
+		}
+	}
+	catch (std::exception e)
+	{
+		std::cout << e.what() << std::endl;
+	}
+
+	m_particleSystem.setTexture(m_particleTexture);
 }

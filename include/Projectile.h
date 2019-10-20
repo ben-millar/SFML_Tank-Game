@@ -30,7 +30,7 @@ private:
 	/// </summary>
 	/// <param name="t_dT">time since last update<</param>
 	/// <returns>false if our projectile died</returns>
-	bool update(double t_dT);
+	bool update(sf::Time dt);
 
 
 	// ####### DATA MEMBERS #######
