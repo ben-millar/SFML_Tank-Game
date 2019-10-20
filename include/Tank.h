@@ -1,6 +1,7 @@
 #pragma once
 #include <SFML/Graphics.hpp>
 #include "CollisionDetector.h"
+#include "ProjectilePool.h"
 
 /// <summary>
 /// @brief A simple tank controller.
@@ -58,6 +59,11 @@ public:
 	/// </summary>
 	void toggleTurretFree();
 
+	/// <summary>
+	/// @brief Fires a projectile
+	/// </summary>
+	void fire();
+
 	void update(double dt);
 	void render(sf::RenderWindow & window);
 	
@@ -91,10 +97,11 @@ private:
 	/// </summary>
 	void initSprites();
 
-
 	sf::Sprite m_tankBase;
 	sf::Sprite m_turret;
 	sf::Texture const & m_texture;
+
+	ProjectilePool m_projectilePool = ProjectilePool();
 
 	// A reference to the container of wall sprites.
 	std::vector<sf::Sprite>& m_wallSprites;

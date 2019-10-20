@@ -4,6 +4,24 @@
 class ProjectilePool
 {
 public:
+
+	ProjectilePool();
+
+	void setTexture(sf::Texture const& texture);
+
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <param name="t_pos"></param>
+	/// <param name="t_vel"></param>
+	/// <param name="t_timeToLive"></param>
+	void create(sf::Vector2f t_pos, sf::Vector2f t_vel, int t_timeToLive);
+
+	/// <summary>
+	/// 
+	/// </summary>
+	void update(double t_dT);
+
 	/// <summary>
 	/// @brief Iterate through our projectile array and draw them
 	/// </summary>
@@ -11,6 +29,12 @@ public:
 	void render(sf::RenderWindow& t_window);
 
 private:
-	const static int ARRAY_SIZE = 100;
-	Projectile m_projectiles[ARRAY_SIZE];
+
+	sf::Texture m_texture;
+	sf::Sprite m_sprite;
+
+	Projectile* m_firstAvailable{ nullptr };
+
+	const static int POOL_SIZE = 100;
+	Projectile m_projectiles[POOL_SIZE];
 };

@@ -152,6 +152,8 @@ void Game::processGameEvents(sf::Event& event)
 		case sf::Keyboard::Escape:
 			m_window.close();
 			break;
+		case sf::Keyboard::Space:
+			m_tank.fire();
 		default:
 			break;
 		}
@@ -166,6 +168,14 @@ void Game::processGameEvents(sf::Event& event)
 			break;
 		default:
 			break;
+		}
+	}
+
+	if (sf::Event::MouseButtonPressed == event.type)
+	{
+		if (sf::Mouse::Left == event.mouseButton.button)
+		{
+			m_tank.fire();
 		}
 	}
 }

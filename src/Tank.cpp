@@ -120,8 +120,21 @@ void Tank::toggleTurretFree()
 	(m_turretFree) ? m_turretFree = false : m_turretFree = true;
 }
 
+void Tank::fire()
+{
+	sf::Vector2f targetVector{ 
+		static_cast<float>( cos(MathUtility::DEG_TO_RAD * m_turretRotation) ), 
+		static_cast<float>( sin(MathUtility::DEG_TO_RAD * m_turretRotation) ) 
+	};
+
+	m_projectilePool.create(m_turret.getPosition(), targetVector, 180);
+}
+
 void Tank::update(double dt)
 {
+	// update projectiles
+	m_projectilePool.update(dt);
+
 	// keep track of previous position
 	m_previousPosition = m_tankBase.getPosition();
 
@@ -158,6 +171,9 @@ void Tank::update(double dt)
 
 void Tank::render(sf::RenderWindow & window) 
 {
+	// draw projectiles
+	m_projectilePool.render(window);
+
 	window.draw(m_tankBase);
 	window.draw(m_turret);
 }
@@ -179,4 +195,5 @@ void Tank::initSprites()
 	m_turret.setOrigin(turretRect.width / 3.0, turretRect.height / 2.0);
 	//m_turret.setPosition(pos);
 
+	m_projectilePool.setTexture(m_texture);
 }

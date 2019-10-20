@@ -31,6 +31,12 @@
     <Filter Include="Source Files\YAML">
       <UniqueIdentifier>{32f6ecaa-0551-45d7-a008-82b2fae6bd8e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Projectile">
+      <UniqueIdentifier>{32c48389-ec4f-4612-bcf9-d703cf0a3b05}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Projectile">
+      <UniqueIdentifier>{b7dd91fb-3724-49fe-beb5-b48ea7b0a850}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Game.h">
@@ -49,10 +55,10 @@
       <Filter>Header Files\YAML</Filter>
     </ClInclude>
     <ClInclude Include="include\Projectile.h">
-      <Filter>Header Files\Tank</Filter>
+      <Filter>Header Files\Projectile</Filter>
     </ClInclude>
     <ClInclude Include="include\ProjectilePool.h">
-      <Filter>Header Files\Tank</Filter>
+      <Filter>Header Files\Projectile</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -77,11 +83,11 @@
     <ClCompile Include="src\LevelLoader.cpp">
       <Filter>Source Files\YAML</Filter>
     </ClCompile>
-    <ClCompile Include="src\Projectile.cpp">
-      <Filter>Source Files\Tank</Filter>
-    </ClCompile>
     <ClCompile Include="src\ProjectilePool.cpp">
-      <Filter>Source Files\Tank</Filter>
+      <Filter>Source Files\Projectile</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Projectile.cpp">
+      <Filter>Source Files\Projectile</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
