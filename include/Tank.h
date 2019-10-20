@@ -66,6 +66,11 @@ public:
 	/// </summary>
 	void fire();
 
+	/// <summary>
+	/// @brief Handles turret firing effects
+	/// </summary>
+	void muzzleFlash(sf::Vector2f t_fireDir);
+
 	void update(sf::Time dt);
 	void render(sf::RenderWindow & window);
 	
@@ -106,10 +111,14 @@ private:
 
 	// ########## THOR PARTICLES ##########
 	
-	sf::Texture m_particleTexture;
-	thor::ParticleSystem m_particleSystem;
+	sf::Texture m_smokeTexture;
+	sf::Texture m_sparkTexture;
 
-	thor::UniversalEmitter m_emitter = thor::UniversalEmitter();
+	thor::ParticleSystem m_smokeParticleSystem;
+	thor::ParticleSystem m_sparkParticleSystem;
+
+	thor::UniversalEmitter m_sparksEmitter = thor::UniversalEmitter();
+	thor::UniversalEmitter m_smokeEmitter = thor::UniversalEmitter();
 
 	// ####################################
 
@@ -137,7 +146,7 @@ private:
 	
 	static constexpr double M_MAX_SPEED = 100.0;
 	static constexpr double M_MIN_SPEED = -100.0;
-	static constexpr double M_FRICTION = 0.1;
+	static constexpr double M_FRICTION = 0.2;
 
 	// The tank speed.
 	double m_speed{ 0.0 };

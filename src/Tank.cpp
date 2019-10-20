@@ -81,12 +81,27 @@ void Tank::adjustRotation()
 
 void Tank::increaseSpeed()
 {
-	m_speed += 1.0;
+	if (m_speed < (M_MAX_SPEED - 1.0))
+	{
+		m_speed += 1.0;
+	}
+	else
+	{
+		m_speed = M_MAX_SPEED;
+	}
+	
 }
 
 void Tank::decreaseSpeed()
 {
-	m_speed -= 1.0;
+	if (m_speed > (M_MIN_SPEED + 1.0))
+	{
+		m_speed -= 1.0;
+	}
+	else
+	{
+		m_speed = M_MIN_SPEED;
+	}
 }
 
 void Tank::increaseRotation()
@@ -132,17 +147,33 @@ void Tank::fire()
 
 	m_projectilePool.create(m_turret.getPosition(), targetVector, 180);
 	
-	m_emitter.setParticlePosition(m_tankBase.getPosition() + targetVector*60.0f);
-	m_emitter.setEmissionRate(500);
-	m_emitter.setParticleVelocity(thor::Distributions::deflect(targetVector*60.0f, 120.0f));
-	m_emitter.setParticleLifetime(sf::seconds(1));
+	muzzleFlash(targetVector);
+}
 
+void Tank::muzzleFlash(sf::Vector2f t_fireDir)
+{
 	thor::FadeAnimation fade{ 0.0f,1.0f };
-	thor::ScaleAffector scale({ 1.1f,1.1f });
 
-	m_particleSystem.addAffector(thor::AnimationAffector(fade));
-	m_particleSystem.addAffector(scale, sf::seconds(1));
-	m_particleSystem.addEmitter(m_emitter, sf::seconds(0.1f));
+	// Muzzle Flash/Sparks effects
+	m_sparksEmitter.setParticlePosition(m_tankBase.getPosition() + t_fireDir * 60.0f);
+	m_sparksEmitter.setEmissionRate(500);
+	m_sparksEmitter.setParticleVelocity(thor::Distributions::deflect(t_fireDir * 250.0f, 10.0f));
+	m_sparksEmitter.setParticleLifetime(thor::Distributions::uniform(sf::seconds(0.1), sf::seconds(2.0)));
+
+	m_sparkParticleSystem.addEmitter(m_sparksEmitter, sf::seconds(0.05f));
+	m_sparkParticleSystem.addAffector(thor::AnimationAffector(fade));
+
+	// Smoke/Dust effects
+	m_smokeEmitter.setParticlePosition(m_tankBase.getPosition() + t_fireDir * 60.0f);
+	m_smokeEmitter.setEmissionRate(500);
+	m_smokeEmitter.setParticleVelocity(thor::Distributions::deflect(t_fireDir * 60.0f, 120.0f));
+	m_smokeEmitter.setParticleLifetime(thor::Distributions::uniform(sf::seconds(0.1), sf::seconds(1.5)));
+
+	
+	thor::ScaleAffector scale({ 1.1f,1.1f });
+	m_smokeParticleSystem.addEmitter(m_smokeEmitter, sf::seconds(0.1f));
+	m_smokeParticleSystem.addAffector(thor::AnimationAffector(fade));
+	m_smokeParticleSystem.addAffector(scale, sf::seconds(1));
 }
 
 void Tank::update(sf::Time dt)
@@ -151,7 +182,8 @@ void Tank::update(sf::Time dt)
 	m_projectilePool.update(dt);
 
 	// update particles
-	m_particleSystem.update(dt);
+	m_smokeParticleSystem.update(dt);
+	m_sparkParticleSystem.update(dt);
 
 	// keep track of previous position
 	m_previousPosition = m_tankBase.getPosition();
@@ -189,7 +221,8 @@ void Tank::update(sf::Time dt)
 
 void Tank::render(sf::RenderWindow & window) 
 {
-	window.draw(m_particleSystem);
+	window.draw(m_smokeParticleSystem);
+	window.draw(m_sparkParticleSystem);
 
 	// draw projectiles
 	m_projectilePool.render(window);
@@ -222,9 +255,14 @@ void Tank::initParticles()
 {
 	try
 	{
-		if (!m_particleTexture.loadFromFile(".\\resources\\images\\particle.png"))
+		if (!m_smokeTexture.loadFromFile(".\\resources\\images\\smoke.png"))
 		{
-			throw std::exception("Error loading 'particle.png' from within Tank.cpp >> initParticles");
+			throw std::exception("Error loading 'smoke.png' from within Tank.cpp >> initParticles");
+		}
+
+		if (!m_sparkTexture.loadFromFile(".\\resources\\images\\spark.png"))
+		{
+			throw std::exception("Error loading 'spark.png' from within Tank.cpp >> initParticles");
 		}
 	}
 	catch (std::exception e)
@@ -232,5 +270,6 @@ void Tank::initParticles()
 		std::cout << e.what() << std::endl;
 	}
 
-	m_particleSystem.setTexture(m_particleTexture);
+	m_smokeParticleSystem.setTexture(m_smokeTexture);
+	m_sparkParticleSystem.setTexture(m_sparkTexture);
 }
