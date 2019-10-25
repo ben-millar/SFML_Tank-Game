@@ -1,5 +1,7 @@
 #pragma once
 
+// TODO: Setup all asset file paths in YAML file
+
 #include <SFML/Graphics.hpp>
 #include "ScreenSize.h"
 #include "Tank.h"
@@ -46,9 +48,25 @@ public:
 private: 
 
 	/// <summary>
+	/// @brief Keep track of the state of our game
+	/// </summary>
+	enum class state 
+	{ 
+		Null, 
+		Loading,
+		GamePlay, 
+		GameOver 
+	} m_gameState{ state::Loading };
+
+	/// <summary>
 	/// @brief Loads all game textures from file
 	/// </summary>
 	void loadTextures();
+
+	/// <summary>
+	/// @brief Loads all fonts from file
+	/// </summary>
+	void loadFonts();
 
 	/// <summary>
 	/// @brief Assigns textures to sprites and sets up sprite parameters
@@ -73,6 +91,10 @@ private:
 	// stores the data for our level
 	LevelData m_level;
 
+	// keeps track of game time
+	sf::Clock m_gameClock;
+	sf::Time m_maxGameTime{ sf::seconds(60.0f) };
+
 	// tank sprite
 	sf::Texture m_tankTexture;
 	//sf::Sprite m_tankSprite;
@@ -85,6 +107,10 @@ private:
 	std::vector<sf::Sprite> m_sprites;
 	// A texture for the spritesheet
 	sf::Texture m_spriteSheetTexture;
+
+	// font and text
+	sf::Font m_font;
+	sf::Text m_text;
 
 	// An instance representing the player controlled tank.
 	Tank m_tank;

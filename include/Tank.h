@@ -148,6 +148,10 @@ private:
 	static constexpr double M_MIN_SPEED = -100.0;
 	static constexpr double M_FRICTION = 0.2;
 
+	// Fire clock 
+	sf::Clock m_fireClock;
+	sf::Time m_fireDelay{ sf::seconds(1.0f) };
+
 	// The tank speed.
 	double m_speed{ 0.0 };
 

@@ -11,11 +11,15 @@ Tank::Tank(sf::Texture const& texture, std::vector<sf::Sprite>& wallSprites)
 	initParticles();
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////
+
 void Tank::setPosition(sf::Vector2f const& m_pos)
 {
 	m_tankBase.setPosition(m_pos);
 	m_turret.setPosition(m_pos);
 }
+
+///////////////////////////////////////////////////////////////////////////////////////////////
 
 bool Tank::checkWallCollision()
 {
@@ -30,6 +34,8 @@ bool Tank::checkWallCollision()
 	}
 	return false;
 }
+
+///////////////////////////////////////////////////////////////////////////////////////////////
 
 void Tank::deflect()
 {
@@ -56,6 +62,8 @@ void Tank::deflect()
 	}
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////
+
 void Tank::adjustRotation()
 {
 	// If tank was rotating...
@@ -79,11 +87,13 @@ void Tank::adjustRotation()
 	}
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////
+
 void Tank::increaseSpeed()
 {
 	if (m_speed < (M_MAX_SPEED - 1.0))
 	{
-		m_speed += 1.0;
+		m_speed += 0.6;
 	}
 	else
 	{
@@ -92,11 +102,13 @@ void Tank::increaseSpeed()
 	
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////
+
 void Tank::decreaseSpeed()
 {
 	if (m_speed > (M_MIN_SPEED + 1.0))
 	{
-		m_speed -= 1.0;
+		m_speed -= 0.6;
 	}
 	else
 	{
@@ -104,17 +116,23 @@ void Tank::decreaseSpeed()
 	}
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////
+
 void Tank::increaseRotation()
 {
 	m_previousBaseRotation = m_baseRotation;
 	(m_baseRotation > 360.0) ? m_baseRotation -= 360.0 : m_baseRotation += 1.0;
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////
+
 void Tank::decreaseRotation()
 {
 	m_previousBaseRotation = m_baseRotation;
 	(m_baseRotation < 0.0) ? m_baseRotation += 360.0 : m_baseRotation -= 1.0;
 }
+
+///////////////////////////////////////////////////////////////////////////////////////////////
 
 void Tank::setTurretHeading(float t_heading)
 {
@@ -133,22 +151,33 @@ void Tank::setTurretHeading(float t_heading)
 	}
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////
+
 void Tank::toggleTurretFree()
 {
 	(m_turretFree) ? m_turretFree = false : m_turretFree = true;
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////
+
 void Tank::fire()
 {
-	sf::Vector2f targetVector{ 
-		static_cast<float>( cos(MathUtility::DEG_TO_RAD * m_turretRotation) ), 
-		static_cast<float>( sin(MathUtility::DEG_TO_RAD * m_turretRotation) ) 
-	};
+	if (m_fireClock.getElapsedTime() > m_fireDelay)
+	{
+		sf::Vector2f targetVector{
+			static_cast<float>(cos(MathUtility::DEG_TO_RAD * m_turretRotation)),
+			static_cast<float>(sin(MathUtility::DEG_TO_RAD * m_turretRotation))
+		};
 
-	m_projectilePool.create(m_turret.getPosition(), targetVector, 180);
-	
-	muzzleFlash(targetVector);
+		m_projectilePool.create(m_turret.getPosition(), targetVector, 180);
+
+		muzzleFlash(targetVector);
+
+		m_fireClock.restart();
+	}
 }
+
+///////////////////////////////////////////////////////////////////////////////////////////////
 
 void Tank::muzzleFlash(sf::Vector2f t_fireDir)
 {
@@ -175,6 +204,8 @@ void Tank::muzzleFlash(sf::Vector2f t_fireDir)
 	m_smokeParticleSystem.addAffector(thor::AnimationAffector(fade));
 	m_smokeParticleSystem.addAffector(scale, sf::seconds(1));
 }
+
+///////////////////////////////////////////////////////////////////////////////////////////////
 
 void Tank::update(sf::Time dt)
 {
@@ -216,8 +247,11 @@ void Tank::update(sf::Time dt)
 		m_speed += M_FRICTION;
 	}
 
+	// Doesn't work very smoothly with acceleration :(
 	//m_speed = std::clamp(m_speed, M_MIN_SPEED, M_MAX_SPEED);
 }
+
+///////////////////////////////////////////////////////////////////////////////////////////////
 
 void Tank::render(sf::RenderWindow & window) 
 {
@@ -231,6 +265,7 @@ void Tank::render(sf::RenderWindow & window)
 	window.draw(m_turret);	
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////
 
 void Tank::initSprites()
 {
@@ -250,6 +285,8 @@ void Tank::initSprites()
 
 	m_projectilePool.setTexture(m_texture);
 }
+
+///////////////////////////////////////////////////////////////////////////////////////////////
 
 void Tank::initParticles()
 {

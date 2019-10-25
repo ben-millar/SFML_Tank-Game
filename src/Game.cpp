@@ -28,11 +28,17 @@ Game::Game()
 	}
 
 	loadTextures();
+	loadFonts();
 	generateWalls();
 	setupSprites();
+
+	// set state to GamePlay
+	m_gameState = state::GamePlay;
+	m_gameClock.restart();
 }
 
-////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////
+
 void Game::run()
 {
 	sf::Clock clock;
@@ -60,6 +66,8 @@ void Game::run()
 	}
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////
+
 /// <summary>
 /// @brief Loads all game textures from file
 /// </summary>
@@ -69,7 +77,7 @@ void Game::loadTextures()
 	{
 		if (!m_tankTexture.loadFromFile(".\\resources\\images\\SpriteSheet.png"))
 		{
-			throw std::exception("Error loading tank texture from file");
+			throw std::exception("Error loading tank texture from file in game.cpp:76");
 		}
 
 		if (!m_bgTexture.loadFromFile(m_level.m_background.m_fileName))
@@ -78,7 +86,7 @@ void Game::loadTextures()
 		}
 		if (!m_spriteSheetTexture.loadFromFile(".\\resources\\images\\SpriteSheet.png"))
 		{
-			throw std::exception("Error loading SpriteSheet texture from file");
+			throw std::exception("Error loading SpriteSheet texture from file in game.cpp:85");
 		}
 	}
 	catch(std::exception& e)
@@ -86,6 +94,29 @@ void Game::loadTextures()
 		std::cout << e.what();
 	}
 }
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+
+void Game::loadFonts()
+{
+	try
+	{
+		if (!m_font.loadFromFile(".\\resources\\fonts\\joystix.monospace.ttf"))
+		{
+			throw std::exception("Error loading joystix font from file in game.cpp:100");
+		}
+
+		m_text.setFont(m_font);
+		m_text.setCharacterSize(16U);
+		m_text.setPosition({ 10.0f,10.0f });
+	}
+	catch (std::exception e)
+	{
+		std::cout << e.what() << std::endl;
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////
 
 /// <summary>
 /// @brief Assigns textures to sprites and sets up sprite parameters
@@ -99,6 +130,8 @@ void Game::setupSprites()
 	m_bgSprite.setPosition({ 0.0f,0.0f });
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////
+
 void Game::generateWalls()
 {
 	sf::IntRect wallRect(2, 129, 33, 23);
@@ -108,14 +141,14 @@ void Game::generateWalls()
 		sf::Sprite sprite;
 		sprite.setTexture(m_spriteSheetTexture);
 		sprite.setTextureRect(wallRect);
-		sprite.setOrigin(wallRect.width / 2.0, wallRect.height / 2.0);
+		sprite.setOrigin(wallRect.width / 2.0f, wallRect.height / 2.0f);
 		sprite.setPosition(obstacle.m_position);
 		sprite.setRotation(obstacle.m_rotation);
 		m_sprites.push_back(sprite);
 	}
 }
 
-////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////
 
 void Game::getTurretRotation()
 {
@@ -127,7 +160,8 @@ void Game::getTurretRotation()
 	m_tank.setTurretHeading(atan2(vec.y, vec.x));
 }
 
-////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////
+
 void Game::processEvents()
 {
 	sf::Event event;
@@ -141,46 +175,57 @@ void Game::processEvents()
 	}
 }
 
-////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////
+
 void Game::processGameEvents(sf::Event& event)
 {
-	// check if the event is a a mouse button release
-	if (sf::Event::KeyPressed == event.type)
+	switch (m_gameState)
 	{
-		switch (event.key.code)
+	///////////////////////////////////////// GAMEPLAY
+	case state::GamePlay:
+		// check if the event is a a mouse button release
+		if (sf::Event::KeyPressed == event.type)
 		{
-		case sf::Keyboard::Escape:
-			m_window.close();
-			break;
-		case sf::Keyboard::Space:
-			m_tank.fire();
-		default:
-			break;
+			switch (event.key.code)
+			{
+			case sf::Keyboard::Escape:
+				m_window.close();
+				break;
+			case sf::Keyboard::Space:
+				m_tank.fire();
+			default:
+				break;
+			}
 		}
-	}
 
-	if (sf::Event::KeyReleased == event.type)
-	{
-		switch (event.key.code)
+		if (sf::Event::KeyReleased == event.type)
 		{
-		case sf::Keyboard::C:
-			m_tank.toggleTurretFree();
-			break;
-		default:
-			break;
+			switch (event.key.code)
+			{
+			case sf::Keyboard::C:
+				m_tank.toggleTurretFree();
+				break;
+			default:
+				break;
+			}
 		}
-	}
 
-	if (sf::Event::MouseButtonPressed == event.type)
-	{
-		if (sf::Mouse::Left == event.mouseButton.button)
+		if (sf::Event::MouseButtonPressed == event.type)
 		{
-			m_tank.fire();
+			if (sf::Mouse::Left == event.mouseButton.button)
+			{
+				m_tank.fire();
+			}
 		}
+		break;
+		///////////////////////////////////////// DEFAULT
+	default:
+		break;
 	}
 }
 
-////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////
+
 void Game::handleKeyInput()
 {
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) || // UP or W
@@ -208,29 +253,71 @@ void Game::handleKeyInput()
 	}
 }
 
-////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////
+
 void Game::update(sf::Time dt)
 {
-	handleKeyInput();
-
-	getTurretRotation();
-
-	m_tank.update(dt);
-}
-
-////////////////////////////////////////////////////////////
-void Game::render()
-{
-	m_window.clear(sf::Color(0, 0, 0, 0));
-
-	m_window.draw(m_bgSprite);
-
-	for (auto& sprite : m_sprites)
+	// if we've hit our maximum game time, set gamestate to GameOver
+	if (m_gameClock.getElapsedTime() > m_maxGameTime)
 	{
-		m_window.draw(sprite);
+		m_gameState = state::GameOver;
 	}
 
-	m_tank.render(m_window);
+	switch (m_gameState)
+	{
+	case state::Loading:
+		break;
+	case state::GamePlay:
+
+		handleKeyInput();
+
+		getTurretRotation();
+
+		m_tank.update(dt);
+
+		break;
+	case state::GameOver:
+		break;
+	default:
+		break;
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+
+void Game::render()
+{
+	m_window.clear(sf::Color::Black);
+
+	int timeRemaining = (m_maxGameTime - m_gameClock.getElapsedTime()).asSeconds();
+
+	switch (m_gameState)
+	{
+	case state::Loading:
+		m_text.setString("Loading . . .");
+		m_window.draw(m_text);
+		break;
+	case state::GamePlay:
+
+		m_window.draw(m_bgSprite);
+
+		m_text.setString("Time Remaining: " + std::to_string(timeRemaining) );
+
+		m_window.draw(m_text);
+
+		for (auto& sprite : m_sprites)
+		{
+			m_window.draw(sprite);
+		}
+
+		m_tank.render(m_window);
+
+		break;
+	case state::GameOver:
+		break;
+	default:
+		break;
+	}
 
 	m_window.display();
 }
