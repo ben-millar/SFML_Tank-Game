@@ -33,7 +33,13 @@ struct BackgroundData
 /// </summary>
 struct TankData
 {
-	sf::Vector2f m_position;
+	std::vector<sf::Vector2f> m_position
+	{
+		sf::Vector2f(0.0f,0.0f),
+		sf::Vector2f(0.0f,0.0f),
+		sf::Vector2f(0.0f,0.0f),
+		sf::Vector2f(0.0f,0.0f)
+	};
 };
 
 /// <summary>

@@ -39,8 +39,25 @@ void operator >> (const YAML::Node& backgroundNode, BackgroundData& background)
 ////////////////////////////////////////////////////////////
 void operator >> (const YAML::Node& tankNode, TankData& tank)
 {
-	tank.m_position.x = tankNode["position"]["x"].as<float>();
-	tank.m_position.y = tankNode["position"]["y"].as<float>();
+	/*tank.m_position.x = tankNode["position"]["x"].as<float>();
+	tank.m_position.y = tankNode["position"]["y"].as<float>();*/
+
+	const YAML::Node& tankPosNode = tankNode["spawns"].as<YAML::Node>();
+	auto size = tankPosNode.size();
+
+	/*int i = 0;
+	for (auto& node : tankPosNode)
+	{
+		tank.m_position[i].x = node["pos"]["x"].as<float>();
+		tank.m_position[i].y = node["pos"]["y"].as<float>();
+		i++;
+	}*/
+
+	for (unsigned i = 0; i < tankPosNode.size(); ++i)
+	{
+		tank.m_position[i].x = tankPosNode[i]["pos"]["x"].as<float>();
+		tank.m_position[i].y = tankPosNode[i]["pos"]["y"].as<float>();
+	}
 }
 
 /// <summary>

@@ -123,8 +123,8 @@ void Game::loadFonts()
 /// </summary>
 void Game::setupSprites()
 {
-	// Now the level data is loaded, set the tank position.
-	m_tank.setPosition(m_level.m_tank.m_position);
+	// Now the level data is loaded, set the tank position in a random corner.
+	m_tank.setPosition(m_level.m_tank.m_position[rand() % 4]);
 
 	m_bgSprite.setTexture(m_bgTexture);
 	m_bgSprite.setPosition({ 0.0f,0.0f });

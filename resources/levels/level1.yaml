@@ -1,9 +1,13 @@
 background:
    file: ./resources/images/Background.jpg # Sample comment
 tank:
-   position: {x: 800, y: 100}
    max_projectiles: 10
-   reload_time: 1000  
+   reload_time: 1000
+   spawns: 
+      - pos: {x: 100, y: 100}
+      - pos: {x: 1300, y: 100}
+      - pos: {x: 100, y: 800}
+      - pos: {x: 1300, y: 800}
 ai_tank:
    position: {x: 400, y: 700}
    max_projectiles: 10

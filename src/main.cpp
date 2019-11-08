@@ -29,6 +29,8 @@
 /// <returns></returns>
 int main(int, char* argv[])
 {
+	srand(static_cast<unsigned>(time(nullptr)));
+
 	Game game;
 	game.run();
 }
