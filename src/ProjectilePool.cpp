@@ -86,7 +86,7 @@ f_generateParticle(Fooinstance, );
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
-void ProjectilePool::checkCollisions(std::vector<sf::Sprite> t_spriteVector, std::function<void(Tank*, sf::Vector2f)> t_smokeFunc)
+void ProjectilePool::checkCollisions(std::vector<sf::Sprite> t_spriteVector, std::function<void(Tank*, sf::Vector2f)> t_smokeFunc, Tank* t_tank)
 {
 	for (Projectile& p : m_projectiles)
 	{
@@ -109,14 +109,15 @@ void ProjectilePool::checkCollisions(std::vector<sf::Sprite> t_spriteVector, std
 					kill(p);
 
 					// pass position to our smoke effect function
-					//t_smokeFunc(p.m_position);
+					t_smokeFunc(t_tank, p.m_position);
 				}
 
 				delete tempSprite;
 				tempSprite = nullptr;
-			}
-		}
-	}
+
+			} // end for t_spriteVector
+		} // end if p.active
+	} // end for m_projectiles
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////

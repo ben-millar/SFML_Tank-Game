@@ -1,8 +1,8 @@
 #pragma once
-#include <queue>
+#include <functional>
 #include "Projectile.h"
 #include "CollisionDetector.h"
-#include <functional>
+
 
 class Tank;
 
@@ -31,7 +31,7 @@ public:
 	/// </summary>
 	/// <param name="t_spriteVector"></param>
 	/// <returns></returns>
-	void checkCollisions(std::vector<sf::Sprite> t_spriteVector, std::function<void(Tank*, sf::Vector2f)>);
+	void checkCollisions(std::vector<sf::Sprite> t_spriteVector, std::function<void(Tank*, sf::Vector2f)>, Tank* t_tank);
 
 	/// <summary>
 	/// @brief Iterate through our projectile array and draw them

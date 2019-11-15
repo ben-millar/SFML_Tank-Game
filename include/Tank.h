@@ -2,6 +2,7 @@
 #include <SFML/Graphics.hpp>
 #include <Thor/Particles.hpp>
 #include <Thor/Math.hpp>
+#include <thread>
 #include "CollisionDetector.h"
 #include "ProjectilePool.h"
 
@@ -113,12 +114,30 @@ private:
 	/// @brief Handles impact smoke effects
 	/// </summary>
 	/// <param name="t_impactPos">location of impact</param>
+	void projectileImpact(sf::Vector2f t_impactPos);
+
+	/// <summary>
+	/// @brief Alias for projectileImpact function
+	/// </summary>
+	std::function<void(Tank*, sf::Vector2f)> f_projectileImpact;
+
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <param name="t_impactPos"></param>
 	void impactSmoke(sf::Vector2f t_impactPos);
 
 	/// <summary>
 	/// @brief Alias for impactSmoke function
 	/// </summary>
 	std::function<void(Tank*, sf::Vector2f)> f_impactSmoke;
+
+	// ############# THREADS ##############
+
+	std::thread* m_smokeThread;
+
+	// ####################################
+	
 
 	// ########## THOR PARTICLES ##########
 	
@@ -130,6 +149,9 @@ private:
 
 	thor::UniversalEmitter m_sparksEmitter = thor::UniversalEmitter();
 	thor::UniversalEmitter m_smokeEmitter = thor::UniversalEmitter();
+
+	thor::ParticleSystem m_impactParticleSystem;
+	thor::UniversalEmitter m_impactSmokeEmitter;
 
 	// ####################################
 

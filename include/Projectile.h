@@ -41,7 +41,7 @@ private:
 	int m_timeToLive;
 
 	// pixels/second
-	float m_speed{ 750.0f };
+	float m_speed{ 500.0f };
 	float m_rotation{ 0.0f };
 
 	sf::Vector2f m_position{ 0.0f,0.0f };

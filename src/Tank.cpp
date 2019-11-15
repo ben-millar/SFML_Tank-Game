@@ -7,6 +7,7 @@ Tank::Tank(sf::Texture const& texture, std::vector<sf::Sprite>& wallSprites)
 	: m_texture(texture)
 	, m_wallSprites(wallSprites)
 {
+	f_projectileImpact = &Tank::projectileImpact;
 	f_impactSmoke = &Tank::impactSmoke;
 	initSprites();
 	initParticles();
@@ -188,7 +189,7 @@ void Tank::muzzleFlash(sf::Vector2f t_fireDir)
 	m_sparksEmitter.setParticlePosition(m_tankBase.getPosition() + t_fireDir * 60.0f);
 	m_sparksEmitter.setEmissionRate(500);
 	m_sparksEmitter.setParticleVelocity(thor::Distributions::deflect(t_fireDir * 250.0f, 10.0f));
-	m_sparksEmitter.setParticleLifetime(thor::Distributions::uniform(sf::seconds(0.1), sf::seconds(2.0)));
+	m_sparksEmitter.setParticleLifetime(thor::Distributions::uniform(sf::seconds(0.1f), sf::seconds(2.0f)));
 
 	m_sparkParticleSystem.addEmitter(m_sparksEmitter, sf::seconds(0.05f));
 	m_sparkParticleSystem.addAffector(thor::AnimationAffector(fade));
@@ -197,7 +198,7 @@ void Tank::muzzleFlash(sf::Vector2f t_fireDir)
 	m_smokeEmitter.setParticlePosition(m_tankBase.getPosition() + t_fireDir * 60.0f);
 	m_smokeEmitter.setEmissionRate(500);
 	m_smokeEmitter.setParticleVelocity(thor::Distributions::deflect(t_fireDir * 60.0f, 120.0f));
-	m_smokeEmitter.setParticleLifetime(thor::Distributions::uniform(sf::seconds(0.1), sf::seconds(1.5)));
+	m_smokeEmitter.setParticleLifetime(thor::Distributions::uniform(sf::seconds(0.1f), sf::seconds(1.5f)));
 
 	
 	thor::ScaleAffector scale({ 1.1f,1.1f });
@@ -208,9 +209,41 @@ void Tank::muzzleFlash(sf::Vector2f t_fireDir)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
+void Tank::projectileImpact(sf::Vector2f t_impactPos)
+{
+	if (nullptr != m_smokeThread)
+	{
+		std::cout << "Waiting for thread [" << m_smokeThread->get_id() << "] to finish... ";
+		m_smokeThread->join();
+
+		// deallocate memory occupied by old thread ptr
+		delete m_smokeThread;
+	}
+	
+	std::cout << "Creating thread [";
+	m_smokeThread = new std::thread(f_impactSmoke, this, t_impactPos);
+	std::cout << m_smokeThread->get_id() << "]" << std::endl;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+/// 
 void Tank::impactSmoke(sf::Vector2f t_impactPos)
 {
 	std::cout << "I'm making smoke!" << std::endl;
+
+	thor::FadeAnimation fade{ 0.0f,1.0f };
+
+	// Smoke/Dust effects
+	m_impactSmokeEmitter.setParticlePosition(t_impactPos);
+	m_impactSmokeEmitter.setEmissionRate(500);
+	m_impactSmokeEmitter.setParticleVelocity(thor::Distributions::deflect({ 40.0f,40.0f }, 360.0f));
+	m_impactSmokeEmitter.setParticleLifetime(thor::Distributions::uniform(sf::seconds(0.1f), sf::seconds(0.75f)));
+
+
+	thor::ScaleAffector scale({ 1.1f,1.1f });
+	m_impactParticleSystem.addEmitter(m_impactSmokeEmitter, sf::seconds(0.25f));
+	m_impactParticleSystem.addAffector(thor::AnimationAffector(fade));
+	m_impactParticleSystem.addAffector(scale, sf::seconds(1));
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -220,20 +253,23 @@ void Tank::update(sf::Time dt)
 	// update projectiles
 	m_projectilePool.update(dt);
 
-	m_projectilePool.checkCollisions(m_wallSprites, f_impactSmoke);
+	m_projectilePool.checkCollisions(m_wallSprites, f_projectileImpact, this);
 
 	// update particles
 	m_smokeParticleSystem.update(dt);
 	m_sparkParticleSystem.update(dt);
+	m_impactParticleSystem.update(dt);
 
 	// keep track of previous position
 	m_previousPosition = m_tankBase.getPosition();
 
-	m_tankBase.move(cos(MathUtility::DEG_TO_RAD * m_baseRotation) * m_speed * dt.asSeconds(), sin(MathUtility::DEG_TO_RAD * m_baseRotation) * m_speed * dt.asSeconds());
-	m_turret.move(cos(MathUtility::DEG_TO_RAD * m_baseRotation) * m_speed * dt.asSeconds(), sin(MathUtility::DEG_TO_RAD * m_baseRotation) * m_speed * dt.asSeconds());
+	float deltaX = cos(MathUtility::DEG_TO_RAD * m_baseRotation) * m_speed * dt.asSeconds();
+	float deltaY = sin(MathUtility::DEG_TO_RAD * m_baseRotation) * m_speed * dt.asSeconds();
+	m_tankBase.move(deltaX, deltaY);
+	m_turret.move(deltaX, deltaY);
 
-	m_tankBase.setRotation(m_baseRotation);
-	m_turret.setRotation(m_turretRotation);
+	m_tankBase.setRotation(static_cast<float>(m_baseRotation));
+	m_turret.setRotation(static_cast<float>(m_turretRotation));
 
 	if (checkWallCollision())
 	{
@@ -265,6 +301,7 @@ void Tank::update(sf::Time dt)
 
 void Tank::render(sf::RenderWindow & window) 
 {
+	window.draw(m_impactParticleSystem);
 	window.draw(m_smokeParticleSystem);
 	window.draw(m_sparkParticleSystem);
 
@@ -283,14 +320,14 @@ void Tank::initSprites()
 	m_tankBase.setTexture(m_texture);
 	sf::IntRect baseRect(2, 43, 79, 43);
 	m_tankBase.setTextureRect(baseRect);
-	m_tankBase.setOrigin(baseRect.width / 2.0, baseRect.height / 2.0);
+	m_tankBase.setOrigin(baseRect.width / 2.0f, baseRect.height / 2.0f);
 	//m_tankBase.setPosition(pos);
 
 	// Initialise the turret
 	m_turret.setTexture(m_texture);
 	sf::IntRect turretRect(19, 1, 83, 31);
 	m_turret.setTextureRect(turretRect);
-	m_turret.setOrigin(turretRect.width / 3.0, turretRect.height / 2.0);
+	m_turret.setOrigin(turretRect.width / 3.0f, turretRect.height / 2.0f);
 	//m_turret.setPosition(pos);
 
 	m_projectilePool.setTexture(m_texture);
@@ -317,6 +354,7 @@ void Tank::initParticles()
 		std::cout << e.what() << std::endl;
 	}
 
+	m_impactParticleSystem.setTexture(m_smokeTexture);
 	m_smokeParticleSystem.setTexture(m_smokeTexture);
 	m_sparkParticleSystem.setTexture(m_sparkTexture);
 }
