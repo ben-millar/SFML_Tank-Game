@@ -1,10 +1,14 @@
 #pragma once
+#include <queue>
 #include "Projectile.h"
+#include "CollisionDetector.h"
+#include <functional>
+
+class Tank;
 
 class ProjectilePool
 {
 public:
-
 	ProjectilePool();
 
 	void setTexture(sf::Texture const& texture);
@@ -23,12 +27,26 @@ public:
 	void update(sf::Time dt);
 
 	/// <summary>
+	/// 
+	/// </summary>
+	/// <param name="t_spriteVector"></param>
+	/// <returns></returns>
+	void checkCollisions(std::vector<sf::Sprite> t_spriteVector, std::function<void(Tank*, sf::Vector2f)>);
+
+	/// <summary>
 	/// @brief Iterate through our projectile array and draw them
 	/// </summary>
 	/// <param name="t_window">Reference to SF render window to draw to</param>
 	void render(sf::RenderWindow& t_window);
 
 private:
+
+	/// <summary>
+	/// Make projectile inactive and add back to our linked list
+	/// </summary>
+	/// <param name="t_projectile">projectile to act on</param>
+	void kill(Projectile& t_projectile);
+
 
 	sf::Texture m_texture;
 	sf::Sprite m_sprite;

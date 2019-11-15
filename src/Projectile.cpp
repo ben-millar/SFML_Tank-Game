@@ -11,7 +11,7 @@ void Projectile::init(sf::Vector2f t_pos, sf::Vector2f t_vel, int t_timeToLive)
 
 bool Projectile::update(sf::Time dt)
 {
-	m_position += m_velocity;
+	m_position += (m_velocity * dt.asSeconds());
 
 	m_timeToLive--;
 

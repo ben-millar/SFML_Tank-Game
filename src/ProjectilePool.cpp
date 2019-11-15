@@ -20,10 +20,14 @@ ProjectilePool::ProjectilePool()
 	m_sprite.setTextureRect({ 8,177,9,6 });
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////
+
 void ProjectilePool::setTexture(sf::Texture const& texture)
 {
 	m_sprite.setTexture(texture);
 }
+
+///////////////////////////////////////////////////////////////////////////////////////////////
 
 void ProjectilePool::create(sf::Vector2f t_pos, sf::Vector2f t_vel, int t_timeToLive)
 {
@@ -43,29 +47,79 @@ void ProjectilePool::create(sf::Vector2f t_pos, sf::Vector2f t_vel, int t_timeTo
 	std::cout << "FIRING" << std::endl;
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////
+
 void ProjectilePool::update(sf::Time dt)
 {
 	// for all projectiles
-	for (Projectile& i : m_projectiles)
+	for (Projectile& p : m_projectiles)
 	{
 		// which are active
-		if (i.m_active)
+		if (p.m_active)
 		{
 			// if can't update, then our projectile died this frame
-			if (!i.update(dt))
+			if (!p.update(dt))
 			{
-				// add back to our linked list
-				i.setNext(m_firstAvailable);
-				m_firstAvailable = &i;
-
-				// set inactive
-				i.m_active = false;
-
-				std::cout << "deleting bullet" << std::endl;
+				kill(p);
 			}
 		}
 	}
 }
+
+/*
+
+void printNumber(int i)
+{
+   std::cout << i;
+}
+
+std::function<void(int)> f_print = printNumber;
+f_print(10);
+
+
+checkCollisions( std::function<void(const Foo&, int)> f_generateParticle )
+{
+f_generateParticle(Fooinstance, );
+}
+
+*/
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+
+void ProjectilePool::checkCollisions(std::vector<sf::Sprite> t_spriteVector, std::function<void(Tank*, sf::Vector2f)> t_smokeFunc)
+{
+	for (Projectile& p : m_projectiles)
+	{
+		if (p.m_active)
+		{
+			for (sf::Sprite& s : t_spriteVector)
+			{
+				/* create a 'clone' of projectile p to check collisions
+				   this is necessary as we only have one sprite which is
+				   moved around at render time */
+
+				sf::Sprite* tempSprite = new sf::Sprite();
+				tempSprite->setPosition(p.m_position);
+				tempSprite->setRotation(p.m_rotation);
+
+				// if they collide
+				if (CollisionDetector::collision(*tempSprite, s))
+				{
+					std::cout << "IMPACT" << std::endl;
+					kill(p);
+
+					// pass position to our smoke effect function
+					//t_smokeFunc(p.m_position);
+				}
+
+				delete tempSprite;
+				tempSprite = nullptr;
+			}
+		}
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////
 
 void ProjectilePool::render(sf::RenderWindow& t_window)
 {
@@ -78,4 +132,18 @@ void ProjectilePool::render(sf::RenderWindow& t_window)
 			t_window.draw(m_sprite);
 		}
 	}
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+
+void ProjectilePool::kill(Projectile& t_projectile)
+{
+	// add back to our linked list
+	t_projectile.setNext(m_firstAvailable);
+	m_firstAvailable = &t_projectile;
+
+	// set inactive
+	t_projectile.m_active = false;
+
+	std::cout << "deleting bullet" << std::endl;
 }

@@ -4,9 +4,10 @@
 #include <iostream>
 
 Tank::Tank(sf::Texture const& texture, std::vector<sf::Sprite>& wallSprites)
-: m_texture(texture)
-, m_wallSprites(wallSprites)
+	: m_texture(texture)
+	, m_wallSprites(wallSprites)
 {
+	f_impactSmoke = &Tank::impactSmoke;
 	initSprites();
 	initParticles();
 }
@@ -207,10 +208,19 @@ void Tank::muzzleFlash(sf::Vector2f t_fireDir)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
+void Tank::impactSmoke(sf::Vector2f t_impactPos)
+{
+	std::cout << "I'm making smoke!" << std::endl;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+
 void Tank::update(sf::Time dt)
 {
 	// update projectiles
 	m_projectilePool.update(dt);
+
+	m_projectilePool.checkCollisions(m_wallSprites, f_impactSmoke);
 
 	// update particles
 	m_smokeParticleSystem.update(dt);

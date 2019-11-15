@@ -66,11 +66,6 @@ public:
 	/// </summary>
 	void fire();
 
-	/// <summary>
-	/// @brief Handles turret firing effects
-	/// </summary>
-	void muzzleFlash(sf::Vector2f t_fireDir);
-
 	void update(sf::Time dt);
 	void render(sf::RenderWindow & window);
 	
@@ -108,6 +103,22 @@ private:
 	/// @brief Set up THOR particle system/emitters
 	/// </summary>
 	void initParticles();
+
+	/// <summary>
+	/// @brief Handles turret firing effects
+	/// </summary>
+	void muzzleFlash(sf::Vector2f t_fireDir);
+
+	/// <summary>
+	/// @brief Handles impact smoke effects
+	/// </summary>
+	/// <param name="t_impactPos">location of impact</param>
+	void impactSmoke(sf::Vector2f t_impactPos);
+
+	/// <summary>
+	/// @brief Alias for impactSmoke function
+	/// </summary>
+	std::function<void(Tank*, sf::Vector2f)> f_impactSmoke;
 
 	// ########## THOR PARTICLES ##########
 	

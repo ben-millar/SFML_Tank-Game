@@ -1,6 +1,7 @@
 #pragma once
 #include <SFML/Graphics.hpp>
 
+
 class Projectile
 {
 	friend class ProjectilePool;
@@ -39,7 +40,8 @@ private:
 
 	int m_timeToLive;
 
-	float m_speed{ 10.0f };
+	// pixels/second
+	float m_speed{ 750.0f };
 	float m_rotation{ 0.0f };
 
 	sf::Vector2f m_position{ 0.0f,0.0f };
