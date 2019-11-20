@@ -120,6 +120,9 @@ private:
 	std::vector<sf::Sprite> m_activeTargets;
 	int m_targetIndex{ 0 }; // track which target is active
 
+	// visual representation of how long a given target has left on the screen
+	sf::RectangleShape m_targetLoadingBar;
+
 	// A texture for the spritesheet
 	sf::Texture m_spriteSheetTexture;
 

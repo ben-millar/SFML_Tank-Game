@@ -44,6 +44,9 @@ Game::Game()
 
 	// restart target timer
 	m_targetClock.restart();
+
+	m_targetLoadingBar.setFillColor(sf::Color::Red);
+	m_targetLoadingBar.setSize({ 50.0f,10.0f });
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -359,7 +362,14 @@ void Game::render()
 
 		for (auto& target : m_activeTargets)
 		{
+			// set up target loading bar
+			float barWidth = 10.0f * (m_targetDuration.asSeconds() - m_targetClock.getElapsedTime().asSeconds());
+			m_targetLoadingBar.setOrigin({ barWidth / 2.0f, 0.0f });
+			m_targetLoadingBar.setPosition(target.getPosition().x, target.getPosition().y + 25.0f);
+			m_targetLoadingBar.setSize({ barWidth, 10.0f });
+
 			m_window.draw(target);
+			m_window.draw(m_targetLoadingBar);
 		}
 
 		m_tank.render(m_window);
