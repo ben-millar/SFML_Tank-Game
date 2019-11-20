@@ -30,6 +30,7 @@ Game::Game()
 	loadTextures();
 	loadFonts();
 	generateWalls();
+	generateTargets();
 	setupSprites();
 
 	// set state to GamePlay
@@ -145,6 +146,29 @@ void Game::generateWalls()
 		sprite.setPosition(obstacle.m_position);
 		sprite.setRotation(obstacle.m_rotation);
 		m_sprites.push_back(sprite);
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+
+void Game::generateTargets()
+{
+	sf::IntRect targetRect(0, 90, 38, 38);
+
+	for (TargetData const& target : m_level.m_targets)
+	{
+		sf::Sprite sprite;
+		sprite.setTexture(m_spriteSheetTexture);
+		sprite.setTextureRect(targetRect);
+		sprite.setOrigin(targetRect.width / 2.0f, targetRect.height / 2.0f);
+		sprite.setPosition(target.m_position);
+
+		float offsetX = rand() % target.m_randomOffset.x;
+		float offsetY = rand() % target.m_randomOffset.y;
+
+		sprite.move({ offsetX, offsetY });
+
+		m_targets.push_back(sprite);
 	}
 }
 
@@ -308,6 +332,11 @@ void Game::render()
 		for (auto& sprite : m_sprites)
 		{
 			m_window.draw(sprite);
+		}
+
+		for (auto& target : m_targets)
+		{
+			m_window.draw(target);
 		}
 
 		m_tank.render(m_window);

@@ -94,10 +94,7 @@ void ProjectilePool::checkCollisions(std::vector<sf::Sprite> t_spriteVector, std
 		{
 			for (sf::Sprite& s : t_spriteVector)
 			{
-				/* create a 'clone' of projectile p to check collisions
-				   this is necessary as we only have one sprite which is
-				   moved around at render time */
-
+				// assign a temp sprite to this location for collisions
 				sf::Sprite* tempSprite = new sf::Sprite();
 				tempSprite->setPosition(p.m_position);
 				tempSprite->setRotation(p.m_rotation);

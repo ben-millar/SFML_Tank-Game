@@ -5,22 +5,37 @@
 
 /// <summary>
 /// @brief Extracts the obstacle type, position and rotation values.
-/// 
 /// </summary>
 /// <param name="obstacleNode">A YAML node</param>
 /// <param name="obstacle">A simple struct to store the obstacle data</param>
-////////////////////////////////////////////////////////////
-void operator >> (const YAML::Node& obstacleNode, ObstacleData& obstacle)
+void operator >> (const YAML::Node& t_obstacleNode, ObstacleData& t_obstacle)
 {
-	obstacle.m_type = obstacleNode["type"].as<std::string>();
-	obstacle.m_position.x = obstacleNode["position"]["x"].as<float>();
-	obstacle.m_position.y = obstacleNode["position"]["y"].as<float>();
-	obstacle.m_rotation = obstacleNode["rotation"].as<double>();
+	t_obstacle.m_type = t_obstacleNode["type"].as<std::string>();
+	t_obstacle.m_position.x = t_obstacleNode["position"]["x"].as<float>();
+	t_obstacle.m_position.y = t_obstacleNode["position"]["y"].as<float>();
+	t_obstacle.m_rotation = t_obstacleNode["rotation"].as<double>();
 }
+
+////////////////////////////////////////////////////////////
+
+/// <summary>
+/// @brief Extracts the target type, position, and random offset.
+/// </summary>
+/// <param name="t_targetNode">A YAML node</param>
+/// <param name="t_target">A struct holding our target data</param>
+void operator >> (const YAML::Node& t_targetNode, TargetData& t_target)
+{
+	t_target.m_type = t_targetNode["type"].as<std::string>();
+	t_target.m_position.x = t_targetNode["position"]["x"].as<float>();
+	t_target.m_position.y = t_targetNode["position"]["y"].as<float>();
+	t_target.m_randomOffset.x = t_targetNode["position"]["randomOffset"].as<int>();
+	t_target.m_randomOffset.y = t_targetNode["position"]["randomOffset"].as<int>();
+}
+
+////////////////////////////////////////////////////////////
 
 /// <summary>
 /// @brief Extracts the filename for the game background texture.
-/// 
 /// </summary>
 /// <param name="backgroundNode">A YAML node</param>
 /// <param name="background">A simple struct to store background related data</param>
@@ -30,13 +45,13 @@ void operator >> (const YAML::Node& backgroundNode, BackgroundData& background)
 	background.m_fileName = backgroundNode["file"].as<std::string>();
 }
 
+////////////////////////////////////////////////////////////
+
 /// <summary>
 /// @brief Extracts the initial screen position for the player tank.
-/// 
 /// </summary>
 /// <param name="tankNode">A YAML node</param>
 /// <param name="tank">A simple struct to store data related to the player tank</param>
-////////////////////////////////////////////////////////////
 void operator >> (const YAML::Node& tankNode, TankData& tank)
 {
 	/*tank.m_position.x = tankNode["position"]["x"].as<float>();
@@ -60,21 +75,23 @@ void operator >> (const YAML::Node& tankNode, TankData& tank)
 	}
 }
 
+////////////////////////////////////////////////////////////
+
 /// <summary>
 /// @brief Top level function that extracts various game data from the YAML data stucture.
 /// 
-/// Invokes other functions to extract the background, tank and obstacle data.
-//   Because there are multiple obstacles, obstacle data are stored in a vector.
+/// Invokes other functions to extract the background, tank, obstacle, and target data.
+/// Because there are multiple obstacles, obstacle data are stored in a vector.
 /// </summary>
 /// <param name="tankNode">A YAML node</param>
 /// <param name="tank">A simple struct to store data related to the player tank</param>
-////////////////////////////////////////////////////////////
 void operator >> (const YAML::Node& levelNode, LevelData& level)
 {
 	levelNode["background"] >> level.m_background;
 
 	levelNode["tank"] >> level.m_tank;
 
+	// Load our obstacle data from file into our struct, and push a copy into our obstacle vector
 	const YAML::Node& obstaclesNode = levelNode["obstacles"].as<YAML::Node>();
 	for (unsigned i = 0; i < obstaclesNode.size(); ++i)
 	{
@@ -82,9 +99,24 @@ void operator >> (const YAML::Node& levelNode, LevelData& level)
 		obstaclesNode[i] >> obstacle;
 		level.m_obstacles.push_back(obstacle);
 	}
+
+	// Load our target data from file into our struct, and push a copy into our target vector
+	const YAML::Node& targetsNode = levelNode["targets"].as<YAML::Node>();
+	for (unsigned i = 0; i < targetsNode.size(); ++i)
+	{
+		TargetData target;
+		targetsNode[i] >> target;
+		level.m_targets.push_back(target);
+	}
 }
 
 ////////////////////////////////////////////////////////////
+
+/// <summary>
+/// @brief Handles loading our YAML file into memory
+/// </summary>
+/// <param name="nr">Level number to load in</param>
+/// <param name="level">LevelData struct to take info into</param>
 void LevelLoader::load(int nr, LevelData& level)
 {
 	std::stringstream ss;
@@ -115,5 +147,3 @@ void LevelLoader::load(int nr, LevelData& level)
 		throw std::exception(message.c_str());
 	}
 }
-
-

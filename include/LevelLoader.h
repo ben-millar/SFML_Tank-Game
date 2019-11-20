@@ -9,7 +9,6 @@
 
 /// <summary>
 /// @brief A struct to represent Obstacle data in the level.
-/// 
 /// </summary>
 struct ObstacleData
 {
@@ -19,8 +18,17 @@ struct ObstacleData
 };
 
 /// <summary>
+/// @brief A struct to represent Target data in the level.
+/// </summary>
+struct TargetData
+{
+	std::string m_type;
+	sf::Vector2f m_position;
+	sf::Vector2i m_randomOffset;
+};
+
+/// <summary>
 /// @brief A struct to store Background texture information.
-/// 
 /// </summary>
 struct BackgroundData
 {
@@ -29,7 +37,6 @@ struct BackgroundData
 
 /// <summary>
 /// @brief A struct to represent tank data in the level.
-/// 
 /// </summary>
 struct TankData
 {
@@ -52,6 +59,7 @@ struct LevelData
 	BackgroundData m_background;
 	TankData m_tank;
 	std::vector<ObstacleData> m_obstacles;
+	std::vector<TargetData> m_targets;
 };
 
 /// <summary>

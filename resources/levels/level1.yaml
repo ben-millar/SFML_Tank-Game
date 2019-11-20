@@ -15,6 +15,11 @@ ai_tank:
 projectile:
    speed: 1000
    damage: 10	
+targets:
+   - type: bullseye
+     position: {x: 400, y: 400, randomOffset: 40}
+   - type: bullseye
+     position: {x: 450, y: 450, randomOffset: 40}
 obstacles: 
    - type: wall
      position: {x: 100, y: 660}
