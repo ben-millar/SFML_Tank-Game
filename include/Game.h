@@ -100,6 +100,10 @@ private:
 	sf::Clock m_gameClock;
 	sf::Time m_maxGameTime{ sf::seconds(60.0f) };
 
+	// keeps track of target timing
+	sf::Clock m_targetClock;
+	sf::Time m_targetDuration{ sf::seconds(5.0f) };
+
 	// tank sprite
 	sf::Texture m_tankTexture;
 	//sf::Sprite m_tankSprite;
@@ -112,7 +116,9 @@ private:
 	std::vector<sf::Sprite> m_sprites;
 
 	// target sprites
-	std::vector<sf::Sprite> m_targets;
+	std::vector<sf::Sprite> m_allTargets;
+	std::vector<sf::Sprite> m_activeTargets;
+	int m_targetIndex{ 0 }; // track which target is active
 
 	// A texture for the spritesheet
 	sf::Texture m_spriteSheetTexture;

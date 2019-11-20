@@ -17,9 +17,21 @@ projectile:
    damage: 10	
 targets:
    - type: bullseye
-     position: {x: 400, y: 400, randomOffset: 40}
+     position: {x: 200, y: 400, randomOffset: 40}
    - type: bullseye
-     position: {x: 450, y: 450, randomOffset: 40}
+     position: {x: 450, y: 600, randomOffset: 40}
+   - type: bullseye
+     position: {x: 1060, y: 250, randomOffset: 40}
+   - type: bullseye
+     position: {x: 350, y: 650, randomOffset: 40}
+   - type: bullseye
+     position: {x: 1000, y: 550, randomOffset: 40}
+   - type: bullseye
+     position: {x: 850, y: 200, randomOffset: 40}
+   - type: bullseye
+     position: {x: 1100, y: 100, randomOffset: 40}
+   - type: bullseye
+     position: {x: 900, y: 250, randomOffset: 40}
 obstacles: 
    - type: wall
      position: {x: 100, y: 660}

@@ -7,7 +7,7 @@ static const sf::Time MS_PER_UPDATE = sf::seconds(1.0f/60.0f);
 ////////////////////////////////////////////////////////////
 Game::Game()
 	: m_window(sf::VideoMode(ScreenSize::s_height, ScreenSize::s_width, 32), "SFML Playground", sf::Style::Default),
-	m_tank(m_tankTexture, m_sprites)
+	m_tank(m_tankTexture, m_sprites, m_activeTargets)
 {
 	// Game runs much faster with this commented out. Why?
 	// Seems to limit our refresh rate to that of the monitor
@@ -33,9 +33,17 @@ Game::Game()
 	generateTargets();
 	setupSprites();
 
+	// add first target to our active targets
+	m_activeTargets.push_back(m_allTargets[m_targetIndex]);
+
 	// set state to GamePlay
 	m_gameState = state::GamePlay;
+
+	// restart game timer
 	m_gameClock.restart();
+
+	// restart target timer
+	m_targetClock.restart();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -168,7 +176,7 @@ void Game::generateTargets()
 
 		sprite.move({ offsetX, offsetY });
 
-		m_targets.push_back(sprite);
+		m_allTargets.push_back(sprite);
 	}
 }
 
@@ -287,6 +295,21 @@ void Game::update(sf::Time dt)
 		m_gameState = state::GameOver;
 	}
 
+	// setup our new target
+	if (m_targetClock.getElapsedTime() > m_targetDuration)
+	{
+		m_targetIndex++;
+
+		// take previous target out of the array
+		m_activeTargets.clear();
+
+		// add new target to the array
+		m_activeTargets.push_back(m_allTargets[m_targetIndex % m_allTargets.size()]);
+
+		// restart our target clock
+		m_targetClock.restart();
+	}
+
 	switch (m_gameState)
 	{
 	case state::Loading:
@@ -334,7 +357,7 @@ void Game::render()
 			m_window.draw(sprite);
 		}
 
-		for (auto& target : m_targets)
+		for (auto& target : m_activeTargets)
 		{
 			m_window.draw(target);
 		}

@@ -3,9 +3,10 @@
 #include "Thor/Animations.hpp"
 #include <iostream>
 
-Tank::Tank(sf::Texture const& texture, std::vector<sf::Sprite>& wallSprites)
+Tank::Tank(sf::Texture const& texture, std::vector<sf::Sprite>& wallSprites, std::vector<sf::Sprite>& targetSprites)
 	: m_texture(texture)
 	, m_wallSprites(wallSprites)
+	, m_targetSprites(targetSprites)
 {
 	f_projectileImpact = &Tank::projectileImpact;
 	f_impactSmoke = &Tank::impactSmoke;
@@ -254,6 +255,7 @@ void Tank::update(sf::Time dt)
 	m_projectilePool.update(dt);
 
 	m_projectilePool.checkCollisions(m_wallSprites, f_projectileImpact, this);
+	m_projectilePool.checkCollisions(m_targetSprites, f_projectileImpact, this);
 
 	// update particles
 	m_smokeParticleSystem.update(dt);

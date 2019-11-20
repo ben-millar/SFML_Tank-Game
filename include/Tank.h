@@ -21,7 +21,7 @@ public:
 /// </summary>
 /// <param name="texture">A reference to the sprite sheet texture</param>
 ///< param name="texture">A reference to the container of wall sprites</param>
-	Tank(sf::Texture const & texture, std::vector<sf::Sprite> & wallSprites);
+	Tank(sf::Texture const & texture, std::vector<sf::Sprite> & wallSprites, std::vector<sf::Sprite>& targetSprites);
 
 	inline sf::Vector2f position() { return m_tankBase.getPosition(); }
 
@@ -164,6 +164,9 @@ private:
 
 	// A reference to the container of wall sprites.
 	std::vector<sf::Sprite>& m_wallSprites;
+
+	// A reference to the container of target sprites.
+	std::vector<sf::Sprite>& m_targetSprites;
 
 	// ####################################
 
