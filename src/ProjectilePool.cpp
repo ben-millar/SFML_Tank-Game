@@ -86,13 +86,13 @@ f_generateParticle(Fooinstance, );
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
-void ProjectilePool::checkCollisions(std::vector<sf::Sprite> t_spriteVector, std::function<void(Tank*, sf::Vector2f)> t_smokeFunc, Tank* t_tank)
+void ProjectilePool::checkCollisions(std::vector<GameObject*>& t_gameObjVector, std::function<void(Tank*, sf::Vector2f)> t_smokeFunc, Tank* t_tank)
 {
 	for (Projectile& p : m_projectiles)
 	{
 		if (p.m_active)
 		{
-			for (sf::Sprite& s : t_spriteVector)
+			for (auto& obj : t_gameObjVector)
 			{
 				// assign a temp sprite to this location for collisions
 				sf::Sprite* tempSprite = new sf::Sprite();
@@ -100,7 +100,7 @@ void ProjectilePool::checkCollisions(std::vector<sf::Sprite> t_spriteVector, std
 				tempSprite->setRotation(p.m_rotation);
 
 				// if they collide
-				if (CollisionDetector::collision(*tempSprite, s))
+				if (CollisionDetector::collision(*tempSprite, obj->getSprite()))
 				{
 					std::cout << "IMPACT" << std::endl;
 					kill(p);

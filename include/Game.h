@@ -6,6 +6,8 @@
 #include <Thor/Time.hpp>
 #include "ScreenSize.h"
 #include "Tank.h"
+#include "Target.h"
+#include "Obstacle.h"
 
 /// <summary>
 /// @author RP
@@ -112,20 +114,16 @@ private:
 	thor::StopWatch m_targetClock;
 	sf::Time m_targetDuration{ sf::seconds(5.0f) };
 
-	// tank sprite
-	sf::Texture m_tankTexture;
-	//sf::Sprite m_tankSprite;
-
 	// background sprite
 	sf::Texture m_bgTexture;
 	sf::Sprite m_bgSprite;
 
 	// obstacle sprites
-	std::vector<sf::Sprite> m_sprites;
+	std::vector<Obstacle> m_obstacles;
 
 	// target sprites
 	std::vector<sf::Sprite> m_allTargets;
-	std::vector<sf::Sprite> m_activeTargets;
+	std::vector<Target> m_activeTargets;
 	int m_targetIndex{ 0 }; // track which target is active
 
 	// visual representation of how long a given target has left on the screen

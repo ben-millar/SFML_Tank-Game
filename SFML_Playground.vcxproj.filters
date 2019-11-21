@@ -37,6 +37,12 @@
     <Filter Include="Source Files\Projectile">
       <UniqueIdentifier>{b7dd91fb-3724-49fe-beb5-b48ea7b0a850}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\GameObjects">
+      <UniqueIdentifier>{eb2f8f27-b6e3-4025-a766-2c089a859335}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GameObjects">
+      <UniqueIdentifier>{213eec0c-0d79-4d94-92bd-631ca0220a56}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Game.h">
@@ -59,6 +65,15 @@
     </ClInclude>
     <ClInclude Include="include\ProjectilePool.h">
       <Filter>Header Files\Projectile</Filter>
+    </ClInclude>
+    <ClInclude Include="include\GameObject.h">
+      <Filter>Header Files\GameObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Obstacle.h">
+      <Filter>Header Files\GameObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Target.h">
+      <Filter>Header Files\GameObjects</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -88,6 +103,12 @@
     </ClCompile>
     <ClCompile Include="src\Projectile.cpp">
       <Filter>Source Files\Projectile</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Obstacle.cpp">
+      <Filter>Source Files\GameObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Target.cpp">
+      <Filter>Source Files\GameObjects</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

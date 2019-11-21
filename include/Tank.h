@@ -6,6 +6,9 @@
 #include "CollisionDetector.h"
 #include "ProjectilePool.h"
 
+#include "Obstacle.h"
+#include "Target.h"
+
 /// <summary>
 /// @brief A simple tank controller.
 /// 
@@ -21,7 +24,7 @@ public:
 /// </summary>
 /// <param name="texture">A reference to the sprite sheet texture</param>
 ///< param name="texture">A reference to the container of wall sprites</param>
-	Tank(sf::Texture const & texture, std::vector<sf::Sprite> & wallSprites, std::vector<sf::Sprite>& targetSprites);
+	Tank(sf::Texture const & t_texture, std::vector<Obstacle> & t_obstacleVector, std::vector<Target>& t_targetVector);
 
 	inline sf::Vector2f position() { return m_tankBase.getPosition(); }
 
@@ -30,7 +33,6 @@ public:
 	/// </summary>
 	/// <param name="m_pos">Position for tank and turret</param>
 	void setPosition(sf::Vector2f const& m_pos);
-
 
 	/// <summary>
 	/// @brief Increases the speed by 1, max speed is capped at 100.
@@ -106,6 +108,11 @@ private:
 	void initParticles();
 
 	/// <summary>
+	/// 
+	/// </summary>
+	void updateGameObjects();
+
+	/// <summary>
 	/// @brief Handles turret firing effects
 	/// </summary>
 	void muzzleFlash(sf::Vector2f t_fireDir);
@@ -163,10 +170,12 @@ private:
 	sf::Texture const & m_texture;
 
 	// A reference to the container of wall sprites.
-	std::vector<sf::Sprite>& m_wallSprites;
+	std::vector<Obstacle>& ref_obstacles;
+	std::vector<GameObject*> m_obstacles;
 
 	// A reference to the container of target sprites.
-	std::vector<sf::Sprite>& m_targetSprites;
+	std::vector<Target>& ref_targets;
+	std::vector<GameObject*> m_targets;
 
 	// ####################################
 

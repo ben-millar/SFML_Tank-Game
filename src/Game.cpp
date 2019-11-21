@@ -7,7 +7,7 @@ static const sf::Time MS_PER_UPDATE = sf::seconds(1.0f/60.0f);
 ////////////////////////////////////////////////////////////
 Game::Game()
 	: m_window(sf::VideoMode(ScreenSize::s_width, ScreenSize::s_height, 32), "SFML Playground", sf::Style::Default),
-	m_tank(m_tankTexture, m_sprites, m_activeTargets)
+	m_tank(m_spriteSheetTexture, m_obstacles, m_activeTargets)
 {
 	// Game runs much faster with this commented out. Why?
 	// Seems to limit our refresh rate to that of the monitor
@@ -35,7 +35,7 @@ Game::Game()
 	setupSprites();
 
 	// add first target to our active targets
-	m_activeTargets.push_back(m_allTargets[m_targetIndex]);
+	m_activeTargets.push_back(Target(m_allTargets[m_targetIndex]));
 
 	// set state to GamePlay
 	m_gameState = state::GamePlay;
@@ -88,11 +88,6 @@ void Game::loadTextures()
 {
 	try
 	{
-		if (!m_tankTexture.loadFromFile(".\\resources\\images\\SpriteSheet.png"))
-		{
-			throw std::exception("Error loading tank texture from file in game.cpp:76");
-		}
-
 		if (!m_bgTexture.loadFromFile(m_level.m_background.m_fileName))
 		{
 			throw std::exception("Error loading background texture from file");
@@ -157,7 +152,8 @@ void Game::generateWalls()
 		sprite.setOrigin(wallRect.width / 2.0f, wallRect.height / 2.0f);
 		sprite.setPosition(obstacle.m_position);
 		sprite.setRotation(obstacle.m_rotation);
-		m_sprites.push_back(sprite);
+
+		m_obstacles.push_back(Obstacle(sprite));
 	}
 }
 
@@ -232,11 +228,17 @@ void Game::processGameEvents(sf::Event& event)
 			{
 				m_tank.fire();
 			}
+
 			if (sf::Keyboard::P == event.key.code)
 			{
 				m_gameState = state::Paused;
 				m_gameClock.stop();
 				m_targetClock.stop();
+			}
+
+			if (sf::Keyboard::C == event.key.code)
+			{
+				m_tank.toggleTurretFree();
 			}
 		}
 	}
@@ -363,9 +365,9 @@ void Game::render()
 
 		m_window.draw(m_text);
 
-		for (auto& sprite : m_sprites)
+		for (auto& i : m_obstacles)
 		{
-			m_window.draw(sprite);
+			m_window.draw(i.getSprite());
 		}
 
 		for (auto& target : m_activeTargets)
@@ -373,10 +375,12 @@ void Game::render()
 			// set up target loading bar
 			float barWidth = 10.0f * (m_targetDuration.asSeconds() - m_targetClock.getElapsedTime().asSeconds());
 			m_targetLoadingBar.setOrigin({ barWidth / 2.0f, 0.0f });
-			m_targetLoadingBar.setPosition(target.getPosition().x, target.getPosition().y + 25.0f);
+			m_targetLoadingBar.setPosition(target.getSprite().getPosition().x, 
+										   target.getSprite().getPosition().y + 25.0f);
+
 			m_targetLoadingBar.setSize({ barWidth, 10.0f });
 
-			m_window.draw(target);
+			m_window.draw(target.getSprite());
 			m_window.draw(m_targetLoadingBar);
 		}
 

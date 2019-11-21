@@ -2,6 +2,7 @@
 #include <functional>
 #include "Projectile.h"
 #include "CollisionDetector.h"
+#include "GameObject.h"
 
 
 class Tank;
@@ -26,12 +27,8 @@ public:
 	/// </summary>
 	void update(sf::Time dt);
 
-	/// <summary>
-	/// 
-	/// </summary>
-	/// <param name="t_spriteVector"></param>
-	/// <returns></returns>
-	void checkCollisions(std::vector<sf::Sprite> t_spriteVector, std::function<void(Tank*, sf::Vector2f)>, Tank* t_tank);
+
+	void checkCollisions(std::vector<GameObject*>& t_gameObjVector, std::function<void(Tank*, sf::Vector2f)>, Tank* t_tank);
 
 	/// <summary>
 	/// @brief Iterate through our projectile array and draw them

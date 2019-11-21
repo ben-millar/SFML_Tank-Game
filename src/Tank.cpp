@@ -3,11 +3,13 @@
 #include "Thor/Animations.hpp"
 #include <iostream>
 
-Tank::Tank(sf::Texture const& texture, std::vector<sf::Sprite>& wallSprites, std::vector<sf::Sprite>& targetSprites)
-	: m_texture(texture)
-	, m_wallSprites(wallSprites)
-	, m_targetSprites(targetSprites)
+Tank::Tank(sf::Texture const& t_texture, std::vector<Obstacle>& t_obstacleVector, std::vector<Target>& t_targetVector)
+	: m_texture(t_texture),
+	ref_obstacles(t_obstacleVector),
+	ref_targets(t_targetVector)
 {
+	
+
 	f_projectileImpact = &Tank::projectileImpact;
 	f_impactSmoke = &Tank::impactSmoke;
 	initSprites();
@@ -26,11 +28,11 @@ void Tank::setPosition(sf::Vector2f const& m_pos)
 
 bool Tank::checkWallCollision()
 {
-	for (sf::Sprite const& sprite : m_wallSprites)
+	for (auto& wall : m_obstacles)
 	{
 		// Checks if either the tank base or turret has collided with the current wall sprite.
-		if (CollisionDetector::collision(m_turret, sprite) ||
-			CollisionDetector::collision(m_tankBase, sprite))
+		if (CollisionDetector::collision(m_turret, wall->getSprite()) ||
+			CollisionDetector::collision(m_tankBase, wall->getSprite()))
 		{
 			return true;
 		}
@@ -254,8 +256,8 @@ void Tank::update(sf::Time dt)
 	// update projectiles
 	m_projectilePool.update(dt);
 
-	m_projectilePool.checkCollisions(m_wallSprites, f_projectileImpact, this);
-	m_projectilePool.checkCollisions(m_targetSprites, f_projectileImpact, this);
+	m_projectilePool.checkCollisions(m_obstacles, f_projectileImpact, this);
+	m_projectilePool.checkCollisions(m_targets, f_projectileImpact, this);
 
 	// update particles
 	m_smokeParticleSystem.update(dt);
@@ -294,6 +296,8 @@ void Tank::update(sf::Time dt)
 	{
 		m_speed += M_FRICTION;
 	}
+
+	updateGameObjects();
 
 	// Doesn't work very smoothly with acceleration :(
 	//m_speed = std::clamp(m_speed, M_MIN_SPEED, M_MAX_SPEED);
@@ -359,4 +363,22 @@ void Tank::initParticles()
 	m_impactParticleSystem.setTexture(m_smokeTexture);
 	m_smokeParticleSystem.setTexture(m_smokeTexture);
 	m_sparkParticleSystem.setTexture(m_sparkTexture);
+}
+
+void Tank::updateGameObjects()
+{
+	m_obstacles.clear();
+	m_targets.clear();
+
+	// populate our vector of obstacle pointers
+	for (Obstacle& i : ref_obstacles)
+	{
+		m_obstacles.push_back(&i);
+	}
+
+	// populate our vector of target pointers
+	for (Target& i : ref_targets)
+	{
+		m_targets.push_back(&i);
+	}
 }
