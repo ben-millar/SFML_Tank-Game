@@ -6,12 +6,13 @@ static const sf::Time MS_PER_UPDATE = sf::seconds(1.0f/60.0f);
 
 ////////////////////////////////////////////////////////////
 Game::Game()
-	: m_window(sf::VideoMode(ScreenSize::s_height, ScreenSize::s_width, 32), "SFML Playground", sf::Style::Default),
+	: m_window(sf::VideoMode(ScreenSize::s_width, ScreenSize::s_height, 32), "SFML Playground", sf::Style::Default),
 	m_tank(m_tankTexture, m_sprites, m_activeTargets)
 {
 	// Game runs much faster with this commented out. Why?
 	// Seems to limit our refresh rate to that of the monitor
 	m_window.setVerticalSyncEnabled(true);
+	m_window.setKeyRepeatEnabled(false);
 
 	int currentLevel = 1;
 
@@ -214,37 +215,9 @@ void Game::processEvents()
 
 void Game::processGameEvents(sf::Event& event)
 {
-	switch (m_gameState)
+	// GAMEPLAY
+	if (state::GamePlay == m_gameState)
 	{
-	///////////////////////////////////////// GAMEPLAY
-	case state::GamePlay:
-		// check if the event is a a mouse button release
-		if (sf::Event::KeyPressed == event.type)
-		{
-			switch (event.key.code)
-			{
-			case sf::Keyboard::Escape:
-				m_window.close();
-				break;
-			case sf::Keyboard::Space:
-				m_tank.fire();
-			default:
-				break;
-			}
-		}
-
-		if (sf::Event::KeyReleased == event.type)
-		{
-			switch (event.key.code)
-			{
-			case sf::Keyboard::C:
-				m_tank.toggleTurretFree();
-				break;
-			default:
-				break;
-			}
-		}
-
 		if (sf::Event::MouseButtonPressed == event.type)
 		{
 			if (sf::Mouse::Left == event.mouseButton.button)
@@ -252,11 +225,44 @@ void Game::processGameEvents(sf::Event& event)
 				m_tank.fire();
 			}
 		}
-		break;
-		///////////////////////////////////////// DEFAULT
-	default:
-		break;
+
+		if (sf::Event::KeyPressed == event.type)
+		{
+			if (sf::Keyboard::Space == event.key.code)
+			{
+				m_tank.fire();
+			}
+			if (sf::Keyboard::P == event.key.code)
+			{
+				m_gameState = state::Paused;
+				m_gameClock.stop();
+				m_targetClock.stop();
+			}
+		}
 	}
+	// PAUSED
+	else if (state::Paused == m_gameState)
+	{
+		if (sf::Event::KeyPressed == event.type)
+		{
+			if (sf::Keyboard::P == event.key.code)
+			{
+				m_gameState = state::GamePlay;
+				m_gameClock.start();
+				m_targetClock.start();
+			}
+		}
+	}
+
+	// ALL STATES
+	if (sf::Event::KeyPressed == event.type)
+	{
+		if (sf::Keyboard::Escape == event.key.code)
+		{
+			m_window.close();
+		}
+	}
+
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -341,17 +347,19 @@ void Game::render()
 
 	int timeRemaining = (m_maxGameTime - m_gameClock.getElapsedTime()).asSeconds();
 
-	switch (m_gameState)
+	// LOADING
+	if (state::Loading == m_gameState)
 	{
-	case state::Loading:
 		m_text.setString("Loading . . .");
 		m_window.draw(m_text);
-		break;
-	case state::GamePlay:
+	}
 
+	// GAMEPLAY OR PAUSED
+	if (state::GamePlay == m_gameState || state::Paused == m_gameState)
+	{
 		m_window.draw(m_bgSprite);
 
-		m_text.setString("Time Remaining: " + std::to_string(timeRemaining) );
+		m_text.setString("Time Remaining: " + std::to_string(timeRemaining));
 
 		m_window.draw(m_text);
 
@@ -374,12 +382,35 @@ void Game::render()
 
 		m_tank.render(m_window);
 
-		break;
-	case state::GameOver:
-		break;
-	default:
-		break;
+		// PAUSED
+		if (state::Paused == m_gameState)
+		{
+			drawPauseScreen();
+		}
 	}
-
+		
 	m_window.display();
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+
+void Game::drawPauseScreen()
+{
+	sf::Vector2f windowSize{ static_cast<float>(ScreenSize::s_width),
+							 static_cast<float>(ScreenSize::s_height) };
+
+	// SETUP grey overlay
+	sf::RectangleShape pauseScreenCover;
+	pauseScreenCover.setFillColor(sf::Color(196, 196, 196, 128));
+	pauseScreenCover.setSize(windowSize);
+
+	m_window.draw(pauseScreenCover);
+
+	// SETUP pause text
+	sf::Text pauseText("PAUSED", m_font, 70U);
+
+	pauseText.setOrigin(pauseText.getGlobalBounds().width / 2.0f, pauseText.getGlobalBounds().height / 2.0f);
+	pauseText.setPosition({ windowSize.x / 2.0f, windowSize.y / 2.0f });
+
+	m_window.draw(pauseText);
 }

@@ -3,6 +3,7 @@
 // TODO: Setup all asset file paths in YAML file
 
 #include <SFML/Graphics.hpp>
+#include <Thor/Time.hpp>
 #include "ScreenSize.h"
 #include "Tank.h"
 
@@ -55,6 +56,7 @@ private:
 		Null, 
 		Loading,
 		GamePlay, 
+		Paused,
 		GameOver 
 	} m_gameState{ state::Loading };
 
@@ -93,15 +95,21 @@ private:
 	/// </summary>
 	void handleKeyInput();
 
+	/// <summary>
+	/// Draws our PAUSE overlay with flashing text
+	/// </summary>
+	void drawPauseScreen();
+
 	// stores the data for our level
 	LevelData m_level;
 
 	// keeps track of game time
-	sf::Clock m_gameClock;
+	thor::StopWatch m_gameClock;
 	sf::Time m_maxGameTime{ sf::seconds(60.0f) };
 
+	
 	// keeps track of target timing
-	sf::Clock m_targetClock;
+	thor::StopWatch m_targetClock;
 	sf::Time m_targetDuration{ sf::seconds(5.0f) };
 
 	// tank sprite
