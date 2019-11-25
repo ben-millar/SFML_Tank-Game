@@ -67,7 +67,7 @@ public:
 	/// <summary>
 	/// @brief Fires a projectile
 	/// </summary>
-	void fire();
+	bool fire();
 
 	void update(sf::Time dt);
 	void render(sf::RenderWindow & window);

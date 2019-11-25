@@ -88,6 +88,11 @@ private:
 	void generateTargets();
 
 	/// <summary>
+	/// Shakes the sf::view based off our trauma variable
+	/// </summary>
+	void shakeScreen();
+
+	/// <summary>
 	/// Gets the angle between the mouse and the tank, and assign the turret that angle
 	/// </summary>
 	void getTurretRotation();
@@ -138,6 +143,12 @@ private:
 
 	// An instance representing the player controlled tank.
 	Tank m_tank;
+
+	// SCREENSHAKE variables
+	float m_trauma{ 0.0f }; // scalar for screenshake, normalised to the range 0-1
+	const float MAX_OFFSET = 50.0f; // max translational offset for screenshake
+	const float MAX_ANGLE = 5.0f; // max rotational offset for screenshake
+	sf::Text m_traumaMeter;
 
 protected:
 	/// <summary>

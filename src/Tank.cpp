@@ -165,7 +165,7 @@ void Tank::toggleTurretFree()
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
-void Tank::fire()
+bool Tank::fire()
 {
 	if (m_fireClock.getElapsedTime() > m_fireDelay)
 	{
@@ -179,7 +179,11 @@ void Tank::fire()
 		muzzleFlash(targetVector);
 
 		m_fireClock.restart();
+
+		return true;
 	}
+
+	return false;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////

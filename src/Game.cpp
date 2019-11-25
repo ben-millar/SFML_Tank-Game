@@ -117,6 +117,9 @@ void Game::loadFonts()
 		m_text.setFont(m_font);
 		m_text.setCharacterSize(16U);
 		m_text.setPosition({ 10.0f,10.0f });
+
+		m_traumaMeter.setFont(m_font);
+		m_traumaMeter.setPosition({ 10.0f,30.0f });
 	}
 	catch (std::exception e)
 	{
@@ -135,7 +138,12 @@ void Game::setupSprites()
 	m_tank.setPosition(m_level.m_tank.m_position[rand() % 4]);
 
 	m_bgSprite.setTexture(m_bgTexture);
-	m_bgSprite.setPosition({ 0.0f,0.0f });
+
+	// overdraw the background slightly to account for later screenshake
+	m_bgSprite.setScale(1.1f, 1.1f);
+	m_bgSprite.setOrigin(m_bgSprite.getGlobalBounds().width / 2.0f, 
+						 m_bgSprite.getGlobalBounds().height / 2.0f);
+	m_bgSprite.setPosition({ ScreenSize::s_width / 2.0f, ScreenSize::s_height / 2.0f });
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -218,7 +226,10 @@ void Game::processGameEvents(sf::Event& event)
 		{
 			if (sf::Mouse::Left == event.mouseButton.button)
 			{
-				m_tank.fire();
+				if (m_tank.fire())
+				{
+					(m_trauma < 0.5f) ? m_trauma += 0.5f : m_trauma = 1.0f;
+				}
 			}
 		}
 
@@ -226,7 +237,10 @@ void Game::processGameEvents(sf::Event& event)
 		{
 			if (sf::Keyboard::Space == event.key.code)
 			{
-				m_tank.fire();
+				if (m_tank.fire())
+				{
+					(m_trauma < 0.5f) ? m_trauma += 0.5f : m_trauma = 1.0f;
+				}
 			}
 
 			if (sf::Keyboard::P == event.key.code)
@@ -333,12 +347,43 @@ void Game::update(sf::Time dt)
 
 		m_tank.update(dt);
 
+		// reduce trauma linearly to zero
+		(m_trauma > 0.005f) ? m_trauma -= 0.005f : m_trauma = 0.0f;
+		m_traumaMeter.setString(std::to_string(m_trauma));
+
+		shakeScreen();
+
 		break;
 	case state::GameOver:
 		break;
 	default:
 		break;
 	}
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+
+void Game::shakeScreen()
+{
+	sf::View view = m_window.getDefaultView();
+
+	// translational shake
+	float offsetX = (rand() % 201 - 100) / 100.0f;
+	float offsetY = (rand() % 201 - 100) / 100.0f;
+
+	offsetX *= MAX_OFFSET * (m_trauma * m_trauma);
+	offsetY *= MAX_OFFSET * (m_trauma * m_trauma);
+
+	view.move(offsetX, offsetY);
+
+	// rotational shake
+	float angleOffset = (rand() % 201 - 100) / 100.0f;
+
+	angleOffset *= MAX_ANGLE * (m_trauma * m_trauma);
+
+	view.setRotation(angleOffset);
+
+	m_window.setView(view);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -385,6 +430,8 @@ void Game::render()
 		}
 
 		m_tank.render(m_window);
+
+		m_window.draw(m_traumaMeter);
 
 		// PAUSED
 		if (state::Paused == m_gameState)
