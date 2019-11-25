@@ -7,4 +7,5 @@ Obstacle::Obstacle(sf::Sprite t_sprite)
 
 void Obstacle::hit()
 {
+	m_isHit = true;
 }

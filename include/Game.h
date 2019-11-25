@@ -88,9 +88,14 @@ private:
 	void generateTargets();
 
 	/// <summary>
-	/// Shakes the sf::view based off our trauma variable
+	/// @brief Shakes the sf::view based off our trauma variable
 	/// </summary>
 	void shakeScreen();
+
+	/// <summary>
+	/// @brief pulls the next target into our active target array
+	/// </summary>
+	void nextTarget();
 
 	/// <summary>
 	/// Gets the angle between the mouse and the tank, and assign the turret that angle

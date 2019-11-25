@@ -321,18 +321,20 @@ void Game::update(sf::Time dt)
 	}
 
 	// setup our new target
+	for (auto& t : m_activeTargets)
+	{
+		if (t.isHit())
+		{
+			// Add remaining target time to our total time
+			m_maxGameTime += (m_targetDuration - m_targetClock.getElapsedTime());
+			t.reset();
+			nextTarget();
+		}
+	}
+
 	if (m_targetClock.getElapsedTime() > m_targetDuration)
 	{
-		m_targetIndex++;
-
-		// take previous target out of the array
-		m_activeTargets.clear();
-
-		// add new target to the array
-		m_activeTargets.push_back(m_allTargets[m_targetIndex % m_allTargets.size()]);
-
-		// restart our target clock
-		m_targetClock.restart();
+		nextTarget();
 	}
 
 	switch (m_gameState)
@@ -384,6 +386,22 @@ void Game::shakeScreen()
 	view.setRotation(angleOffset);
 
 	m_window.setView(view);
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+
+void Game::nextTarget()
+{
+	m_targetIndex++;
+
+	// take previous target out of the array
+	m_activeTargets.clear();
+
+	// add new target to the array
+	m_activeTargets.push_back(m_allTargets[m_targetIndex % m_allTargets.size()]);
+
+	// restart our target clock
+	m_targetClock.restart();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////

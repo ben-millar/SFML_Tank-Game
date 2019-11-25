@@ -107,6 +107,9 @@ void ProjectilePool::checkCollisions(std::vector<GameObject*>& t_gameObjVector, 
 
 					// pass position to our smoke effect function
 					t_smokeFunc(t_tank, p.m_position);
+
+					// tell our object it's been hit
+					obj->hit();
 				}
 
 				delete tempSprite;

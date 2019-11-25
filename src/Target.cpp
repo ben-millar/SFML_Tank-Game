@@ -7,4 +7,5 @@ Target::Target(sf::Sprite t_sprite)
 
 void Target::hit()
 {
+	m_isHit = true;
 }
