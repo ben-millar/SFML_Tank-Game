@@ -120,6 +120,12 @@ void Game::loadFonts()
 
 		m_traumaMeter.setFont(m_font);
 		m_traumaMeter.setPosition({ 10.0f,30.0f });
+
+		m_addedTimeText.setFont(m_font);
+		m_addedTimeText.setCharacterSize(16U);
+		m_addedTimeText.setFillColor(sf::Color::Yellow);
+		m_addedTimeText.setOutlineColor(sf::Color::Black);
+		m_addedTimeText.setOutlineThickness(2.0f);
 	}
 	catch (std::exception e)
 	{
@@ -326,8 +332,13 @@ void Game::update(sf::Time dt)
 		if (t.isHit())
 		{
 			// Add remaining target time to our total time
-			m_maxGameTime += (m_targetDuration - m_targetClock.getElapsedTime());
+			sf::Time addedTime = m_targetDuration - m_targetClock.getElapsedTime();
+			m_maxGameTime += addedTime;
 			t.reset();
+
+			m_addedTimeText.setString("+" + std::to_string(static_cast<int>(addedTime.asSeconds())) + "s");
+			m_addedTimeText.setPosition(t.getSprite().getPosition());
+
 			nextTarget();
 		}
 	}
@@ -446,6 +457,8 @@ void Game::render()
 			m_window.draw(target.getSprite());
 			m_window.draw(m_targetLoadingBar);
 		}
+
+		m_window.draw(m_addedTimeText);
 
 		m_tank.render(m_window);
 

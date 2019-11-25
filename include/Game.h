@@ -149,6 +149,9 @@ private:
 	// An instance representing the player controlled tank.
 	Tank m_tank;
 
+	// Shows the player how much time was added on destroying target
+	sf::Text m_addedTimeText;
+
 	// SCREENSHAKE variables
 	float m_trauma{ 0.0f }; // scalar for screenshake, normalised to the range 0-1
 	const float MAX_OFFSET = 50.0f; // max translational offset for screenshake
