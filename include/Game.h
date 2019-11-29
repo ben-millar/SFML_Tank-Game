@@ -153,6 +153,7 @@ private:
 
 	// visual representation of how long a given target has left on the screen
 	sf::RectangleShape m_targetLoadingBar;
+	float const MAX_BAR_WIDTH{ 80.0f };
 
 	// A texture for the spritesheet
 	sf::Texture m_spriteSheetTexture;

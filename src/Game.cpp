@@ -379,7 +379,7 @@ void Game::checkTargetsHit()
 
 			// Add remaining target time to our total time
 			sf::Time addedTime = m_targetDuration - m_targetClock.getElapsedTime();
-			m_targetDuration = sf::seconds(5.0f) + addedTime;
+			m_targetDuration = sf::seconds(5.0f) + (addedTime * 0.5f);
 			t.reset();
 
 			m_deltaScoreText.setString("+50");
@@ -480,8 +480,12 @@ void Game::drawTargets()
 {
 	for (auto& target : m_activeTargets)
 	{
-		// set up target loading bar
-		float barWidth = 10.0f * (m_targetDuration.asSeconds() - m_targetClock.getElapsedTime().asSeconds());
+		// Get a ratio of remaining target time to total target time normalised to the range 0 - 1
+		float normalised = (m_targetDuration.asSeconds() - m_targetClock.getElapsedTime().asSeconds()) / m_targetDuration.asSeconds();
+
+		// non-linear. The bar will quickly deplete, and then slow as it nears the end
+		float barWidth = MAX_BAR_WIDTH * (normalised * normalised);
+
 		m_targetLoadingBar.setOrigin({ barWidth / 2.0f, 0.0f });
 		m_targetLoadingBar.setPosition(target.getSprite().getPosition().x,
 			target.getSprite().getPosition().y + 25.0f);
@@ -497,18 +501,22 @@ void Game::drawTargets()
 
 void Game::drawUI()
 {
-	int timeRemaining = (m_maxGameTime - m_gameClock.getElapsedTime()).asSeconds();
-
-	m_text.setPosition({ 10.0f,10.0f });
-	m_text.setString("Time Remaining: " + std::to_string(timeRemaining));
-	m_window.draw(m_text);
-
-	m_text.setPosition({ 260.00f,10.0f });
+	// Score
+	m_text.setPosition({ 10.0f,8.0f });
 	m_text.setString("Score: " + std::to_string(m_score));
 	m_window.draw(m_text);
 
-	m_text.setPosition({ 420.00f,10.0f });
-	m_text.setString("Accuracy: " + std::to_string(m_accuracy));
+	// Accuracy
+	m_text.setPosition({ 10.0f,28.0f });
+	m_text.setString("Accuracy: " + std::to_string(static_cast<int>(m_accuracy * 100.0f)) + "%");
+	m_window.draw(m_text);
+
+	// Remaining Time
+	int timeRemaining = (m_maxGameTime - m_gameClock.getElapsedTime()).asSeconds();
+	m_text.setString("Time Remaining: " + std::to_string(timeRemaining));
+
+	// Right-hand side of the screen, minus the width of our text plus a buffer of 15px
+	m_text.setPosition({ ScreenSize::s_width - (m_text.getLocalBounds().width + 15.0f), 8.0f });
 	m_window.draw(m_text);
 }
 
