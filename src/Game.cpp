@@ -121,11 +121,11 @@ void Game::loadFonts()
 		m_traumaMeter.setFont(m_font);
 		m_traumaMeter.setPosition({ 10.0f,30.0f });
 
-		m_addedTimeText.setFont(m_font);
-		m_addedTimeText.setCharacterSize(16U);
-		m_addedTimeText.setFillColor(sf::Color::Yellow);
-		m_addedTimeText.setOutlineColor(sf::Color::Black);
-		m_addedTimeText.setOutlineThickness(2.0f);
+		m_deltaScoreText.setFont(m_font);
+		m_deltaScoreText.setCharacterSize(16U);
+		m_deltaScoreText.setFillColor(sf::Color::Yellow);
+		m_deltaScoreText.setOutlineColor(sf::Color::Black);
+		m_deltaScoreText.setOutlineThickness(2.0f);
 	}
 	catch (std::exception e)
 	{
@@ -235,6 +235,7 @@ void Game::processGameEvents(sf::Event& event)
 				if (m_tank.fire())
 				{
 					(m_trauma < 0.5f) ? m_trauma += 0.5f : m_trauma = 1.0f;
+					m_shotsFired++;
 				}
 			}
 		}
@@ -246,6 +247,7 @@ void Game::processGameEvents(sf::Event& event)
 				if (m_tank.fire())
 				{
 					(m_trauma < 0.5f) ? m_trauma += 0.5f : m_trauma = 1.0f;
+					m_shotsFired++;
 				}
 			}
 
@@ -326,27 +328,6 @@ void Game::update(sf::Time dt)
 		m_gameState = state::GameOver;
 	}
 
-	// setup our new target
-	for (auto& t : m_activeTargets)
-	{
-		if (t.isHit())
-		{
-			// Add remaining target time to our total time
-			sf::Time addedTime = m_targetDuration - m_targetClock.getElapsedTime();
-			m_maxGameTime += addedTime;
-			t.reset();
-
-			m_addedTimeText.setString("+" + std::to_string(static_cast<int>(addedTime.asSeconds())) + "s");
-			m_addedTimeText.setPosition(t.getSprite().getPosition());
-
-			nextTarget();
-		}
-	}
-
-	if (m_targetClock.getElapsedTime() > m_targetDuration)
-	{
-		nextTarget();
-	}
 
 	switch (m_gameState)
 	{
@@ -358,7 +339,17 @@ void Game::update(sf::Time dt)
 
 		getTurretRotation();
 
+		if (m_targetClock.getElapsedTime() > m_targetDuration)
+		{
+			nextTarget();
+		}
+
+		checkTargetsHit();
+
 		m_tank.update(dt);
+
+		// Don't divide by 0!
+		m_accuracy = (m_shotsFired == 0) ? 0.0f : m_targetsHit / static_cast<float>(m_shotsFired);
 
 		// reduce trauma linearly to zero
 		(m_trauma > 0.005f) ? m_trauma -= 0.005f : m_trauma = 0.0f;
@@ -371,6 +362,31 @@ void Game::update(sf::Time dt)
 		break;
 	default:
 		break;
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+
+void Game::checkTargetsHit()
+{
+	// setup our new target
+	for (auto& t : m_activeTargets)
+	{
+		if (t.isHit())
+		{
+			m_targetsHit++;
+			m_score += 50.0f;
+
+			// Add remaining target time to our total time
+			sf::Time addedTime = m_targetDuration - m_targetClock.getElapsedTime();
+			m_targetDuration = sf::seconds(5.0f) + addedTime;
+			t.reset();
+
+			m_deltaScoreText.setString("+50");
+			m_deltaScoreText.setPosition(t.getSprite().getPosition());
+
+			nextTarget();
+		}
 	}
 }
 
@@ -421,8 +437,6 @@ void Game::render()
 {
 	m_window.clear(sf::Color::Black);
 
-	int timeRemaining = (m_maxGameTime - m_gameClock.getElapsedTime()).asSeconds();
-
 	// LOADING
 	if (state::Loading == m_gameState)
 	{
@@ -435,34 +449,20 @@ void Game::render()
 	{
 		m_window.draw(m_bgSprite);
 
-		m_text.setString("Time Remaining: " + std::to_string(timeRemaining));
-
-		m_window.draw(m_text);
-
 		for (auto& i : m_obstacles)
 		{
 			m_window.draw(i.getSprite());
 		}
 
-		for (auto& target : m_activeTargets)
-		{
-			// set up target loading bar
-			float barWidth = 10.0f * (m_targetDuration.asSeconds() - m_targetClock.getElapsedTime().asSeconds());
-			m_targetLoadingBar.setOrigin({ barWidth / 2.0f, 0.0f });
-			m_targetLoadingBar.setPosition(target.getSprite().getPosition().x, 
-										   target.getSprite().getPosition().y + 25.0f);
-
-			m_targetLoadingBar.setSize({ barWidth, 10.0f });
-
-			m_window.draw(target.getSprite());
-			m_window.draw(m_targetLoadingBar);
-		}
-
-		m_window.draw(m_addedTimeText);
+		drawTargets();
 
 		m_tank.render(m_window);
 
-		m_window.draw(m_traumaMeter);
+		m_window.draw(m_deltaScoreText);
+
+		drawUI();
+
+		//m_window.draw(m_traumaMeter);
 
 		// PAUSED
 		if (state::Paused == m_gameState)
@@ -472,6 +472,44 @@ void Game::render()
 	}
 		
 	m_window.display();
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+
+void Game::drawTargets()
+{
+	for (auto& target : m_activeTargets)
+	{
+		// set up target loading bar
+		float barWidth = 10.0f * (m_targetDuration.asSeconds() - m_targetClock.getElapsedTime().asSeconds());
+		m_targetLoadingBar.setOrigin({ barWidth / 2.0f, 0.0f });
+		m_targetLoadingBar.setPosition(target.getSprite().getPosition().x,
+			target.getSprite().getPosition().y + 25.0f);
+
+		m_targetLoadingBar.setSize({ barWidth, 10.0f });
+
+		m_window.draw(target.getSprite());
+		m_window.draw(m_targetLoadingBar);
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+
+void Game::drawUI()
+{
+	int timeRemaining = (m_maxGameTime - m_gameClock.getElapsedTime()).asSeconds();
+
+	m_text.setPosition({ 10.0f,10.0f });
+	m_text.setString("Time Remaining: " + std::to_string(timeRemaining));
+	m_window.draw(m_text);
+
+	m_text.setPosition({ 260.00f,10.0f });
+	m_text.setString("Score: " + std::to_string(m_score));
+	m_window.draw(m_text);
+
+	m_text.setPosition({ 420.00f,10.0f });
+	m_text.setString("Accuracy: " + std::to_string(m_accuracy));
+	m_window.draw(m_text);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////

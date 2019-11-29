@@ -88,6 +88,11 @@ private:
 	void generateTargets();
 
 	/// <summary>
+	/// @brief Checks if any active targets have been hit
+	/// </summary>
+	void checkTargetsHit();
+
+	/// <summary>
 	/// @brief Shakes the sf::view based off our trauma variable
 	/// </summary>
 	void shakeScreen();
@@ -106,6 +111,16 @@ private:
 	/// Poll SF keyboard to check current state of keys
 	/// </summary>
 	void handleKeyInput();
+
+	/// <summary>
+	/// @brief Draws our targets to the screen
+	/// </summary>
+	void drawTargets();
+
+	/// <summary>
+	/// @brief Draw our time/score/accuracy
+	/// </summary>
+	void drawUI();
 
 	/// <summary>
 	/// Draws our PAUSE overlay with flashing text
@@ -149,8 +164,16 @@ private:
 	// An instance representing the player controlled tank.
 	Tank m_tank;
 
+	// Player Statistics
+	int m_score{ 0 };
+	float m_accuracy{ 0.0f };
+
+	// Used to calculate accuracy
+	int m_shotsFired{ 0 };
+	int m_targetsHit{ 0 };
+
 	// Shows the player how much time was added on destroying target
-	sf::Text m_addedTimeText;
+	sf::Text m_deltaScoreText;
 
 	// SCREENSHAKE variables
 	float m_trauma{ 0.0f }; // scalar for screenshake, normalised to the range 0-1
