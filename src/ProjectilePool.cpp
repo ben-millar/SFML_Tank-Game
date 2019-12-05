@@ -29,6 +29,19 @@ void ProjectilePool::setTexture(sf::Texture const& texture)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
+void ProjectilePool::reset()
+{
+	for (Projectile& p : m_projectiles)
+	{
+		if (p.m_active)
+		{
+			kill(p);
+		}
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+
 void ProjectilePool::create(sf::Vector2f t_pos, sf::Vector2f t_vel, int t_timeToLive)
 {
 	// ensure there is a projectile available

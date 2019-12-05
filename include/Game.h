@@ -78,6 +78,11 @@ private:
 	void setupSprites();
 
 	/// <summary>
+	/// @brief Sets up a new game environment
+	/// </summary>
+	void init();
+
+	/// <summary>
 	/// @brief Pull our wall data from file and assign it to our obstacles
 	/// </summary>
 	void generateWalls();
@@ -130,6 +135,9 @@ private:
 	// stores the data for our level
 	LevelData m_level;
 
+	sf::Texture m_menuBackgroundTexture;
+	sf::Sprite m_menuBackgroundSprite;
+
 	// keeps track of game time
 	thor::StopWatch m_gameClock;
 	sf::Time m_maxGameTime{ sf::seconds(60.0f) };
@@ -168,6 +176,10 @@ private:
 	// Player Statistics
 	int m_score{ 0 };
 	float m_accuracy{ 0.0f };
+
+	// highscores
+	int m_highscore{ 0 };
+	float m_bestAccuracy{ 0.0f };
 
 	// Used to calculate accuracy
 	int m_shotsFired{ 0 };

@@ -29,6 +29,11 @@ public:
 	inline sf::Vector2f position() { return m_tankBase.getPosition(); }
 
 	/// <summary>
+	/// @brief Resets all tank attributes for new game
+	/// </summary>
+	void reset();
+
+	/// <summary>
 	/// @brief Sets the initial position of our tank and turret
 	/// </summary>
 	/// <param name="m_pos">Position for tank and turret</param>

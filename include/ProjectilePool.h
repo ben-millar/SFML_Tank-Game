@@ -15,15 +15,20 @@ public:
 	void setTexture(sf::Texture const& texture);
 
 	/// <summary>
-	/// 
+	/// @brief Kill all active projectiles
 	/// </summary>
-	/// <param name="t_pos"></param>
-	/// <param name="t_vel"></param>
-	/// <param name="t_timeToLive"></param>
+	void reset();
+
+	/// <summary>
+	/// @brief Activate a new projectile from our pool, update linked list
+	/// </summary>
+	/// <param name="t_pos">Position to put projectile</param>
+	/// <param name="t_vel">Velocity to give projectile</param>
+	/// <param name="t_timeToLive">Projectile lifespan</param>
 	void create(sf::Vector2f t_pos, sf::Vector2f t_vel, int t_timeToLive);
 
 	/// <summary>
-	/// 
+	/// @brief Move all projectiles by their velocity
 	/// </summary>
 	void update(sf::Time dt);
 

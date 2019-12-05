@@ -34,17 +34,10 @@ Game::Game()
 	generateTargets();
 	setupSprites();
 
-	// add first target to our active targets
-	m_activeTargets.push_back(Target(m_allTargets[m_targetIndex]));
+	init();
 
 	// set state to GamePlay
 	m_gameState = state::GamePlay;
-
-	// restart game timer
-	m_gameClock.restart();
-
-	// restart target timer
-	m_targetClock.restart();
 
 	m_targetLoadingBar.setFillColor(sf::Color::Red);
 	m_targetLoadingBar.setSize({ 50.0f,10.0f });
@@ -90,11 +83,15 @@ void Game::loadTextures()
 	{
 		if (!m_bgTexture.loadFromFile(m_level.m_background.m_fileName))
 		{
-			throw std::exception("Error loading background texture from file");
+			throw std::exception("Error loading background texture from file in game.cpp>loadTextures");
 		}
 		if (!m_spriteSheetTexture.loadFromFile(".\\resources\\images\\SpriteSheet.png"))
 		{
-			throw std::exception("Error loading SpriteSheet texture from file in game.cpp:85");
+			throw std::exception("Error loading SpriteSheet texture from file in game.cpp>loadTextures");
+		}
+		if (!m_menuBackgroundTexture.loadFromFile(".\\resources\\images\\MainMenuBackground.png"))
+		{
+			throw std::exception("Error loading menuBackgroundTexture from file in game.cpp>loadTextures");
 		}
 	}
 	catch(std::exception& e)
@@ -150,6 +147,29 @@ void Game::setupSprites()
 	m_bgSprite.setOrigin(m_bgSprite.getGlobalBounds().width / 2.0f, 
 						 m_bgSprite.getGlobalBounds().height / 2.0f);
 	m_bgSprite.setPosition({ ScreenSize::s_width / 2.0f, ScreenSize::s_height / 2.0f });
+
+	m_menuBackgroundSprite.setTexture(m_menuBackgroundTexture);
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+
+void Game::init()
+{
+	m_gameClock.restart();
+	m_targetClock.restart();
+
+	m_trauma = 0.0f;
+
+	m_targetIndex = 0;
+	m_targetsHit = 0;
+	m_shotsFired = 0;
+	m_score = 0;
+	m_accuracy = 0.0f;
+
+	m_activeTargets.clear();
+	m_activeTargets.push_back(m_allTargets[m_targetIndex]);
+
+	m_deltaScoreText.setPosition({ -100.0f,-100.0f });
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -262,6 +282,11 @@ void Game::processGameEvents(sf::Event& event)
 			{
 				m_tank.toggleTurretFree();
 			}
+
+			if (sf::Keyboard::Num1 == event.key.code)
+			{
+				m_maxGameTime = sf::seconds(1.0f);
+			}
 		}
 	}
 	// PAUSED
@@ -274,6 +299,19 @@ void Game::processGameEvents(sf::Event& event)
 				m_gameState = state::GamePlay;
 				m_gameClock.start();
 				m_targetClock.start();
+			}
+		}
+	}
+	// GAME OVER
+	else if (state::GameOver == m_gameState)
+	{
+		if (sf::Event::KeyPressed == event.type)
+		{
+			if (sf::Keyboard::R == event.key.code)
+			{
+				init();
+				m_maxGameTime = sf::seconds(60.0f);
+				m_gameState = state::GamePlay;
 			}
 		}
 	}
@@ -326,6 +364,11 @@ void Game::update(sf::Time dt)
 	if (m_gameClock.getElapsedTime() > m_maxGameTime)
 	{
 		m_gameState = state::GameOver;
+
+		if (m_score > m_highscore) m_highscore = m_score;
+		if (m_accuracy > m_bestAccuracy) m_bestAccuracy = m_accuracy;
+
+		m_tank.reset();
 	}
 
 
@@ -470,6 +513,49 @@ void Game::render()
 			drawPauseScreen();
 		}
 	}
+	else if (state::GameOver == m_gameState)
+	{
+		m_window.draw(m_menuBackgroundSprite);
+
+		m_text.setCharacterSize(36U);
+		m_text.setOutlineColor(sf::Color::Black);
+		m_text.setOutlineThickness(2.0f);
+
+		// Score
+		m_text.setString("Score: " + std::to_string(m_score));
+		m_text.setOrigin(m_text.getLocalBounds().width, 0.0f);
+		m_text.setPosition({ (ScreenSize::s_width / 2.0f) - 100.0f, 350.0f });
+		
+		m_window.draw(m_text);
+
+		// Accuracy
+		m_text.setString("Accuracy: " + std::to_string(static_cast<int>(m_accuracy * 100.0f)) + "%");
+		m_text.setOrigin(m_text.getLocalBounds().width, 0.0f);
+		m_text.setPosition({ (ScreenSize::s_width / 2.0f) - 100.0f, 400.0f });
+		
+		m_window.draw(m_text);
+
+		// HighScore
+		m_text.setString("Highscore: " + std::to_string(m_highscore));
+		m_text.setOrigin(0.0f, 0.0f);
+		m_text.setPosition({ (ScreenSize::s_width / 2.0f) - 60.0f, 350.0f });
+
+		m_window.draw(m_text);
+
+		// Best Accuracy
+		m_text.setString("Best Accuracy: " + std::to_string(static_cast<int>(m_bestAccuracy * 100.0f)) + "%");
+		m_text.setOrigin(0.0f, 0.0f);
+		m_text.setPosition({ (ScreenSize::s_width / 2.0f) - 60.0f, 400.0f });
+
+		m_window.draw(m_text);
+
+		// Restart text
+		m_text.setString("Press [R] to Restart!");
+		m_text.setOrigin(m_text.getLocalBounds().width / 2.0f, 0.0f);
+		m_text.setPosition({ (ScreenSize::s_width / 2.0f), 800.0f });
+
+		m_window.draw(m_text);
+	}
 		
 	m_window.display();
 }
@@ -501,6 +587,10 @@ void Game::drawTargets()
 
 void Game::drawUI()
 {
+	m_text.setOrigin({ 0.0f,0.0f });
+	m_text.setCharacterSize(16U);
+	m_text.setOutlineThickness(0.0f);
+
 	// Score
 	m_text.setPosition({ 10.0f,8.0f });
 	m_text.setString("Score: " + std::to_string(m_score));

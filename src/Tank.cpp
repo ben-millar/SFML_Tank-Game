@@ -8,12 +8,23 @@ Tank::Tank(sf::Texture const& t_texture, std::vector<Obstacle>& t_obstacleVector
 	ref_obstacles(t_obstacleVector),
 	ref_targets(t_targetVector)
 {
-	
-
 	f_projectileImpact = &Tank::projectileImpact;
 	f_impactSmoke = &Tank::impactSmoke;
 	initSprites();
 	initParticles();
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+
+void Tank::reset()
+{
+	setPosition({ 80.0f,80.0f });
+	m_speed = 0.0;
+
+	m_smokeParticleSystem.clearEmitters();
+	m_sparkParticleSystem.clearEmitters();
+
+	m_projectilePool.reset();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
