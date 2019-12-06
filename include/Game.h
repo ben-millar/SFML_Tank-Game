@@ -103,6 +103,11 @@ private:
 	void shakeScreen();
 
 	/// <summary>
+	/// @brief Decrease deltaScoreText opacity until it disappears
+	/// </summary>
+	void fadeDeltaScoreText();
+
+	/// <summary>
 	/// @brief pulls the next target into our active target array
 	/// </summary>
 	void nextTarget();
@@ -128,9 +133,14 @@ private:
 	void drawUI();
 
 	/// <summary>
-	/// Draws our PAUSE overlay with flashing text
+	/// @brief Draws our PAUSE overlay with flashing text
 	/// </summary>
 	void drawPauseScreen();
+
+	/// <summary>
+	/// @brief Draws our game over screen with game stats
+	/// </summary>
+	void drawGameOverScreen();
 
 	// stores the data for our level
 	LevelData m_level;
@@ -187,6 +197,10 @@ private:
 
 	// Shows the player how much time was added on destroying target
 	sf::Text m_deltaScoreText;
+
+	// Used for fading of delta score text
+	const sf::Time DELTA_SCORE_TIME{ sf::seconds(1.0f) };
+	thor::StopWatch m_deltaScoreClock;
 
 	// SCREENSHAKE variables
 	float m_trauma{ 0.0f }; // scalar for screenshake, normalised to the range 0-1

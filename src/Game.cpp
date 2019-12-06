@@ -41,6 +41,8 @@ Game::Game()
 
 	m_targetLoadingBar.setFillColor(sf::Color::Red);
 	m_targetLoadingBar.setSize({ 50.0f,10.0f });
+
+	m_deltaScoreClock.start();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -155,20 +157,25 @@ void Game::setupSprites()
 
 void Game::init()
 {
+	// Restart game clocks
 	m_gameClock.restart();
 	m_targetClock.restart();
 
+	// Reset trauma/screenshake variable
 	m_trauma = 0.0f;
 
+	// Reset score counters
 	m_targetIndex = 0;
 	m_targetsHit = 0;
 	m_shotsFired = 0;
 	m_score = 0;
 	m_accuracy = 0.0f;
 
+	// Clear targets array and push back first target
 	m_activeTargets.clear();
 	m_activeTargets.push_back(m_allTargets[m_targetIndex]);
 
+	// Get rid of delta score text
 	m_deltaScoreText.setPosition({ -100.0f,-100.0f });
 }
 
@@ -398,6 +405,8 @@ void Game::update(sf::Time dt)
 		(m_trauma > 0.005f) ? m_trauma -= 0.005f : m_trauma = 0.0f;
 		m_traumaMeter.setString(std::to_string(m_trauma));
 
+		fadeDeltaScoreText();
+
 		shakeScreen();
 
 		break;
@@ -428,6 +437,8 @@ void Game::checkTargetsHit()
 			m_deltaScoreText.setString("+50");
 			m_deltaScoreText.setPosition(t.getSprite().getPosition());
 
+			m_deltaScoreClock.restart();
+
 			nextTarget();
 		}
 	}
@@ -456,6 +467,22 @@ void Game::shakeScreen()
 	view.setRotation(angleOffset);
 
 	m_window.setView(view);
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+
+void Game::fadeDeltaScoreText()
+{
+	if (m_deltaScoreClock.getElapsedTime() < DELTA_SCORE_TIME)
+	{
+		// non-linear fading (when time remaining is 1, coefficient is 1. when time remaining is 0.5, coefficient is 0.25)
+		float timeCoefficient = m_deltaScoreClock.getElapsedTime() / DELTA_SCORE_TIME;
+
+		sf::Uint8 alpha = 255U * pow(timeCoefficient, 2);
+
+		m_deltaScoreText.setFillColor(sf::Color(255U, 255U, 0U, 255U - alpha));
+		m_deltaScoreText.setOutlineColor(sf::Color(0U, 0U, 0U, 255U - alpha));
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -501,7 +528,7 @@ void Game::render()
 
 		m_tank.render(m_window);
 
-		m_window.draw(m_deltaScoreText);
+		if (m_deltaScoreClock.getElapsedTime() < DELTA_SCORE_TIME) m_window.draw(m_deltaScoreText);
 
 		drawUI();
 
@@ -515,46 +542,7 @@ void Game::render()
 	}
 	else if (state::GameOver == m_gameState)
 	{
-		m_window.draw(m_menuBackgroundSprite);
-
-		m_text.setCharacterSize(36U);
-		m_text.setOutlineColor(sf::Color::Black);
-		m_text.setOutlineThickness(2.0f);
-
-		// Score
-		m_text.setString("Score: " + std::to_string(m_score));
-		m_text.setOrigin(m_text.getLocalBounds().width, 0.0f);
-		m_text.setPosition({ (ScreenSize::s_width / 2.0f) - 100.0f, 350.0f });
-		
-		m_window.draw(m_text);
-
-		// Accuracy
-		m_text.setString("Accuracy: " + std::to_string(static_cast<int>(m_accuracy * 100.0f)) + "%");
-		m_text.setOrigin(m_text.getLocalBounds().width, 0.0f);
-		m_text.setPosition({ (ScreenSize::s_width / 2.0f) - 100.0f, 400.0f });
-		
-		m_window.draw(m_text);
-
-		// HighScore
-		m_text.setString("Highscore: " + std::to_string(m_highscore));
-		m_text.setOrigin(0.0f, 0.0f);
-		m_text.setPosition({ (ScreenSize::s_width / 2.0f) - 60.0f, 350.0f });
-
-		m_window.draw(m_text);
-
-		// Best Accuracy
-		m_text.setString("Best Accuracy: " + std::to_string(static_cast<int>(m_bestAccuracy * 100.0f)) + "%");
-		m_text.setOrigin(0.0f, 0.0f);
-		m_text.setPosition({ (ScreenSize::s_width / 2.0f) - 60.0f, 400.0f });
-
-		m_window.draw(m_text);
-
-		// Restart text
-		m_text.setString("Press [R] to Restart!");
-		m_text.setOrigin(m_text.getLocalBounds().width / 2.0f, 0.0f);
-		m_text.setPosition({ (ScreenSize::s_width / 2.0f), 800.0f });
-
-		m_window.draw(m_text);
+		drawGameOverScreen();
 	}
 		
 	m_window.display();
@@ -631,4 +619,50 @@ void Game::drawPauseScreen()
 	pauseText.setPosition({ windowSize.x / 2.0f, windowSize.y / 2.0f });
 
 	m_window.draw(pauseText);
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+
+void Game::drawGameOverScreen()
+{
+	m_window.draw(m_menuBackgroundSprite);
+
+	m_text.setCharacterSize(36U);
+	m_text.setOutlineColor(sf::Color::Black);
+	m_text.setOutlineThickness(2.0f);
+
+	// Score
+	m_text.setString("Score: " + std::to_string(m_score));
+	m_text.setOrigin(m_text.getLocalBounds().width, 0.0f);
+	m_text.setPosition({ (ScreenSize::s_width / 2.0f) - 100.0f, 350.0f });
+
+	m_window.draw(m_text);
+
+	// Accuracy
+	m_text.setString("Accuracy: " + std::to_string(static_cast<int>(m_accuracy * 100.0f)) + "%");
+	m_text.setOrigin(m_text.getLocalBounds().width, 0.0f);
+	m_text.setPosition({ (ScreenSize::s_width / 2.0f) - 100.0f, 400.0f });
+
+	m_window.draw(m_text);
+
+	// HighScore
+	m_text.setString("Highscore: " + std::to_string(m_highscore));
+	m_text.setOrigin(0.0f, 0.0f);
+	m_text.setPosition({ (ScreenSize::s_width / 2.0f) - 60.0f, 350.0f });
+
+	m_window.draw(m_text);
+
+	// Best Accuracy
+	m_text.setString("Best Accuracy: " + std::to_string(static_cast<int>(m_bestAccuracy * 100.0f)) + "%");
+	m_text.setOrigin(0.0f, 0.0f);
+	m_text.setPosition({ (ScreenSize::s_width / 2.0f) - 60.0f, 400.0f });
+
+	m_window.draw(m_text);
+
+	// Restart text
+	m_text.setString("Press [R] to Restart!");
+	m_text.setOrigin(m_text.getLocalBounds().width / 2.0f, 0.0f);
+	m_text.setPosition({ (ScreenSize::s_width / 2.0f), 800.0f });
+
+	m_window.draw(m_text);
 }
