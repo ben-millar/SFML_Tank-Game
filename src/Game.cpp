@@ -177,6 +177,8 @@ void Game::init()
 
 	// Get rid of delta score text
 	m_deltaScoreText.setPosition({ -100.0f,-100.0f });
+
+	buildMap();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -218,6 +220,36 @@ void Game::generateTargets()
 		sprite.move({ offsetX, offsetY });
 
 		m_allTargets.push_back(sprite);
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+
+void Game::buildMap()
+{
+	// for each obstacle in our vector
+	for (GameObject& obs : m_obstacles)
+	{
+		// for each corner of our obstacle
+		for (sf::Vector2f pos : getCorners(obs))
+		{
+			// find the grid ref
+			int grid{ getGridRef(pos) };
+
+			// check if we already account for this object at this position in our map
+			bool alreadyInList{ false };
+			for (GameObject* mapObject : m_spacialMap[grid])
+			{
+				if (mapObject == &obs)
+				{
+					alreadyInList = true;
+					break;
+				}
+			}
+
+			// associate our obstacle with the grid ref in our map if unaccounted for
+			if (!alreadyInList) (m_spacialMap[grid].push_back(&obs));
+		}
 	}
 }
 
@@ -415,6 +447,30 @@ void Game::update(sf::Time dt)
 	default:
 		break;
 	}
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+
+int Game::getGridRef(sf::Vector2f t_pos)
+{
+	return (floor(t_pos.x / CELL_SIZE.x) * 10) + floor(t_pos.y / CELL_SIZE.y);
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+
+std::array<sf::Vector2f, 4> Game::getCorners(GameObject & t_obj)
+{
+	std::array<sf::Vector2f, 4> corners;
+
+	sf::FloatRect bounds{ t_obj.getSprite().getGlobalBounds() };
+	sf::Vector2f pos{ bounds.left, bounds.top };
+
+	corners.at(0) = pos;
+	corners.at(1) = pos + sf::Vector2f(bounds.width, 0.0f);
+	corners.at(2) = pos + sf::Vector2f(bounds.width, bounds.height);
+	corners.at(3) = pos + sf::Vector2f(0.0f, bounds.height);
+
+	return corners;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
