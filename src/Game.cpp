@@ -1,4 +1,5 @@
 #include "Game.h"
+#include "MathUtility.h"
 #include <iostream>
 
 // Updates per milliseconds
@@ -464,11 +465,17 @@ std::array<sf::Vector2f, 4> Game::getCorners(GameObject & t_obj)
 
 	sf::FloatRect bounds{ t_obj.getSprite().getGlobalBounds() };
 	sf::Vector2f pos{ bounds.left, bounds.top };
+	float rotation{ t_obj.getSprite().getRotation() };
+
+	float horizontalComponentOfWidth = bounds.width * cos(MathUtility::DEG_TO_RAD * rotation);
+	float verticalComponentOfWidth = bounds.width * sin(MathUtility::DEG_TO_RAD * rotation);
+	float horizontalComponentOfHeight = bounds.height * cos(MathUtility::DEG_TO_RAD * rotation);
+	float verticalComponentOfHeight = bounds.height * sin(MathUtility::DEG_TO_RAD * rotation);
 
 	corners.at(0) = pos;
-	corners.at(1) = pos + sf::Vector2f(bounds.width, 0.0f);
-	corners.at(2) = pos + sf::Vector2f(bounds.width, bounds.height);
-	corners.at(3) = pos + sf::Vector2f(0.0f, bounds.height);
+	corners.at(1) = pos + sf::Vector2f(horizontalComponentOfWidth, verticalComponentOfWidth);
+	corners.at(2) = corners.at(1) + sf::Vector2f(horizontalComponentOfHeight, verticalComponentOfHeight);
+	corners.at(3) = pos + sf::Vector2f(horizontalComponentOfHeight, verticalComponentOfHeight);
 
 	return corners;
 }
