@@ -465,12 +465,12 @@ std::array<sf::Vector2f, 4> Game::getCorners(GameObject & t_obj)
 
 	sf::FloatRect bounds{ t_obj.getSprite().getGlobalBounds() };
 	sf::Vector2f pos{ bounds.left, bounds.top };
-	float rotation{ t_obj.getSprite().getRotation() };
+	float rotation = t_obj.getSprite().getRotation() * MathUtility::DEG_TO_RAD;
 
-	float horizontalComponentOfWidth = bounds.width * cos(MathUtility::DEG_TO_RAD * rotation);
-	float verticalComponentOfWidth = bounds.width * sin(MathUtility::DEG_TO_RAD * rotation);
-	float horizontalComponentOfHeight = bounds.height * cos(MathUtility::DEG_TO_RAD * rotation);
-	float verticalComponentOfHeight = bounds.height * sin(MathUtility::DEG_TO_RAD * rotation);
+	float horizontalComponentOfWidth = bounds.width * cos(rotation);
+	float verticalComponentOfWidth = bounds.width * sin(rotation);
+	float horizontalComponentOfHeight = bounds.height * cos(rotation);
+	float verticalComponentOfHeight = bounds.height * sin(rotation);
 
 	corners.at(0) = pos;
 	corners.at(1) = pos + sf::Vector2f(horizontalComponentOfWidth, verticalComponentOfWidth);

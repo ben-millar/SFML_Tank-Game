@@ -19,6 +19,10 @@
 #pragma comment(lib,"libyaml-cppmdd")
 #include "Game.h"
 
+// TODO: Refactor tank class to accept a map of lists of obstacles instead of vector of obstacles
+// Check grid position of projectiles each frame
+// Refactor collision check to only check against obstacles in same grid positioin as projectile/s (for each active projectile grid)
+
 /// <summary>
 /// @brief starting point for all C++ programs.
 /// 
