@@ -5,6 +5,7 @@
 #include <SFML/Graphics.hpp>
 #include <Thor/Time.hpp>
 #include "ScreenSize.h"
+#include "CellResolution.h"
 #include "Tank.h"
 #include "Target.h"
 #include "Obstacle.h"
@@ -101,20 +102,6 @@ private:
 	void buildMap();
 
 	/// <summary>
-	/// @brief Find the grid position of a given point in 2D space
-	/// </summary>
-	/// <param name="t_pos">position of the object to check</param>
-	/// <returns>grid reference as vector2i</returns>
-	int getGridRef(sf::Vector2f t_pos);
-
-	/// <summary>
-	/// 
-	/// </summary>
-	/// <param name="t_obj"></param>
-	/// <returns></returns>
-	std::array<sf::Vector2f, 4> getCorners(GameObject & t_obj);
-
-	/// <summary>
 	/// @brief Checks if any active targets have been hit
 	/// </summary>
 	void checkTargetsHit();
@@ -170,12 +157,8 @@ private:
 	sf::Texture m_menuBackgroundTexture;
 	sf::Sprite m_menuBackgroundSprite;
 
-	// used for game space partitioning 
-	const int NUM_ROWS{ 10 }, NUM_COLS{ 10 };
-	const sf::Vector2f CELL_SIZE{ ScreenSize::s_width / static_cast<float>(NUM_ROWS), ScreenSize::s_height / static_cast<float>(NUM_COLS)};
-
 	// a mapping of our partition spaces to the sprites occupying them
-	std::map<int, std::list<GameObject*>> m_spacialMap;
+	std::map<int, std::list<GameObject*>> m_spatialMap;
 
 	// keeps track of game time
 	thor::StopWatch m_gameClock;

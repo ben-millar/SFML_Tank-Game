@@ -3,9 +3,9 @@
 #include "Thor/Animations.hpp"
 #include <iostream>
 
-Tank::Tank(sf::Texture const& t_texture, std::vector<Obstacle>& t_obstacleVector, std::vector<Target>& t_targetVector)
+Tank::Tank(sf::Texture const& t_texture, std::map<int, std::list<GameObject*>>& t_obstacleMap, std::vector<Target>& t_targetVector)
 	: m_texture(t_texture),
-	ref_obstacles(t_obstacleVector),
+	ref_obstacles(t_obstacleMap),
 	ref_targets(t_targetVector)
 {
 	f_projectileImpact = &Tank::projectileImpact;
@@ -385,11 +385,37 @@ void Tank::updateGameObjects()
 	m_obstacles.clear();
 	m_targets.clear();
 
-	// populate our vector of obstacle pointers
-	for (Obstacle& i : ref_obstacles)
+	// work out which cells we occupy
+	std::set<int> activeCells;
+
+	// add positions of tank base and turret
+	for (sf::Vector2f pos : CellResolution::getCorners(m_tankBase))
 	{
-		m_obstacles.push_back(&i);
+		activeCells.insert(CellResolution::getGridRef(pos));
 	}
+	
+	for (sf::Vector2f pos : CellResolution::getCorners(m_turret))
+	{
+		activeCells.insert(CellResolution::getGridRef(pos));
+	}
+
+	std::cout << "Active cells: ";
+
+	// populate our vector of obstacle pointers
+	for (int i : activeCells)
+	{
+		std::cout << i << ", ";
+		// will return 0 if key not in map
+		if (ref_obstacles.count(i))
+		{ 
+			for (GameObject* obj : ref_obstacles.at(i))
+			{
+				m_obstacles.push_back(obj);
+			}
+		}
+	}
+
+	std::cout << std::endl;
 
 	// populate our vector of target pointers
 	for (Target& i : ref_targets)

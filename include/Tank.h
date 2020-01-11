@@ -4,6 +4,7 @@
 #include <Thor/Math.hpp>
 #include <thread>
 #include "CollisionDetector.h"
+#include "CellResolution.h"
 #include "ProjectilePool.h"
 
 #include "Obstacle.h"
@@ -24,7 +25,7 @@ public:
 /// </summary>
 /// <param name="texture">A reference to the sprite sheet texture</param>
 ///< param name="texture">A reference to the container of wall sprites</param>
-	Tank(sf::Texture const & t_texture, std::vector<Obstacle> & t_obstacleVector, std::vector<Target>& t_targetVector);
+	Tank(sf::Texture const & t_texture, std::map<int, std::list<GameObject*>>& t_obstacleMap, std::vector<Target>& t_targetVector);
 
 	inline sf::Vector2f position() { return m_tankBase.getPosition(); }
 
@@ -175,7 +176,7 @@ private:
 	sf::Texture const & m_texture;
 
 	// A reference to the container of wall sprites.
-	std::vector<Obstacle>& ref_obstacles;
+	std::map<int, std::list<GameObject*>>& ref_obstacles;
 	std::vector<GameObject*> m_obstacles;
 
 	// A reference to the container of target sprites.

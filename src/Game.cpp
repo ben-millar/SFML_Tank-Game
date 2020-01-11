@@ -8,7 +8,7 @@ static const sf::Time MS_PER_UPDATE = sf::seconds(1.0f/60.0f);
 ////////////////////////////////////////////////////////////
 Game::Game()
 	: m_window(sf::VideoMode(ScreenSize::s_width, ScreenSize::s_height, 32), "SFML Playground", sf::Style::Default),
-	m_tank(m_spriteSheetTexture, m_obstacles, m_activeTargets)
+	m_tank(m_spriteSheetTexture, m_spatialMap, m_activeTargets)
 {
 	// Game runs much faster with this commented out. Why?
 	// Seems to limit our refresh rate to that of the monitor
@@ -232,14 +232,14 @@ void Game::buildMap()
 	for (GameObject& obs : m_obstacles)
 	{
 		// for each corner of our obstacle
-		for (sf::Vector2f pos : getCorners(obs))
+		for (sf::Vector2f pos : CellResolution::getCorners(obs.getSprite()))
 		{
 			// find the grid ref
-			int grid{ getGridRef(pos) };
+			int grid{ CellResolution::getGridRef(pos) };
 
 			// check if we already account for this object at this position in our map
 			bool alreadyInList{ false };
-			for (GameObject* mapObject : m_spacialMap[grid])
+			for (GameObject* mapObject : m_spatialMap[grid])
 			{
 				if (mapObject == &obs)
 				{
@@ -249,7 +249,7 @@ void Game::buildMap()
 			}
 
 			// associate our obstacle with the grid ref in our map if unaccounted for
-			if (!alreadyInList) (m_spacialMap[grid].push_back(&obs));
+			if (!alreadyInList) (m_spatialMap[grid].push_back(&obs));
 		}
 	}
 }
@@ -448,36 +448,6 @@ void Game::update(sf::Time dt)
 	default:
 		break;
 	}
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////
-
-int Game::getGridRef(sf::Vector2f t_pos)
-{
-	return (floor(t_pos.x / CELL_SIZE.x) * 10) + floor(t_pos.y / CELL_SIZE.y);
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////
-
-std::array<sf::Vector2f, 4> Game::getCorners(GameObject & t_obj)
-{
-	std::array<sf::Vector2f, 4> corners;
-
-	sf::FloatRect bounds{ t_obj.getSprite().getGlobalBounds() };
-	sf::Vector2f pos{ bounds.left, bounds.top };
-	float rotation = t_obj.getSprite().getRotation() * MathUtility::DEG_TO_RAD;
-
-	float horizontalComponentOfWidth = bounds.width * cos(rotation);
-	float verticalComponentOfWidth = bounds.width * sin(rotation);
-	float horizontalComponentOfHeight = bounds.height * cos(rotation);
-	float verticalComponentOfHeight = bounds.height * sin(rotation);
-
-	corners.at(0) = pos;
-	corners.at(1) = pos + sf::Vector2f(horizontalComponentOfWidth, verticalComponentOfWidth);
-	corners.at(2) = corners.at(1) + sf::Vector2f(horizontalComponentOfHeight, verticalComponentOfHeight);
-	corners.at(3) = pos + sf::Vector2f(horizontalComponentOfHeight, verticalComponentOfHeight);
-
-	return corners;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
