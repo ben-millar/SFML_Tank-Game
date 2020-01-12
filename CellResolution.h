@@ -22,6 +22,12 @@ public:
 	/// <returns></returns>
 	static std::array<sf::Vector2f, 4> getCorners(sf::Sprite& t_obj);
 
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <returns></returns>
+	static sf::Vector2f temp_getCellSize() { return CELL_SIZE; }
+
 private:
 
 	const static int NUM_ROWS{ 10 }, NUM_COLS{ 10 };

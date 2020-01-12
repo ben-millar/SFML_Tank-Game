@@ -81,6 +81,11 @@ public:
 private:
 
 	/// <summary>
+	/// Initialise values for debugging
+	/// </summary>
+	void temp_debugInit();
+
+	/// <summary>
 	/// @brief Checks for collisions between the tank and the walls.
 	/// </summary>
 	/// <returns>True if collision detected between tank and wall.</returns>
@@ -225,6 +230,17 @@ private:
 	
 	// rolling storage of our last speed
 	double m_previousSpeed;
+
+
+	std::set<int> m_activeCells;
+
+	// ####################################
+
+
+
+	// ############# DEBUGGING ############
+
+	sf::RectangleShape temp_activeCellRect;
 
 	// ####################################
 };

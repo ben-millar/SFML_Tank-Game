@@ -12,6 +12,8 @@ Tank::Tank(sf::Texture const& t_texture, std::map<int, std::list<GameObject*>>& 
 	f_impactSmoke = &Tank::impactSmoke;
 	initSprites();
 	initParticles();
+
+	temp_debugInit();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -33,6 +35,15 @@ void Tank::setPosition(sf::Vector2f const& m_pos)
 {
 	m_tankBase.setPosition(m_pos);
 	m_turret.setPosition(m_pos);
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+
+void Tank::temp_debugInit()
+{
+	temp_activeCellRect.setSize(CellResolution::temp_getCellSize());
+
+	temp_activeCellRect.setFillColor(sf::Color(255, 0, 0, 128));
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -331,6 +342,13 @@ void Tank::render(sf::RenderWindow & window)
 
 	window.draw(m_tankBase);
 	window.draw(m_turret);	
+
+	// DEBUG highlight active cells TEMP
+	for (int i : m_activeCells)
+	{
+		temp_activeCellRect.setPosition({ (i / 10) * CellResolution::temp_getCellSize().x, i % 10 * CellResolution::temp_getCellSize().y });
+		window.draw(temp_activeCellRect);
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -380,33 +398,35 @@ void Tank::initParticles()
 	m_sparkParticleSystem.setTexture(m_sparkTexture);
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////
+
 void Tank::updateGameObjects()
 {
 	m_obstacles.clear();
 	m_targets.clear();
 
 	// work out which cells we occupy
-	std::set<int> activeCells;
+	m_activeCells.clear();
 
 	// add positions of tank base and turret
 	for (sf::Vector2f pos : CellResolution::getCorners(m_tankBase))
 	{
-		activeCells.insert(CellResolution::getGridRef(pos));
+		m_activeCells.insert(CellResolution::getGridRef(pos));
 	}
 	
 	for (sf::Vector2f pos : CellResolution::getCorners(m_turret))
 	{
-		activeCells.insert(CellResolution::getGridRef(pos));
+		m_activeCells.insert(CellResolution::getGridRef(pos));
 	}
 
 	// add positions of projectiles
 	for (sf::Vector2f pos : m_projectilePool.getActiveProjectilePos())
 	{
-		activeCells.insert(CellResolution::getGridRef(pos));
+		m_activeCells.insert(CellResolution::getGridRef(pos));
 	}
 
 	// populate our vector of obstacle pointers
-	for (int i : activeCells)
+	for (int i : m_activeCells)
 	{
 		// will return 0 if key not in map
 		if (ref_obstacles.count(i))
