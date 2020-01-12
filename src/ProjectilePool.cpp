@@ -99,6 +99,20 @@ f_generateParticle(Fooinstance, );
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
+std::vector<sf::Vector2f> ProjectilePool::getActiveProjectilePos()
+{
+	std::vector<sf::Vector2f> positions;
+
+	for (Projectile& p : m_projectiles)
+	{
+		if (p.m_active) positions.push_back(p.m_position);
+	}
+
+	return positions;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+
 void ProjectilePool::checkCollisions(std::vector<GameObject*>& t_gameObjVector, std::function<void(Tank*, sf::Vector2f)> t_smokeFunc, Tank* t_tank)
 {
 	for (Projectile& p : m_projectiles)

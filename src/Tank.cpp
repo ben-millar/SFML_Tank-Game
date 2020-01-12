@@ -399,12 +399,15 @@ void Tank::updateGameObjects()
 		activeCells.insert(CellResolution::getGridRef(pos));
 	}
 
-	std::cout << "Active cells: ";
+	// add positions of projectiles
+	for (sf::Vector2f pos : m_projectilePool.getActiveProjectilePos())
+	{
+		activeCells.insert(CellResolution::getGridRef(pos));
+	}
 
 	// populate our vector of obstacle pointers
 	for (int i : activeCells)
 	{
-		std::cout << i << ", ";
 		// will return 0 if key not in map
 		if (ref_obstacles.count(i))
 		{ 
@@ -414,8 +417,6 @@ void Tank::updateGameObjects()
 			}
 		}
 	}
-
-	std::cout << std::endl;
 
 	// populate our vector of target pointers
 	for (Target& i : ref_targets)

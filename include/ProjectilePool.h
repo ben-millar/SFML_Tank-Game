@@ -32,7 +32,18 @@ public:
 	/// </summary>
 	void update(sf::Time dt);
 
+	/// <summary>
+	/// @brief returns the positions of all active projectiles
+	/// </summary>
+	/// <returns>A vector of sf::vector2fs, one pos per projectile</returns>
+	std::vector<sf::Vector2f> getActiveProjectilePos();
 
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <param name="t_gameObjVector"></param>
+	/// <param name=""></param>
+	/// <param name="t_tank"></param>
 	void checkCollisions(std::vector<GameObject*>& t_gameObjVector, std::function<void(Tank*, sf::Vector2f)>, Tank* t_tank);
 
 	/// <summary>
