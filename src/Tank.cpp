@@ -408,21 +408,38 @@ void Tank::updateGameObjects()
 	// work out which cells we occupy
 	m_activeCells.clear();
 
+	int gridPos{ -1 };
+
 	// add positions of tank base and turret
 	for (sf::Vector2f pos : CellResolution::getCorners(m_tankBase))
 	{
-		m_activeCells.insert(CellResolution::getGridRef(pos));
+		gridPos = CellResolution::getGridRef(pos);
+
+		// If we get an error value back, don't add to set
+		if (gridPos == -1) continue;
+
+		m_activeCells.insert(gridPos);
 	}
 	
 	for (sf::Vector2f pos : CellResolution::getCorners(m_turret))
 	{
-		m_activeCells.insert(CellResolution::getGridRef(pos));
+		gridPos = CellResolution::getGridRef(pos);
+
+		// If we get an error value back, don't add to set
+		if (gridPos == -1) continue;
+
+		m_activeCells.insert(gridPos);
 	}
 
 	// add positions of projectiles
 	for (sf::Vector2f pos : m_projectilePool.getActiveProjectilePos())
 	{
-		m_activeCells.insert(CellResolution::getGridRef(pos));
+		gridPos = CellResolution::getGridRef(pos);
+
+		// If we get an error value back, don't add to set
+		if (gridPos == -1) continue;
+
+		m_activeCells.insert(gridPos);
 	}
 
 	// populate our vector of obstacle pointers

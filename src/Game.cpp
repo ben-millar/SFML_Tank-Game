@@ -237,6 +237,9 @@ void Game::buildMap()
 			// find the grid ref
 			int grid{ CellResolution::getGridRef(pos) };
 
+			// If we get an error value back, continue
+			if (grid == -1) continue;
+
 			// check if we already account for this object at this position in our map
 			bool alreadyInList{ false };
 			for (GameObject* mapObject : m_spatialMap[grid])

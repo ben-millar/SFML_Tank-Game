@@ -12,7 +12,7 @@ public:
 	/// @brief Find the grid position of a given point in 2D space
 	/// </summary>
 	/// <param name="t_pos">position of the object to check</param>
-	/// <returns>grid reference as vector2i</returns>
+	/// <returns>grid reference as vector2i, or -1 if object out of window bounds</returns>
 	static int getGridRef(sf::Vector2f t_pos);
 
 	/// <summary>
@@ -33,4 +33,3 @@ private:
 	const static int NUM_ROWS{ 10 }, NUM_COLS{ 10 };
 	const static sf::Vector2f CELL_SIZE;
 };
-

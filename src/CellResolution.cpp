@@ -6,7 +6,15 @@ const sf::Vector2f CellResolution::CELL_SIZE{ ScreenSize::s_width / static_cast<
 
 int CellResolution::getGridRef(sf::Vector2f t_pos)
 {
-	return (floor(t_pos.x / CELL_SIZE.x) * 10) + floor(t_pos.y / CELL_SIZE.y);
+	if (t_pos.x > 0.0f && t_pos.y > 0.0f)
+	{
+		if (t_pos.x < ScreenSize::s_width && t_pos.y < ScreenSize::s_height)
+		{
+			return (floor(t_pos.x / CELL_SIZE.x) * 10) + floor(t_pos.y / CELL_SIZE.y);
+		}
+	}
+
+	return -1;
 }
 
 ////////////////////////////////////////////////////////////
