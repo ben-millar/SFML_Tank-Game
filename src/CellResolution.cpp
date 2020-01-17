@@ -19,23 +19,16 @@ int CellResolution::getGridRef(sf::Vector2f t_pos)
 
 ////////////////////////////////////////////////////////////
 
-std::array<sf::Vector2f, 4> CellResolution::getCorners(sf::Sprite & t_obj)
+std::array<sf::Vector2f, 4> CellResolution::getCorners(sf::Sprite & t_sprite)
 {
 	std::array<sf::Vector2f, 4> corners;
 
-	sf::FloatRect bounds{ t_obj.getGlobalBounds() };
-	sf::Vector2f pos{ bounds.left, bounds.top };
-	float rotation = t_obj.getRotation() * MathUtility::DEG_TO_RAD;
+	sf::FloatRect bounds{ t_sprite.getGlobalBounds() };
 
-	float horizontalComponentOfWidth = bounds.width * cos(rotation);
-	float verticalComponentOfWidth = bounds.width * sin(rotation);
-	float horizontalComponentOfHeight = bounds.height * cos(rotation);
-	float verticalComponentOfHeight = bounds.height * sin(rotation);
-
-	corners.at(0) = pos;
-	corners.at(1) = pos + sf::Vector2f(horizontalComponentOfWidth, verticalComponentOfWidth);
-	corners.at(2) = corners.at(1) + sf::Vector2f(horizontalComponentOfHeight, verticalComponentOfHeight);
-	corners.at(3) = pos + sf::Vector2f(horizontalComponentOfHeight, verticalComponentOfHeight);
+	corners.at(0) = t_sprite.getTransform().transformPoint(0, 0);
+	corners.at(1) = t_sprite.getTransform().transformPoint(bounds.width, 0);
+	corners.at(2) = t_sprite.getTransform().transformPoint(bounds.width, bounds.height);
+	corners.at(3) = t_sprite.getTransform().transformPoint(0, bounds.height);
 
 	return corners;
 }
