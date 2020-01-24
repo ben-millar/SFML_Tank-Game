@@ -217,9 +217,11 @@ void TankAi::updateGameObjects()
 		{
 			for (GameObject* obj : ref_obstacles.at(i))
 			{
-				sf::CircleShape circle(obj->getSprite().getTextureRect().width);
+				sf::CircleShape circle(obj->getSprite().getTextureRect().width * 1.5f);
 				circle.setOrigin(circle.getRadius(), circle.getRadius());
 				circle.setPosition(obj->getSprite().getPosition());
+
+				circle.setFillColor(sf::Color(255, 255, 255, 128));
 				m_obstacles.push_back(circle);
 			}
 		}
