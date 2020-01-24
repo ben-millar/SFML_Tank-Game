@@ -8,7 +8,8 @@ static const sf::Time MS_PER_UPDATE = sf::seconds(1.0f/60.0f);
 ////////////////////////////////////////////////////////////
 Game::Game()
 	: m_window(sf::VideoMode(ScreenSize::s_width, ScreenSize::s_height, 32), "SFML Playground", sf::Style::Default),
-	m_tank(m_spriteSheetTexture, m_spatialMap, m_activeTargets)
+	m_tank(m_spriteSheetTexture, m_spatialMap, m_activeTargets),
+	m_aiTank(m_spriteSheetTexture, m_spatialMap)
 {
 	// Game runs much faster with this commented out. Why?
 	// Seems to limit our refresh rate to that of the monitor
@@ -36,6 +37,8 @@ Game::Game()
 	setupSprites();
 
 	init();
+
+	m_aiTank.init(m_level.m_aiTank.m_position.at(0));
 
 	// set state to GamePlay
 	m_gameState = state::GamePlay;
@@ -434,6 +437,8 @@ void Game::update(sf::Time dt)
 
 		m_tank.update(dt);
 
+		m_aiTank.update(m_tank, dt.asSeconds());
+
 		// Don't divide by 0!
 		m_accuracy = (m_shotsFired == 0) ? 0.0f : m_targetsHit / static_cast<float>(m_shotsFired);
 
@@ -563,6 +568,8 @@ void Game::render()
 		drawTargets();
 
 		m_tank.render(m_window);
+
+		m_aiTank.render(m_window);
 
 		if (m_deltaScoreClock.getElapsedTime() < DELTA_SCORE_TIME) m_window.draw(m_deltaScoreText);
 

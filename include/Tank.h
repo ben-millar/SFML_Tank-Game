@@ -27,7 +27,7 @@ public:
 ///< param name="texture">A reference to the container of wall sprites</param>
 	Tank(sf::Texture const & t_texture, std::map<int, std::list<GameObject*>>& t_obstacleMap, std::vector<Target>& t_targetVector);
 
-	inline sf::Vector2f position() { return m_tankBase.getPosition(); }
+	inline sf::Vector2f position() const { return m_tankBase.getPosition(); }
 
 	/// <summary>
 	/// @brief Resets all tank attributes for new game

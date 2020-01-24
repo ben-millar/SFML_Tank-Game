@@ -9,7 +9,8 @@ tank:
       - pos: {x: 100, y: 800}
       - pos: {x: 1300, y: 800}
 ai_tank:
-   position: {x: 400, y: 700}
+   spawns:
+      - pos: {x: 400, y: 700}
    max_projectiles: 10
    reload_time: 1000  
 projectile:

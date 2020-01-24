@@ -29,6 +29,7 @@
     <ClInclude Include="include\ProjectilePool.h" />
     <ClInclude Include="include\ScreenSize.h" />
     <ClInclude Include="include\Tank.h" />
+    <ClInclude Include="include\TankAI.h" />
     <ClInclude Include="include\Target.h" />
   </ItemGroup>
   <ItemGroup>
@@ -43,6 +44,7 @@
     <ClCompile Include="src\Projectile.cpp" />
     <ClCompile Include="src\ProjectilePool.cpp" />
     <ClCompile Include="src\Tank.cpp" />
+    <ClCompile Include="src\TankAI.cpp" />
     <ClCompile Include="src\Target.cpp" />
   </ItemGroup>
   <ItemGroup>

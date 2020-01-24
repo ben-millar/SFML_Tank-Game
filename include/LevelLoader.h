@@ -58,6 +58,7 @@ struct LevelData
 {
 	BackgroundData m_background;
 	TankData m_tank;
+	TankData m_aiTank;
 	std::vector<ObstacleData> m_obstacles;
 	std::vector<TargetData> m_targets;
 };

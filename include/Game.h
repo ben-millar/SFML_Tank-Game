@@ -7,6 +7,7 @@
 #include "ScreenSize.h"
 #include "CellResolution.h"
 #include "Tank.h"
+#include "TankAI.h"
 #include "Target.h"
 #include "Obstacle.h"
 
@@ -194,6 +195,9 @@ private:
 
 	// An instance representing the player controlled tank.
 	Tank m_tank;
+
+	// An instance representing the AI controlled tank.
+	TankAi m_aiTank;
 
 	// Player Statistics
 	int m_score{ 0 };
