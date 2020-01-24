@@ -107,7 +107,7 @@ private:
 	// The current rotation as applied to tank base and turret.
 	double m_rotation{ 0.0 };
 
-	const float MASS{ 10.0f };
+	const float MASS{ 5.0f };
 
 	// Current velocity.
 	sf::Vector2f m_velocity;

@@ -136,7 +136,8 @@ sf::Vector2f TankAi::collisionAvoidance()
 	m_halfAhead = m_tankBase.getPosition() + (headingVector * 0.5f);
 	const sf::CircleShape mostThreatening = findMostThreateningObstacle();
 	sf::Vector2f avoidance(0, 0);
-	if (mostThreatening.getRadius() != 0.0)
+
+	if (MathUtility::lineIntersectsCircle(m_ahead, m_halfAhead, mostThreatening))
 	{		
 		avoidance.x = m_ahead.x - mostThreatening.getPosition().x;
 		avoidance.y = m_ahead.y - mostThreatening.getPosition().y;
