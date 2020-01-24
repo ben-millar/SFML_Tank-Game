@@ -81,6 +81,28 @@ void TankAi::render(sf::RenderWindow & window)
 	// TODO: Don't draw if off-screen...
 	window.draw(m_tankBase);
 	window.draw(m_turret);
+
+	for (sf::CircleShape& c : m_obstacles)
+	{
+		window.draw(c);
+	}
+
+	// DEBUG STUFF
+	// Draw my velocity on screen
+	sf::VertexArray heading(sf::Lines, 2);
+	
+	heading[0] = sf::Vertex(m_tankBase.getPosition(), sf::Color::Blue);
+	heading[1] = sf::Vertex(m_tankBase.getPosition() + m_velocity * 2.0f, sf::Color::Blue);
+
+	window.draw(heading);
+
+	// Draw my steering force on screen
+	sf::VertexArray steering(sf::Lines, 2);
+
+	steering[0] = sf::Vertex(m_tankBase.getPosition(), sf::Color::Red);
+	steering[1] = sf::Vertex(m_tankBase.getPosition() + m_steering * 5.0f, sf::Color::Red);
+
+	window.draw(steering);
 }
 
 ////////////////////////////////////////////////////////////
