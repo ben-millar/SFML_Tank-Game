@@ -20,13 +20,19 @@ void TankAi::update(Tank const & playerTank, double dt)
 
 	sf::Vector2f vectorToPlayer = seek(playerTank.position());
 
+	sf::Vector2f acceleration; // ADD THIS
+
 	switch (m_aiBehaviour)
 	{
 	case AiBehaviour::SEEK_PLAYER:
 		m_steering += thor::unitVector(vectorToPlayer);
 		m_steering += collisionAvoidance();
 		m_steering = MathUtility::truncate(m_steering, MAX_FORCE);
-		m_velocity = MathUtility::truncate(m_velocity + m_steering, MAX_SPEED);
+
+		acceleration = m_steering / MASS;  // ADD THIS
+
+		//m_velocity = MathUtility::truncate(m_velocity + m_steering, MAX_SPEED);
+		m_velocity = MathUtility::truncate(m_velocity + acceleration, MAX_SPEED);
 
 		break;
 	case AiBehaviour::STOP:
