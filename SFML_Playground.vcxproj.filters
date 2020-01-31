@@ -43,9 +43,6 @@
     <Filter Include="Source Files\GameObjects">
       <UniqueIdentifier>{213eec0c-0d79-4d94-92bd-631ca0220a56}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\GameState">
-      <UniqueIdentifier>{ca691df4-d753-4b1b-acaf-27796723fe69}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Game.h">
@@ -83,6 +80,9 @@
     </ClInclude>
     <ClInclude Include="include\TankAI.h">
       <Filter>Header Files\Tank</Filter>
+    </ClInclude>
+    <ClInclude Include="HUD.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -124,6 +124,9 @@
     </ClCompile>
     <ClCompile Include="src\TankAI.cpp">
       <Filter>Source Files\Tank</Filter>
+    </ClCompile>
+    <ClCompile Include="HUD.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

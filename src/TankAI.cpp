@@ -180,6 +180,19 @@ const sf::CircleShape TankAi::findMostThreateningObstacle()
 
 ////////////////////////////////////////////////////////////
 
+bool TankAi::collidesWithPlayer(Tank const& playerTank) const
+{
+	// Checks if the AI tank has collided with the player tank.
+	if (CollisionDetector::collision(m_turret, playerTank.getTurret()) ||
+		CollisionDetector::collision(m_tankBase, playerTank.getBase()))
+	{
+		return true;
+	}
+	return false;
+}
+
+////////////////////////////////////////////////////////////
+
 void TankAi::updateGameObjects()
 {
 	// clear our array of circles

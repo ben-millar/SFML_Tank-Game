@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="HUD.h" />
     <ClInclude Include="include\CellResolution.h" />
     <ClInclude Include="include\Game.h" />
     <ClInclude Include="include\GameObject.h" />
@@ -33,6 +34,7 @@
     <ClInclude Include="include\Target.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="HUD.cpp" />
     <ClCompile Include="src\CellResolution.cpp" />
     <ClCompile Include="src\CollisionDetector.cpp" />
     <ClCompile Include="src\Game.cpp" />

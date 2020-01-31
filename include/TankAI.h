@@ -84,6 +84,14 @@ private:
 	const sf::CircleShape findMostThreateningObstacle();
 
 	/// <summary>
+	/// @brief Checks for collision between the AI and player tanks.
+	///
+	/// </summary>
+	/// <param name="player">The player tank instance</param>
+	/// <returns>True if collision detected between AI and player tanks.</returns>
+	bool collidesWithPlayer(Tank const& playerTank) const;
+
+	/// <summary>
 	/// 
 	/// </summary>
 	void updateGameObjects();

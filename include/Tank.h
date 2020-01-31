@@ -73,6 +73,18 @@ public:
 	void toggleTurretFree();
 
 	/// <summary>
+	/// 
+	/// </summary>
+	/// <returns></returns>
+	inline sf::Sprite const getTurret() const { return m_turret; }
+
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <returns></returns>
+	inline sf::Sprite const getBase() const { return m_tankBase; }
+
+	/// <summary>
 	/// @brief Fires a projectile
 	/// </summary>
 	bool fire();
