@@ -1,4 +1,6 @@
 #pragma once
+#define DEBUG
+
 #include <SFML/Graphics.hpp>
 #include <Thor/Particles.hpp>
 #include <Thor/Math.hpp>

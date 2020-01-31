@@ -13,7 +13,9 @@ Tank::Tank(sf::Texture const& t_texture, std::map<int, std::list<GameObject*>>& 
 	initSprites();
 	initParticles();
 
+#ifdef DEBUG
 	temp_debugInit();
+#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -343,12 +345,14 @@ void Tank::render(sf::RenderWindow & window)
 	window.draw(m_tankBase);
 	window.draw(m_turret);	
 
+#ifdef DEBUG
 	// DEBUG highlight active cells TEMP
 	for (int i : m_activeCells)
 	{
 		temp_activeCellRect.setPosition({ (i / 10) * CellResolution::temp_getCellSize().x, i % 10 * CellResolution::temp_getCellSize().y });
 		window.draw(temp_activeCellRect);
 	}
+#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////

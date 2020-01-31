@@ -88,6 +88,7 @@ void TankAi::render(sf::RenderWindow & window)
 	window.draw(m_tankBase);
 	window.draw(m_turret);
 
+#ifdef DEBUG
 	for (sf::CircleShape& c : m_obstacles)
 	{
 		window.draw(c);
@@ -109,6 +110,8 @@ void TankAi::render(sf::RenderWindow & window)
 	steering[1] = sf::Vertex(m_tankBase.getPosition() + m_steering * 5.0f, sf::Color::Red);
 
 	window.draw(steering);
+
+#endif
 }
 
 ////////////////////////////////////////////////////////////

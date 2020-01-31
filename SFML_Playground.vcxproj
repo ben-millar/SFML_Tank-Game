@@ -116,6 +116,7 @@
       <AdditionalIncludeDirectories>$(SFML_SDK)\include;.\include;.</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalOptions>/D _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS %(AdditionalOptions)</AdditionalOptions>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(SFML_SDK)\lib; .\lib</AdditionalLibraryDirectories>
@@ -127,6 +128,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(SFML_SDK)\include;</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(SFML_SDK)\lib;</AdditionalLibraryDirectories>
@@ -140,6 +142,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(SFML_SDK)\include; .\include; .</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -155,6 +158,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(SFML_SDK)\include;</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>

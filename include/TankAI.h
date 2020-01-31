@@ -1,4 +1,6 @@
 #pragma once
+#define DEBUG
+
 #include "MathUtility.h"
 #include "Tank.h"
 #include <SFML/Graphics.hpp>
