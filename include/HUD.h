@@ -1,5 +1,6 @@
 #pragma once
 #include <SFML/Graphics.hpp>
+#include "GameState.h"
 
 /// <summary>
 /// @brief A basic HUD implementation.
@@ -19,7 +20,7 @@ public:
 	/// @brief Checks the current game state and sets the appropriate status text on the HUD.
 	/// </summary>
 	/// <param name="gameState">The current game state</param>
-	//void update(GameState const& gameState);
+	void update(GameState const& gameState);
 
 	/// <summary>
 	/// @brief Draws the HUD outline and text.

@@ -9,7 +9,8 @@ static const sf::Time MS_PER_UPDATE = sf::seconds(1.0f/60.0f);
 Game::Game()
 	: m_window(sf::VideoMode(ScreenSize::s_width, ScreenSize::s_height, 32), "SFML Playground", sf::Style::Default),
 	m_tank(m_spriteSheetTexture, m_spatialMap, m_activeTargets),
-	m_aiTank(m_spriteSheetTexture, m_spatialMap)
+	m_aiTank(m_spriteSheetTexture, m_spatialMap),
+	m_HUD(m_font)
 {
 	// Game runs much faster with this commented out. Why?
 	// Seems to limit our refresh rate to that of the monitor
@@ -41,7 +42,7 @@ Game::Game()
 	m_aiTank.init(m_level.m_aiTank.m_position.at(0));
 
 	// set state to GamePlay
-	m_gameState = state::GamePlay;
+	m_gameState = GameState::GamePlay;
 
 	m_targetLoadingBar.setFillColor(sf::Color::Red);
 	m_targetLoadingBar.setSize({ 50.0f,10.0f });
@@ -292,7 +293,7 @@ void Game::processEvents()
 void Game::processGameEvents(sf::Event& event)
 {
 	// GAMEPLAY
-	if (state::GamePlay == m_gameState)
+	if (GameState::GamePlay == m_gameState)
 	{
 		if (sf::Event::MouseButtonPressed == event.type)
 		{
@@ -319,7 +320,7 @@ void Game::processGameEvents(sf::Event& event)
 
 			if (sf::Keyboard::P == event.key.code)
 			{
-				m_gameState = state::Paused;
+				m_gameState = GameState::Paused;
 				m_gameClock.stop();
 				m_targetClock.stop();
 			}
@@ -336,20 +337,20 @@ void Game::processGameEvents(sf::Event& event)
 		}
 	}
 	// PAUSED
-	else if (state::Paused == m_gameState)
+	else if (GameState::Paused == m_gameState)
 	{
 		if (sf::Event::KeyPressed == event.type)
 		{
 			if (sf::Keyboard::P == event.key.code)
 			{
-				m_gameState = state::GamePlay;
+				m_gameState = GameState::GamePlay;
 				m_gameClock.start();
 				m_targetClock.start();
 			}
 		}
 	}
 	// GAME OVER
-	else if (state::GameOver == m_gameState)
+	else if (GameState::GameOver == m_gameState)
 	{
 		if (sf::Event::KeyPressed == event.type)
 		{
@@ -357,7 +358,7 @@ void Game::processGameEvents(sf::Event& event)
 			{
 				init();
 				m_maxGameTime = sf::seconds(60.0f);
-				m_gameState = state::GamePlay;
+				m_gameState = GameState::GamePlay;
 			}
 		}
 	}
@@ -409,7 +410,7 @@ void Game::update(sf::Time dt)
 	// if we've hit our maximum game time, set gamestate to GameOver
 	if (m_gameClock.getElapsedTime() > m_maxGameTime)
 	{
-		m_gameState = state::GameOver;
+		m_gameState = GameState::GameOver;
 
 		if (m_score > m_highscore) m_highscore = m_score;
 		if (m_accuracy > m_bestAccuracy) m_bestAccuracy = m_accuracy;
@@ -420,11 +421,13 @@ void Game::update(sf::Time dt)
 
 	switch (m_gameState)
 	{
-	case state::Loading:
+	case GameState::Loading:
 		break;
-	case state::GamePlay:
+	case GameState::GamePlay:
 
 		handleKeyInput();
+		
+		m_HUD.update(m_gameState);
 
 		getTurretRotation();
 
@@ -451,7 +454,7 @@ void Game::update(sf::Time dt)
 		shakeScreen();
 
 		break;
-	case state::GameOver:
+	case GameState::GameOver:
 		break;
 	default:
 		break;
@@ -549,14 +552,14 @@ void Game::render()
 	m_window.clear(sf::Color::Black);
 
 	// LOADING
-	if (state::Loading == m_gameState)
+	if (GameState::Loading == m_gameState)
 	{
 		m_text.setString("Loading . . .");
 		m_window.draw(m_text);
 	}
 
 	// GAMEPLAY OR PAUSED
-	if (state::GamePlay == m_gameState || state::Paused == m_gameState)
+	if (GameState::GamePlay == m_gameState || GameState::Paused == m_gameState)
 	{
 		m_window.draw(m_bgSprite);
 
@@ -575,15 +578,17 @@ void Game::render()
 
 		drawUI();
 
+		m_HUD.render(m_window);
+
 		//m_window.draw(m_traumaMeter);
 
 		// PAUSED
-		if (state::Paused == m_gameState)
+		if (GameState::Paused == m_gameState)
 		{
 			drawPauseScreen();
 		}
 	}
-	else if (state::GameOver == m_gameState)
+	else if (GameState::GameOver == m_gameState)
 	{
 		drawGameOverScreen();
 	}

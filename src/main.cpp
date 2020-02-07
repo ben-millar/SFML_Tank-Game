@@ -20,8 +20,6 @@
 #include "Game.h"
 
 // TODO: Refactor spatial partition map to hold sets rather than lists
-// Check grid position of projectiles each frame
-// Refactor collision check to only check against obstacles in same grid positioin as projectile/s (for each active projectile grid)
 
 /// <summary>
 /// @brief starting point for all C++ programs.

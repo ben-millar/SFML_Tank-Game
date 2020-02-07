@@ -11,6 +11,9 @@
 #include "Target.h"
 #include "Obstacle.h"
 
+#include "GameState.h"
+#include "HUD.h"
+
 #include <map>
 #include <list>
 
@@ -54,18 +57,6 @@ public:
 	void run();
 
 private: 
-
-	/// <summary>
-	/// @brief Keep track of the state of our game
-	/// </summary>
-	enum class state 
-	{ 
-		Null, 
-		Loading,
-		GamePlay, 
-		Paused,
-		GameOver 
-	} m_gameState{ state::Loading };
 
 	/// <summary>
 	/// @brief Loads all game textures from file
@@ -151,6 +142,12 @@ private:
 	/// @brief Draws our game over screen with game stats
 	/// </summary>
 	void drawGameOverScreen();
+
+	// Keep track of the state of the game
+	GameState m_gameState{ GameState::Loading };
+
+	// Heads up display showing gamestate etc.
+	HUD m_HUD;
 
 	// stores the data for our level
 	LevelData m_level;

@@ -81,7 +81,10 @@
     <ClInclude Include="include\TankAI.h">
       <Filter>Header Files\Tank</Filter>
     </ClInclude>
-    <ClInclude Include="HUD.h">
+    <ClInclude Include="include\GameState.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\HUD.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -125,7 +128,7 @@
     <ClCompile Include="src\TankAI.cpp">
       <Filter>Source Files\Tank</Filter>
     </ClCompile>
-    <ClCompile Include="HUD.cpp">
+    <ClCompile Include="src\HUD.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
