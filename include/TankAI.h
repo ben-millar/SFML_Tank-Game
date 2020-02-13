@@ -5,6 +5,7 @@
 #include "Tank.h"
 #include <SFML/Graphics.hpp>
 #include <Thor/Vectors.hpp>
+#include "GameState.h"
 #include <iostream>
 #include <queue>
 

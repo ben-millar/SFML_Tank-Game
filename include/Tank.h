@@ -8,6 +8,7 @@
 #include "CollisionDetector.h"
 #include "CellResolution.h"
 #include "ProjectilePool.h"
+#include "GameState.h"
 
 #include "Obstacle.h"
 #include "Target.h"

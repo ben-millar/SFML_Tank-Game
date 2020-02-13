@@ -57,7 +57,7 @@ void Game::run()
 	sf::Clock clock;
 	sf::Time lag = sf::Time::Zero;
 
-	while (m_window.isOpen())
+	while (m_window.isOpen() && m_gameState != GameState::CLI)
 	{
 		sf::Time dt = clock.restart();
 
@@ -76,6 +76,11 @@ void Game::run()
 		update(dt);
 
 		render();
+	}
+	while (m_window.isOpen() && m_gameState == GameState::CLI)
+	{
+		processEvents();
+		processConsole();
 	}
 }
 
@@ -188,6 +193,46 @@ void Game::init()
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
+void Game::processConsole()
+{
+	std::string input;
+
+	std::cout << "The following commands are available:" << std::endl;
+	std::cout << "'debug' will turn on or off runtime debug mode" << std::endl;
+	std::cout << "'play' will return to gameplay" << std::endl;
+
+	while (m_gameState == GameState::CLI)
+	{
+		std::cin >> input;
+
+		for (char& c : input)
+		{
+			// Convert our string to lowercase for easier handling
+			c = tolower(c);
+		}
+
+		if (input == "debug")
+		{
+			std::cout << std::boolalpha; // print bools as textual representations
+
+			DEBUG_mode = (!DEBUG_mode);
+			std::cout << "Debug mode: " << DEBUG_mode << std::endl;
+		}
+		else if (input == "play")
+		{
+			std::cout << "Returning to gameplay . . ." << std::endl;
+			m_gameState = GameState::GamePlay;
+			run();
+		}
+		else
+		{
+			std::cout << "I'm sorry, I didn't recognise that input." << std::endl;
+		}
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+
 void Game::generateWalls()
 {
 	sf::IntRect wallRect(2, 129, 33, 23);
@@ -284,7 +329,23 @@ void Game::processEvents()
 		{
 			m_window.close();
 		}
-		processGameEvents(event);
+
+		// Toggle between command line window and game
+		if (event.type == sf::Event::KeyPressed)
+		{
+			if (event.key.code == sf::Keyboard::Escape)
+			{
+				(m_gameState == GameState::CLI) 
+					? m_gameState = GameState::GamePlay 
+					: m_gameState = GameState::CLI;
+			}
+		}
+
+		// If we're not in the CLI, send input to the game
+		if (m_gameState != GameState::CLI)
+		{
+			processGameEvents(event);
+		}
 	}
 }
 
@@ -362,16 +423,6 @@ void Game::processGameEvents(sf::Event& event)
 			}
 		}
 	}
-
-	// ALL STATES
-	if (sf::Event::KeyPressed == event.type)
-	{
-		if (sf::Keyboard::Escape == event.key.code)
-		{
-			m_window.close();
-		}
-	}
-
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////

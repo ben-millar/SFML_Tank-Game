@@ -9,5 +9,8 @@ enum class GameState
 	Loading,
 	GamePlay,
 	Paused,
-	GameOver
+	GameOver,
+	CLI // Command Line Interface
 };
+
+static bool DEBUG_mode{ false };

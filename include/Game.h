@@ -79,6 +79,11 @@ private:
 	void init();
 
 	/// <summary>
+	/// @brief Take in and handle console window input
+	/// </summary>
+	void processConsole();
+
+	/// <summary>
 	/// @brief Pull our wall data from file and assign it to our obstacles
 	/// </summary>
 	void generateWalls();
