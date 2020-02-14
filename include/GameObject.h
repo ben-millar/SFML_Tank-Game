@@ -4,7 +4,7 @@
 class GameObject
 {
 public:
-	sf::Sprite& getSprite() { return m_sprite; }
+	virtual sf::Sprite& getSprite() { return m_sprite; }
 
 	virtual void hit() = 0;
 

@@ -283,8 +283,8 @@ void Tank::update(sf::Time dt)
 	// update projectiles
 	m_projectilePool.update(dt);
 
-	//m_projectilePool.checkCollisions(m_obstacles, f_projectileImpact, this);
-	//m_projectilePool.checkCollisions(m_targets, f_projectileImpact, this);
+	m_projectilePool.checkCollisions(m_obstacles, f_projectileImpact, this);
+	m_projectilePool.checkCollisions(m_targets, f_projectileImpact, this);
 	m_projectilePool.checkCollisions(m_enemyTanks, f_projectileImpact, this);
 
 	// update particles

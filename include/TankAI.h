@@ -43,7 +43,7 @@ public:
 	/// <summary>
 	/// @brief Returns a reference to our base sprite
 	/// </summary>
-	sf::Sprite& getSprite() { return m_tankBase; }
+	sf::Sprite& getSprite() override { return m_tankBase; }
 
 	/// <summary>
 	/// 
