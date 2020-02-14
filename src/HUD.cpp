@@ -23,6 +23,7 @@ void HUD::update(GameState const& gameState)
 	switch (gameState)
 	{
 	case GameState::GamePlay:
+		m_gameStateText.setString("GAMEPLAY");
 		break;
 	case GameState::Paused:
 		m_gameStateText.setString("PAUSED");

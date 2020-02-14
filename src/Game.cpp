@@ -215,7 +215,8 @@ void Game::processConsole()
 		{
 			std::cout << std::boolalpha; // print bools as textual representations
 
-			DEBUG_mode = (!DEBUG_mode);
+			//DEBUG_mode = (!DEBUG_mode);
+			//DEBUG_mode = (DEBUG_mode) ? false : true;
 			std::cout << "Debug mode: " << DEBUG_mode << std::endl;
 		}
 		else if (input == "play")
@@ -472,8 +473,6 @@ void Game::update(sf::Time dt)
 	case GameState::GamePlay:
 
 		handleKeyInput();
-		
-		m_HUD.update(m_gameState);
 
 		getTurretRotation();
 
@@ -511,6 +510,8 @@ void Game::update(sf::Time dt)
 	default:
 		break;
 	}
+
+	m_HUD.update(m_gameState);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -630,8 +631,6 @@ void Game::render()
 
 		drawUI();
 
-		m_HUD.render(m_window);
-
 		//m_window.draw(m_traumaMeter);
 
 		// PAUSED
@@ -644,7 +643,8 @@ void Game::render()
 	{
 		drawGameOverScreen();
 	}
-		
+
+	m_HUD.render(m_window);
 	m_window.display();
 }
 
