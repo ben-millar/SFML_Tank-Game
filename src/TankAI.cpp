@@ -120,6 +120,8 @@ void TankAi::init(sf::Vector2f position)
 {
 	m_tankBase.setPosition(position);
 	m_turret.setPosition(position);
+
+	m_health = 100;
 }
 
 ////////////////////////////////////////////////////////////
@@ -195,7 +197,9 @@ bool TankAi::collidesWithPlayer(Tank const& playerTank) const
 
 void TankAi::hit()
 {
+	m_health -= 20;
 	std::cout << "enemy tank hit" << std::endl;
+	std::cout << "HEALTH: " << m_health << std::endl;
 }
 
 ////////////////////////////////////////////////////////////

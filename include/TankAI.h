@@ -127,6 +127,8 @@ private:
 	// The current rotation as applied to tank base and turret.
 	double m_rotation{ 0.0 };
 
+	int m_health{ 100 };
+
 	const float MASS{ 5.0f };
 
 	// Current velocity.
