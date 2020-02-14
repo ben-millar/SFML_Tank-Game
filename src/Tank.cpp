@@ -3,10 +3,11 @@
 #include "Thor/Animations.hpp"
 #include <iostream>
 
-Tank::Tank(sf::Texture const& t_texture, std::map<int, std::list<GameObject*>>& t_obstacleMap, std::vector<Target>& t_targetVector)
+Tank::Tank(sf::Texture const& t_texture, std::map<int, std::list<GameObject*>>& t_obstacleMap, std::vector<Target>& t_targetVector, TankAi& t_enemyTank)
 	: m_texture(t_texture),
 	ref_obstacles(t_obstacleMap),
-	ref_targets(t_targetVector)
+	ref_targets(t_targetVector),
+	ref_enemyTank(t_enemyTank)
 {
 	f_projectileImpact = &Tank::projectileImpact;
 	f_impactSmoke = &Tank::impactSmoke;
@@ -282,8 +283,9 @@ void Tank::update(sf::Time dt)
 	// update projectiles
 	m_projectilePool.update(dt);
 
-	m_projectilePool.checkCollisions(m_obstacles, f_projectileImpact, this);
-	m_projectilePool.checkCollisions(m_targets, f_projectileImpact, this);
+	//m_projectilePool.checkCollisions(m_obstacles, f_projectileImpact, this);
+	//m_projectilePool.checkCollisions(m_targets, f_projectileImpact, this);
+	m_projectilePool.checkCollisions(m_enemyTanks, f_projectileImpact, this);
 
 	// update particles
 	m_smokeParticleSystem.update(dt);
@@ -407,6 +409,7 @@ void Tank::updateGameObjects()
 {
 	m_obstacles.clear();
 	m_targets.clear();
+	m_enemyTanks.clear();
 
 	// work out which cells we occupy
 	m_activeCells.clear();
@@ -463,4 +466,7 @@ void Tank::updateGameObjects()
 	{
 		m_targets.push_back(&i);
 	}
+
+	// populate our vector of tank pointers (right now it's just one!)
+	m_enemyTanks.push_back(&ref_enemyTank);
 }

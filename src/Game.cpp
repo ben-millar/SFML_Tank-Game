@@ -8,7 +8,7 @@ static const sf::Time MS_PER_UPDATE = sf::seconds(1.0f/60.0f);
 ////////////////////////////////////////////////////////////
 Game::Game()
 	: m_window(sf::VideoMode(ScreenSize::s_width, ScreenSize::s_height, 32), "SFML Playground", sf::Style::Default),
-	m_tank(m_spriteSheetTexture, m_spatialMap, m_activeTargets),
+	m_tank(m_spriteSheetTexture, m_spatialMap, m_activeTargets, m_aiTank),
 	m_aiTank(m_spriteSheetTexture, m_spatialMap),
 	m_HUD(m_font)
 {
@@ -461,12 +461,7 @@ void Game::update(sf::Time dt)
 	// if we've hit our maximum game time, set gamestate to GameOver
 	if (m_gameClock.getElapsedTime() > m_maxGameTime)
 	{
-		m_gameState = GameState::GameOver;
-
-		if (m_score > m_highscore) m_highscore = m_score;
-		if (m_accuracy > m_bestAccuracy) m_bestAccuracy = m_accuracy;
-
-		m_tank.reset();
+		gameOver();
 	}
 
 
@@ -481,6 +476,12 @@ void Game::update(sf::Time dt)
 		m_HUD.update(m_gameState);
 
 		getTurretRotation();
+
+		// Check for collisions with AI tank
+		if (m_aiTank.collidesWithPlayer(m_tank))
+		{
+			gameOver();
+		}
 
 		if (m_targetClock.getElapsedTime() > m_targetDuration)
 		{
@@ -764,4 +765,15 @@ void Game::drawGameOverScreen()
 	m_text.setPosition({ (ScreenSize::s_width / 2.0f), 800.0f });
 
 	m_window.draw(m_text);
+}
+
+void Game::gameOver()
+{
+	m_gameState = GameState::GameOver;
+
+	if (m_score > m_highscore) m_highscore = m_score;
+	if (m_accuracy > m_bestAccuracy) m_bestAccuracy = m_accuracy;
+
+	m_tank.reset();
+	m_aiTank.init({ 720.0f,450.0f });
 }

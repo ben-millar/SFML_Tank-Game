@@ -191,6 +191,10 @@ bool TankAi::collidesWithPlayer(Tank const& playerTank) const
 	return false;
 }
 
+void TankAi::hit()
+{
+}
+
 ////////////////////////////////////////////////////////////
 
 void TankAi::updateGameObjects()

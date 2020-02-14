@@ -9,7 +9,7 @@
 #include <iostream>
 #include <queue>
 
-class TankAi
+class TankAi : public GameObject
 {
 public:
 	/// <summary>
@@ -32,6 +32,23 @@ public:
 	/// <param name="playerTank">A reference to the player tank</param>
 	/// <param name="dt">update delta time</param>
 	void update(Tank const & playerTank, double dt);
+
+	/// <summary>
+	/// @brief Checks for collision between the AI and player tanks.
+	/// </summary>
+	/// <param name="player">The player tank instance</param>
+	/// <returns>True if collision detected between AI and player tanks.</returns>
+	bool collidesWithPlayer(Tank const& playerTank) const;
+
+	/// <summary>
+	/// @brief Returns a reference to our base sprite
+	/// </summary>
+	sf::Sprite& getSprite() { return m_tankBase; }
+
+	/// <summary>
+	/// 
+	/// </summary>
+	void hit() override;
 
 	/// <summary>
 	/// @brief Draws the tank base and turret.
@@ -83,14 +100,6 @@ private:
 	/// </summary>
 	/// <returns></returns>
 	const sf::CircleShape findMostThreateningObstacle();
-
-	/// <summary>
-	/// @brief Checks for collision between the AI and player tanks.
-	///
-	/// </summary>
-	/// <param name="player">The player tank instance</param>
-	/// <returns>True if collision detected between AI and player tanks.</returns>
-	bool collidesWithPlayer(Tank const& playerTank) const;
 
 	/// <summary>
 	/// 

@@ -148,6 +148,11 @@ private:
 	/// </summary>
 	void drawGameOverScreen();
 
+	/// <summary>
+	/// @brief Ends the game, upstates highscores
+	/// </summary>
+	void gameOver();
+
 	// Keep track of the state of the game
 	GameState m_gameState{ GameState::Loading };
 

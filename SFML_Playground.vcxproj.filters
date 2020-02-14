@@ -78,14 +78,14 @@
     <ClInclude Include="include\CellResolution.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\TankAI.h">
-      <Filter>Header Files\Tank</Filter>
-    </ClInclude>
     <ClInclude Include="include\GameState.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\HUD.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\TankAI.h">
+      <Filter>Header Files\GameObjects</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -125,11 +125,11 @@
     <ClCompile Include="src\CellResolution.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\TankAI.cpp">
-      <Filter>Source Files\Tank</Filter>
-    </ClCompile>
     <ClCompile Include="src\HUD.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TankAI.cpp">
+      <Filter>Source Files\GameObjects</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -13,6 +13,9 @@
 #include "Obstacle.h"
 #include "Target.h"
 
+// Forward reference
+class TankAi;
+
 /// <summary>
 /// @brief A simple tank controller.
 /// 
@@ -28,7 +31,10 @@ public:
 /// </summary>
 /// <param name="texture">A reference to the sprite sheet texture</param>
 ///< param name="texture">A reference to the container of wall sprites</param>
-	Tank(sf::Texture const & t_texture, std::map<int, std::list<GameObject*>>& t_obstacleMap, std::vector<Target>& t_targetVector);
+	Tank(sf::Texture const & t_texture, 
+		std::map<int, std::list<GameObject*>>& t_obstacleMap, 
+		std::vector<Target>& t_targetVector,
+		TankAi& t_enemyTank);
 
 	inline sf::Vector2f position() const { return m_tankBase.getPosition(); }
 
@@ -203,6 +209,10 @@ private:
 	std::vector<Target>& ref_targets;
 	std::vector<GameObject*> m_targets;
 
+	// A reference to the container of enemy tanks
+	TankAi& ref_enemyTank;
+	std::vector<GameObject*> m_enemyTanks;
+
 	// ####################################
 
 
@@ -259,3 +269,5 @@ private:
 
 	// ####################################
 };
+
+#include "TankAI.h"
