@@ -63,46 +63,45 @@ public:
 	/// </summary>
 	void init(sf::Vector2f position);
 
-	enum class AiType
+	enum class AIState
 	{
-		AI_ID_NONE,
-		AI_ID_SEEK_SHOOT_AT_PLAYER
-	};
+
+	} m_currentState;
 
 private:
 
 	/// <summary>
-	/// 
+	/// @brief Setup the bounding box and origin of our base and turret sprites
 	/// </summary>
 	void initSprites();
 
 	/// <summary>
-	/// 
+	/// @brief Updates our position and calculates our net steering force
 	/// </summary>
-	/// <param name="dt"></param>
+	/// <param name="dt">Time since last frame</param>
 	void updateMovement(double dt);
 
 	/// <summary>
-	/// 
+	/// @brief Finds a vector along which we must travel to get to the player
 	/// </summary>
-	/// <param name="playerPosition"></param>
-	/// <returns></returns>
+	/// <param name="playerPosition">Current position of the player</param>
+	/// <returns>Steering force which will guide us to the player</returns>
 	sf::Vector2f seek(sf::Vector2f playerPosition) const;
 
 	/// <summary>
-	/// 
+	/// @brief Looks ahead for obstacles that we're going to it
 	/// </summary>
-	/// <returns></returns>
+	/// <returns>A steering force which will prevent us from hitting some obstacle</returns>
 	sf::Vector2f collisionAvoidance();
 
 	/// <summary>
-	/// 
+	/// @brief Identifies which obstacle is the most immediate threat to us (I.e., we're about to hit it)
 	/// </summary>
-	/// <returns></returns>
+	/// <returns>Bounding circle of the obstacle</returns>
 	const sf::CircleShape findMostThreateningObstacle();
 
 	/// <summary>
-	/// 
+	/// @brief Updates which game objects are in our local area (spatial partitioning code)
 	/// </summary>
 	void updateGameObjects();
 
