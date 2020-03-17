@@ -65,8 +65,9 @@ public:
 
 	enum class AIState
 	{
-
-	} m_currentState;
+		PATROL_MAP,
+		ATTACK_PLAYER
+	} m_currentState{ AIState::PATROL_MAP };
 
 private:
 
