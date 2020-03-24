@@ -113,6 +113,11 @@ private:
 	bool checkWallCollision();
 
 	/// <summary>
+	/// @brief Checks for collisions between the tank and the targets.
+	/// </summary>
+	void checkTargetCollision();
+
+	/// <summary>
 	/// @brief Stops the tank if moving and applies a small increase in speed in the opposite direction of travel.
 	/// - If the tank speed is currently 0, the rotation is set to a value that is less than the previous rotation value
 	///   (scenario: tank is stopped and rotates into a wall, so it gets rotated towards the opposite direction).
@@ -140,7 +145,7 @@ private:
 	void initParticles();
 
 	/// <summary>
-	/// 
+	/// @brief Updates the game objects that are in our current grid space (spacially partitioned)
 	/// </summary>
 	void updateGameObjects();
 

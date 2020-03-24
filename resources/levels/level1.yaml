@@ -33,6 +33,10 @@ targets:
      position: {x: 1100, y: 100, randomOffset: 40}
    - type: bullseye
      position: {x: 900, y: 250, randomOffset: 40}
+   - type: bullseye
+     position: {x: 500, y: 500, randomOffset: 40}
+   - type: bullseye
+     position: {x: 700, y: 850, randomOffset: 40}
 obstacles: 
    - type: wall
      position: {x: 100, y: 660}

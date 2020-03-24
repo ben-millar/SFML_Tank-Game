@@ -65,6 +65,22 @@ bool Tank::checkWallCollision()
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
+void Tank::checkTargetCollision()
+{
+	for (GameObject* t : m_targets)
+	{
+		sf::FloatRect bounds{ t->getSprite().getGlobalBounds() };
+
+		if (m_tankBase.getGlobalBounds().intersects(bounds) ||
+			m_turret.getGlobalBounds().intersects(bounds))
+		{
+			t->hit();
+		}
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+
 void Tank::deflect()
 {
 	// In case tank was rotating.
@@ -256,7 +272,7 @@ void Tank::projectileImpact(sf::Vector2f t_impactPos)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
-/// 
+
 void Tank::impactSmoke(sf::Vector2f t_impactPos)
 {
 	std::cout << "I'm making smoke!" << std::endl;
@@ -311,6 +327,8 @@ void Tank::update(sf::Time dt)
 	{
 		m_enableRotation = true;
 	}
+
+	checkTargetCollision();
 
 	// keep track of previous speed
 	m_previousSpeed = m_speed;
