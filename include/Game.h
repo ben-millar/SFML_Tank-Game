@@ -79,11 +79,6 @@ private:
 	void init();
 
 	/// <summary>
-	/// @brief Take in and handle console window input
-	/// </summary>
-	void processConsole();
-
-	/// <summary>
 	/// @brief Pull our wall data from file and assign it to our obstacles
 	/// </summary>
 	void generateWalls();
@@ -102,6 +97,13 @@ private:
 	/// @brief Checks if any active targets have been hit
 	/// </summary>
 	void checkTargetsHit();
+
+	/// <summary>
+	/// @brief Calculates a score based on how long the player took to get a target
+	/// </summary>
+	/// <param name="t_timeToHit">Time between target appearing and being hit/collected</param>
+	/// <returns>Target score to add to total score</returns>
+	int calculateScore(sf::Time t_timeToHit);
 
 	/// <summary>
 	/// @brief Shakes the sf::view based off our trauma variable
@@ -127,11 +129,6 @@ private:
 	/// Poll SF keyboard to check current state of keys
 	/// </summary>
 	void handleKeyInput();
-
-	/// <summary>
-	/// @brief Draws our targets to the screen
-	/// </summary>
-	void drawTargets();
 
 	/// <summary>
 	/// @brief Draw our time/score/accuracy
@@ -170,12 +167,9 @@ private:
 
 	// keeps track of game time
 	thor::StopWatch m_gameClock;
-	sf::Time m_maxGameTime{ sf::seconds(60.0f) };
 
-	
-	// keeps track of target timing
+	// Track how long the player took to get an obstacle
 	thor::StopWatch m_targetClock;
-	sf::Time m_targetDuration{ sf::seconds(5.0f) };
 
 	// background sprite
 	sf::Texture m_bgTexture;
@@ -188,10 +182,6 @@ private:
 	std::vector<sf::Sprite> m_allTargets;
 	std::vector<Target> m_activeTargets;
 	int m_targetIndex{ 0 }; // track which target is active
-
-	// visual representation of how long a given target has left on the screen
-	sf::RectangleShape m_targetLoadingBar;
-	float const MAX_BAR_WIDTH{ 80.0f };
 
 	// A texture for the spritesheet
 	sf::Texture m_spriteSheetTexture;

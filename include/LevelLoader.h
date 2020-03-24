@@ -14,7 +14,7 @@ struct ObstacleData
 {
 	std::string m_type;
 	sf::Vector2f m_position;
-	double m_rotation;
+	float m_rotation;
 };
 
 /// <summary>

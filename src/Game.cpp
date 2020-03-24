@@ -44,10 +44,8 @@ Game::Game()
 	// set state to GamePlay
 	m_gameState = GameState::GamePlay;
 
-	m_targetLoadingBar.setFillColor(sf::Color::Red);
-	m_targetLoadingBar.setSize({ 50.0f,10.0f });
-
 	m_deltaScoreClock.start();
+	m_targetClock.start();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -164,7 +162,6 @@ void Game::init()
 {
 	// Restart game clocks
 	m_gameClock.restart();
-	m_targetClock.restart();
 
 	// Reset trauma/screenshake variable
 	m_trauma = 0.0f;
@@ -219,8 +216,8 @@ void Game::generateTargets()
 		sprite.setOrigin(targetRect.width / 2.0f, targetRect.height / 2.0f);
 		sprite.setPosition(target.m_position);
 
-		float offsetX = rand() % target.m_randomOffset.x;
-		float offsetY = rand() % target.m_randomOffset.y;
+		float offsetX = static_cast<float>(rand() % target.m_randomOffset.x);
+		float offsetY = static_cast<float>(rand() % target.m_randomOffset.y);
 
 		sprite.move({ offsetX, offsetY });
 
@@ -332,17 +329,11 @@ void Game::processGameEvents(sf::Event& event)
 			{
 				m_gameState = GameState::Paused;
 				m_gameClock.stop();
-				m_targetClock.stop();
 			}
 
 			if (sf::Keyboard::C == event.key.code)
 			{
 				m_tank.toggleTurretFree();
-			}
-
-			if (sf::Keyboard::Num1 == event.key.code)
-			{
-				m_maxGameTime = sf::seconds(1.0f);
 			}
 		}
 	}
@@ -355,7 +346,6 @@ void Game::processGameEvents(sf::Event& event)
 			{
 				m_gameState = GameState::GamePlay;
 				m_gameClock.start();
-				m_targetClock.start();
 			}
 		}
 	}
@@ -367,7 +357,6 @@ void Game::processGameEvents(sf::Event& event)
 			if (sf::Keyboard::R == event.key.code)
 			{
 				init();
-				m_maxGameTime = sf::seconds(60.0f);
 				m_gameState = GameState::GamePlay;
 			}
 		}
@@ -407,8 +396,8 @@ void Game::handleKeyInput()
 
 void Game::update(sf::Time dt)
 {
-	// if we've hit our maximum game time, set gamestate to GameOver
-	if (m_gameClock.getElapsedTime() > m_maxGameTime)
+
+	if (m_targetsHit >= 10)
 	{
 		gameOver();
 	}
@@ -428,11 +417,6 @@ void Game::update(sf::Time dt)
 		if (m_aiTank.collidesWithPlayer(m_tank))
 		{
 			gameOver();
-		}
-
-		if (m_targetClock.getElapsedTime() > m_targetDuration)
-		{
-			nextTarget();
 		}
 
 		checkTargetsHit();
@@ -471,15 +455,18 @@ void Game::checkTargetsHit()
 	{
 		if (t.isHit())
 		{
-			m_targetsHit++;
-			m_score += 50.0f;
+			// How long did it take the player to hit the targ4t?
+			sf::Time targetTime{ m_targetClock.getElapsedTime() };
+			m_targetClock.restart();
 
-			// Add remaining target time to our total time
-			sf::Time addedTime = m_targetDuration - m_targetClock.getElapsedTime();
-			m_targetDuration = sf::seconds(5.0f) + (addedTime * 0.5f);
+			m_targetsHit++;
+
+			int deltaScore{ calculateScore(targetTime) };
+			m_score += deltaScore;
+			
 			t.reset();
 
-			m_deltaScoreText.setString("+50");
+			m_deltaScoreText.setString("+" + std::to_string(deltaScore));
 			m_deltaScoreText.setPosition(t.getSprite().getPosition());
 
 			m_deltaScoreClock.restart();
@@ -487,6 +474,31 @@ void Game::checkTargetsHit()
 			nextTarget();
 		}
 	}
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+
+int Game::calculateScore(sf::Time t_timeToHit)
+{
+	// Maximum score it's possible to get per target
+	int maxScore{ 1000 };
+
+	// Minimum score it's possible to get for a target
+	int minScore{ 100 };
+	
+	// Time at which score will plateau
+	sf::Time lowestScoreTime{ sf::seconds(20.0f) };
+
+	// What proportion of the 'max' time did we take, normalised to the range 1 - 0
+	float proportionOfTimeTaken{ 1 - (t_timeToHit.asSeconds() / lowestScoreTime.asSeconds()) };
+
+	// Square easing function; score drops off inversely proportional to the square of the time taken
+	float scoreScale{ std::pow(proportionOfTimeTaken,2) };
+	
+	int score{ static_cast<int>(maxScore * scoreScale) };
+
+	// Put a lower cap on the score
+	return (score > minScore) ? score : minScore;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -523,7 +535,7 @@ void Game::fadeDeltaScoreText()
 		// non-linear fading (when time remaining is 1, coefficient is 1. when time remaining is 0.5, coefficient is 0.25)
 		float timeCoefficient = m_deltaScoreClock.getElapsedTime() / DELTA_SCORE_TIME;
 
-		sf::Uint8 alpha = 255U * pow(timeCoefficient, 2);
+		sf::Uint8 alpha = static_cast<sf::Uint8>(255U * pow(timeCoefficient, 2));
 
 		m_deltaScoreText.setFillColor(sf::Color(255U, 255U, 0U, 255U - alpha));
 		m_deltaScoreText.setOutlineColor(sf::Color(0U, 0U, 0U, 255U - alpha));
@@ -541,9 +553,6 @@ void Game::nextTarget()
 
 	// add new target to the array
 	m_activeTargets.push_back(m_allTargets[m_targetIndex % m_allTargets.size()]);
-
-	// restart our target clock
-	m_targetClock.restart();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -569,7 +578,10 @@ void Game::render()
 			m_window.draw(i.getSprite());
 		}
 
-		drawTargets();
+		for (auto& target : m_activeTargets)
+		{
+			m_window.draw(target.getSprite());
+		}
 
 		m_tank.render(m_window);
 
@@ -598,29 +610,6 @@ void Game::render()
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
-void Game::drawTargets()
-{
-	for (auto& target : m_activeTargets)
-	{
-		// Get a ratio of remaining target time to total target time normalised to the range 0 - 1
-		float normalised = (m_targetDuration.asSeconds() - m_targetClock.getElapsedTime().asSeconds()) / m_targetDuration.asSeconds();
-
-		// non-linear. The bar will quickly deplete, and then slow as it nears the end
-		float barWidth = MAX_BAR_WIDTH * (normalised * normalised);
-
-		m_targetLoadingBar.setOrigin({ barWidth / 2.0f, 0.0f });
-		m_targetLoadingBar.setPosition(target.getSprite().getPosition().x,
-			target.getSprite().getPosition().y + 25.0f);
-
-		m_targetLoadingBar.setSize({ barWidth, 10.0f });
-
-		m_window.draw(target.getSprite());
-		m_window.draw(m_targetLoadingBar);
-	}
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////
-
 void Game::drawUI()
 {
 	m_text.setOrigin({ 0.0f,0.0f });
@@ -638,8 +627,8 @@ void Game::drawUI()
 	m_window.draw(m_text);
 
 	// Remaining Time
-	int timeRemaining = (m_maxGameTime - m_gameClock.getElapsedTime()).asSeconds();
-	m_text.setString("Time Remaining: " + std::to_string(timeRemaining));
+	//int timeRemaining = (m_maxGameTime - m_gameClock.getElapsedTime()).asSeconds();
+	//m_text.setString("Time Remaining: " + std::to_string(timeRemaining));
 
 	// Right-hand side of the screen, minus the width of our text plus a buffer of 15px
 	m_text.setPosition({ ScreenSize::s_width - (m_text.getLocalBounds().width + 15.0f), 8.0f });
