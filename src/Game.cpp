@@ -196,7 +196,7 @@ void Game::generateWalls()
 		sprite.setTextureRect(wallRect);
 		sprite.setOrigin(wallRect.width / 2.0f, wallRect.height / 2.0f);
 		sprite.setPosition(obstacle.m_position);
-		sprite.setRotation(obstacle.m_rotation);
+		sprite.setRotation(obstacle.m_baseRotation);
 
 		m_obstacles.push_back(Obstacle(sprite));
 	}

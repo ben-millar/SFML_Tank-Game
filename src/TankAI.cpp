@@ -2,40 +2,59 @@
 
 ////////////////////////////////////////////////////////////
 
-TankAi::TankAi(sf::Texture const & texture, std::map<int, std::list<GameObject*>>& t_obstacleMap)
-	: m_aiBehaviour(AiBehaviour::SEEK_PLAYER)
-	, m_texture(texture)
+TankAi::TankAi(sf::Texture const & texture, std::map<int, std::list<GameObject*>>& t_obstacleMap) :
+	  m_texture(texture)
 	, ref_obstacles(t_obstacleMap)
 	, m_steering(0, 0)
 {
 	// Initialises the tank base and turret sprites.
 	initSprites();
+
+	initVisionCone();
 }
 
 ////////////////////////////////////////////////////////////
 
-void TankAi::update(Tank const & playerTank, double dt)
+void TankAi::update(Tank const & playerTank, float dt)
 {
 	updateGameObjects();
+	updateVisionCone();
+
+	// ***** TEMP
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::R))
+	{
+		m_visionDistance += 5.0f;
+	}
+
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::F))
+	{
+		m_visionDistance -= 5.0f;
+	}
+
+	// *************
 
 	sf::Vector2f vectorToPlayer = seek(playerTank.position());
 
-	sf::Vector2f acceleration; // ADD THIS
+	// Point our gun at the player
+	m_turretRotation = thor::polarAngle(vectorToPlayer);
+	m_visionDistance = thor::length(vectorToPlayer) + 100.0f;
 
-	switch (m_aiBehaviour)
+	sf::Vector2f acceleration;
+
+	switch (m_currentState)
 	{
-	case AiBehaviour::SEEK_PLAYER:
+	case AIState::ATTACK_PLAYER:
 		m_steering += thor::unitVector(vectorToPlayer);
 		m_steering += collisionAvoidance();
 		m_steering = MathUtility::truncate(m_steering, MAX_FORCE);
 
-		acceleration = m_steering / MASS;  // ADD THIS
+		acceleration = m_steering / MASS;
 
 		//m_velocity = MathUtility::truncate(m_velocity + m_steering, MAX_SPEED);
 		m_velocity = MathUtility::truncate(m_velocity + acceleration, MAX_SPEED);
 
 		break;
-	case AiBehaviour::STOP:
+	case AIState::STOP:
 		m_velocity = sf::Vector2f(0, 0);
 		//motion->m_speed = 0;
 	default:
@@ -48,7 +67,7 @@ void TankAi::update(Tank const & playerTank, double dt)
 	// Note: we add 180 degrees below to convert the final angle into a range 0 to 359 instead of -PI to +PI
 	auto dest = atan2(-1 * m_velocity.y, -1 * m_velocity.x) / thor::Pi * 180 + 180;
 
-	auto currentRotation = m_rotation;
+	auto currentRotation = m_baseRotation;
 
 	// Find the shortest way to rotate towards the player (clockwise or anti-clockwise)
 	if (std::round(currentRotation - dest) == 0.0)
@@ -59,22 +78,22 @@ void TankAi::update(Tank const & playerTank, double dt)
 	else if ((static_cast<int>(std::round(dest - currentRotation + 360))) % 360 < 180)
 	{
 		// rotate clockwise
-		m_rotation = static_cast<int>((m_rotation) + 1) % 360;
+		m_baseRotation = static_cast<int>((m_baseRotation) + 1) % 360;
 	}
 	else
 	{
 		// rotate anti-clockwise
-		m_rotation = static_cast<int>((m_rotation) - 1) % 360;
+		m_baseRotation = static_cast<int>((m_baseRotation) - 1) % 360;
 	}
 
 
 	if (thor::length(vectorToPlayer) < MAX_SEE_AHEAD)
 	{
-		m_aiBehaviour = AiBehaviour::STOP;
+		m_currentState = AIState::STOP;
 	}
 	else
 	{
-		m_aiBehaviour = AiBehaviour::SEEK_PLAYER;
+		m_currentState = AIState::ATTACK_PLAYER;
 	}
 
 	updateMovement(dt);
@@ -87,6 +106,8 @@ void TankAi::render(sf::RenderWindow& window)
 	// TODO: Don't draw if off-screen...
 	window.draw(m_tankBase);
 	window.draw(m_turret);
+
+	window.draw(m_visionCone);
 
 	if (DEBUG_mode)
 	{
@@ -133,8 +154,8 @@ sf::Vector2f TankAi::seek(sf::Vector2f playerPosition) const
 
 sf::Vector2f TankAi::collisionAvoidance()
 {
-	auto headingRadians = thor::toRadian(m_rotation);
-	sf::Vector2f headingVector(std::cos(headingRadians) * MAX_SEE_AHEAD, std::sin(headingRadians) * MAX_SEE_AHEAD);
+	float headingRadians = static_cast<float>(thor::toRadian(m_baseRotation));
+	sf::Vector2f headingVector(std::cosf(headingRadians) * MAX_SEE_AHEAD, std::sinf(headingRadians) * MAX_SEE_AHEAD);
 	m_ahead = m_tankBase.getPosition() + headingVector;
 	m_halfAhead = m_tankBase.getPosition() + (headingVector * 0.5f);
 	const sf::CircleShape mostThreatening = findMostThreateningObstacle();
@@ -261,25 +282,84 @@ void TankAi::initSprites()
 	m_tankBase.setTexture(m_texture);
 	sf::IntRect baseRect(103, 43, 79, 43);
 	m_tankBase.setTextureRect(baseRect);
-	m_tankBase.setOrigin(baseRect.width / 2.0, baseRect.height / 2.0);
+	m_tankBase.setOrigin(baseRect.width / 2.0f, baseRect.height / 2.0f);
 
 	// Initialise the turret
 	m_turret.setTexture(m_texture);
 	sf::IntRect turretRect(122, 1, 83, 31);
 	m_turret.setTextureRect(turretRect);
-	m_turret.setOrigin(turretRect.width / 3.0, turretRect.height / 2.0);
+	m_turret.setOrigin(turretRect.width / 3.0f, turretRect.height / 2.0f);
 }
-
 
 ////////////////////////////////////////////////////////////
 
-void TankAi::updateMovement(double dt)
+void TankAi::initVisionCone()
 {
-	double speed = thor::length(m_velocity);
-	sf::Vector2f newPos(m_tankBase.getPosition().x + std::cos(MathUtility::DEG_TO_RAD  * m_rotation) * speed * dt,
-		m_tankBase.getPosition().y + std::sin(MathUtility::DEG_TO_RAD  * m_rotation) * speed * dt);
+	// Populate our vision cone with coloured vertices (two per ray)
+	for (int i = 0; i < NUM_RAYS * 2; i++)
+	{
+		m_visionCone.append(sf::Vertex({ -1.0f, -1.0f }, sf::Color::Yellow));
+	}
+}
+
+////////////////////////////////////////////////////////////
+
+void TankAi::updateMovement(float dt)
+{
+	float speed = thor::length(m_velocity);
+	sf::Vector2f newPos(m_tankBase.getPosition().x + std::cos(thor::toRadian(m_baseRotation)) * speed * dt,
+		m_tankBase.getPosition().y + std::sin(thor::toRadian(m_baseRotation)) * speed * dt);
 	m_tankBase.setPosition(newPos.x, newPos.y);
-	m_tankBase.setRotation(m_rotation);
+	m_tankBase.setRotation(m_baseRotation);
 	m_turret.setPosition(m_tankBase.getPosition());
-	m_turret.setRotation(m_rotation);
+	m_turret.setRotation(m_turretRotation);
+}
+
+////////////////////////////////////////////////////////////
+
+void TankAi::updateVisionCone()
+{
+	// Position of our turret
+	sf::Vector2f pos{ m_turret.getPosition() };
+
+	// Adjust the acuity of our ray casts
+	m_visionAcuity = std::clamp(50.0f - (m_visionDistance / 20.0f), MIN_ACUITY, MAX_ACUITY);
+
+	// Angle between each ray, preventing int division
+	m_arcPerRay = calculatePitch();
+
+	// Recalculate our vision arc, given the distance
+	m_visionArc = m_arcPerRay * NUM_RAYS;
+
+	// At what angle do we start drawing
+	float startAngle{ thor::toRadian(m_turretRotation) - m_visionArc / 2.0f };
+
+	// Initialise each ray, tracked in local coordinates (i.e., origin @ 0,0)
+	for (sf::Vector2f& ray : m_visionRayCasts)
+	{
+		ray = { m_visionDistance * cosf(startAngle), m_visionDistance * sinf(startAngle) };
+		startAngle += m_arcPerRay;
+	}
+
+	for (int i = 0; i < NUM_RAYS * 2; i++)
+	{
+		// Alternates every second loop
+		if (i % 2)
+		{
+			// This time we want integer division (1/2 = 0, 3/2 = 1 etc.)
+			m_visionCone[i].position = pos + m_visionRayCasts.at(i / 2);
+		}
+		else
+		{
+			m_visionCone[i].position = pos;
+		}
+	}
+}
+
+float TankAi::calculatePitch()
+{
+	// We split the isosceles triangle of our ray into 2 right angled triangles
+	// and determine the base angle of one given its length and arc, and double
+	// the result to get the angle of our original isosceles
+	return atanf((m_visionAcuity / 2.0f) / m_visionDistance) * 2.0f;
 }

@@ -31,7 +31,7 @@ public:
 	/// </summary>
 	/// <param name="playerTank">A reference to the player tank</param>
 	/// <param name="dt">update delta time</param>
-	void update(Tank const & playerTank, double dt);
+	void update(Tank const & playerTank, float dt);
 
 	/// <summary>
 	/// @brief Checks for collision between the AI and player tanks.
@@ -46,13 +46,12 @@ public:
 	sf::Sprite& getSprite() override { return m_tankBase; }
 
 	/// <summary>
-	/// 
+	/// @brief Called when we're hit by a projectile
 	/// </summary>
 	void hit() override;
 
 	/// <summary>
 	/// @brief Draws the tank base and turret.
-	///
 	/// </summary>
 	/// <param name="window">The SFML Render window</param>
 	void render(sf::RenderWindow & window);
@@ -66,8 +65,9 @@ public:
 	enum class AIState
 	{
 		PATROL_MAP,
-		ATTACK_PLAYER
-	} m_currentState{ AIState::PATROL_MAP };
+		ATTACK_PLAYER,
+		STOP
+	} m_currentState{ AIState::ATTACK_PLAYER };
 
 private:
 
@@ -77,10 +77,26 @@ private:
 	void initSprites();
 
 	/// <summary>
+	/// @brief Sets up the vision cone
+	/// </summary>
+	void initVisionCone();
+
+	/// <summary>
 	/// @brief Updates our position and calculates our net steering force
 	/// </summary>
 	/// <param name="dt">Time since last frame</param>
-	void updateMovement(double dt);
+	void updateMovement(float dt);
+
+	/// <summary>
+	/// @brief Updates the position of the vision cone
+	/// </summary>
+	void updateVisionCone();
+
+	/// <summary>
+	/// @brief Determines the angle between ray casts given their magnitude and arc length
+	/// </summary>
+	/// <returns>Angle between two rays</returns>
+	float calculatePitch();
 
 	/// <summary>
 	/// @brief Finds a vector along which we must travel to get to the player
@@ -124,10 +140,13 @@ private:
 	// A container of circles that represent the obstacles to avoid.
 	std::vector<sf::CircleShape> m_obstacles;
 
-	// The current rotation as applied to tank base and turret.
-	double m_rotation{ 0.0 };
+	// The current rotation in degrees as applied to tank base.
+	float m_baseRotation{ 0.0f };
 
-	const float MASS{ 5.0f };
+	// The current rotation in degrees as applied to turret.
+	float m_turretRotation{ 0.0f };
+
+	const float MASS{ 4.0f };
 
 	// Current velocity.
 	sf::Vector2f m_velocity;
@@ -153,12 +172,32 @@ private:
 	// The maximum speed for this tank.
 	float MAX_SPEED = 50.0f;
 
-	
 
-	enum class AiBehaviour
-	{
-		SEEK_PLAYER,
-		STOP,
-		RETREAT
-	} m_aiBehaviour;
+	// ##### VISION CONE #####
+
+
+	// Distance the vision cone projects out
+	float m_visionDistance{ 200.0f };
+
+	// Arc subtended by the cone (inversely related to the length)
+	float m_visionArc{ thor::Pi / 3.0f }; // 60 degrees
+
+	// Angle between each ray
+	float m_arcPerRay;
+
+	// Distance between distal ends of ray casts; vision arc will reduce at longer range to maintain this.
+	// We will also check for collisions at this interval along the ray, creating a 'net' with a 20px mesh
+	float m_visionAcuity{ 20.0f }; 
+	const float MIN_ACUITY{ 10.0f };
+	const float MAX_ACUITY{ 30.0f };
+
+	// How many ray casts we'll put out
+	static const int NUM_RAYS{ 10 };
+
+	// The actual 'rays' we're casting out, origin is tank position!
+	std::array<sf::Vector2f, NUM_RAYS> m_visionRayCasts;
+
+	// Used for drawing the ray casts on-screen.
+	// We will replace this with a convex shape
+	sf::VertexArray m_visionCone{ sf::Lines };
 };

@@ -2,11 +2,6 @@
 #include <SFML/Graphics.hpp>
 #include "GameState.h"
 
-/// <summary>
-/// @brief A basic HUD implementation.
-/// 
-/// Shows current game state only.
-/// </summary>
 
 class HUD
 {

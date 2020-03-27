@@ -230,16 +230,16 @@ private:
 
 	// ########## TANK ATTRIBUTES #########
 	
-	static constexpr double M_MAX_SPEED = 100.0;
-	static constexpr double M_MIN_SPEED = -100.0;
-	static constexpr double M_FRICTION = 0.2;
+	static constexpr float M_MAX_SPEED = 100.0f;
+	static constexpr float M_MIN_SPEED = -100.0f;
+	static constexpr float M_FRICTION = 0.2f;
 
 	// Fire clock 
 	sf::Clock m_fireClock;
 	sf::Time m_fireDelay{ sf::seconds(1.0f) };
 
 	// The tank speed.
-	double m_speed{ 0.0 };
+	float m_speed{ 0.0 };
 
 	// can our tank rotate?
 	bool m_enableRotation{ true };
@@ -248,18 +248,18 @@ private:
 	bool m_turretFree{ false };
 
 	// The current rotation as applied to tank base.
-	double m_baseRotation{ 0.0 };
-	double m_previousBaseRotation{ 0.0 };
+	float m_baseRotation{ 0.0 };
+	float m_previousBaseRotation{ 0.0 };
 
 	// The current rotation as applied to turret base.
-	double m_turretRotation{ 0.0 };
-	double m_previousTurretRotation{ 0.0 };
+	float m_turretRotation{ 0.0 };
+	float m_previousTurretRotation{ 0.0 };
 
 	// rolling storage of our last position
 	sf::Vector2f m_previousPosition{ 0.0f,0.0f };
 	
 	// rolling storage of our last speed
-	double m_previousSpeed;
+	float m_previousSpeed;
 
 
 	std::set<int> m_activeCells;

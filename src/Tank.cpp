@@ -135,9 +135,9 @@ void Tank::adjustRotation()
 
 void Tank::increaseSpeed()
 {
-	if (m_speed < (M_MAX_SPEED - 1.0))
+	if (m_speed < (M_MAX_SPEED - 1.0f))
 	{
-		m_speed += 0.6;
+		m_speed += 0.6f;
 	}
 	else
 	{
@@ -150,9 +150,9 @@ void Tank::increaseSpeed()
 
 void Tank::decreaseSpeed()
 {
-	if (m_speed > (M_MIN_SPEED + 1.0))
+	if (m_speed > (M_MIN_SPEED + 1.0f))
 	{
-		m_speed -= 0.6;
+		m_speed -= 0.6f;
 	}
 	else
 	{
@@ -186,7 +186,7 @@ void Tank::setTurretHeading(float t_heading)
 	{
 		if (m_turretFree)
 		{
-			m_turretRotation = t_heading * MathUtility::RAD_TO_DEG;
+			m_turretRotation = thor::toDegree(t_heading);
 		}
 		else
 		{
@@ -311,8 +311,8 @@ void Tank::update(sf::Time dt)
 	// keep track of previous position
 	m_previousPosition = m_tankBase.getPosition();
 
-	float deltaX = cos(MathUtility::DEG_TO_RAD * m_baseRotation) * m_speed * dt.asSeconds();
-	float deltaY = sin(MathUtility::DEG_TO_RAD * m_baseRotation) * m_speed * dt.asSeconds();
+	float deltaX = cosf(thor::toRadian(m_baseRotation)) * m_speed * dt.asSeconds();
+	float deltaY = sinf(thor::toRadian(m_baseRotation)) * m_speed * dt.asSeconds();
 	m_tankBase.move(deltaX, deltaY);
 	m_turret.move(deltaX, deltaY);
 
