@@ -105,9 +105,10 @@ void TankAi::render(sf::RenderWindow& window)
 {
 	// TODO: Don't draw if off-screen...
 	window.draw(m_tankBase);
-	window.draw(m_turret);
 
 	window.draw(m_visionCone);
+
+	window.draw(m_turret);
 
 	if (DEBUG_mode)
 	{
@@ -295,10 +296,10 @@ void TankAi::initSprites()
 
 void TankAi::initVisionCone()
 {
-	// Populate our vision cone with coloured vertices (two per ray)
-	for (int i = 0; i < NUM_RAYS * 2; i++)
+	// Populate our vision cone with coloured vertices (should be 1 more than the number of rays)
+	for (int i = 0; i <= NUM_RAYS; i++)
 	{
-		m_visionCone.append(sf::Vertex({ -1.0f, -1.0f }, sf::Color::Yellow));
+		m_visionCone.append(sf::Vertex({ -1.0f, -1.0f }, sf::Color(255,255,0,128)));
 	}
 }
 
@@ -341,18 +342,13 @@ void TankAi::updateVisionCone()
 		startAngle += m_arcPerRay;
 	}
 
-	for (int i = 0; i < NUM_RAYS * 2; i++)
+	// Set the beginning of our triangle cone
+	m_visionCone[0].position = pos;
+
+	// Set the end positions of our vertices
+	for (int i = 1; i <= NUM_RAYS; i++)
 	{
-		// Alternates every second loop
-		if (i % 2)
-		{
-			// This time we want integer division (1/2 = 0, 3/2 = 1 etc.)
-			m_visionCone[i].position = pos + m_visionRayCasts.at(i / 2);
-		}
-		else
-		{
-			m_visionCone[i].position = pos;
-		}
+			m_visionCone[i].position = pos + m_visionRayCasts.at(i-1);
 	}
 }
 

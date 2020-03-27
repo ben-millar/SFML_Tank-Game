@@ -199,5 +199,5 @@ private:
 
 	// Used for drawing the ray casts on-screen.
 	// We will replace this with a convex shape
-	sf::VertexArray m_visionCone{ sf::Lines };
+	sf::VertexArray m_visionCone{ sf::TriangleFan };
 };
