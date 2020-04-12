@@ -19,6 +19,11 @@ namespace MathUtility
 	double distance(sf::Vector2f v1, sf::Vector2f v2);
 
 	/// <summary>
+	/// @brief Given a line PQ, returns whether a point R is to the left of that line or not
+	/// </summary>
+	bool isLeft(sf::Vector2f p, sf::Vector2f q, sf::Vector2f r);
+
+	/// <summary>
 	/// @brief Returns true if either of the supplied points are inside the radius of the specified circle. 
 	/// </summary>
 	/// <param name="ahead">The ahead vector of the tank</param>
@@ -34,5 +39,4 @@ namespace MathUtility
 	/// <param name="max">The maximum length of the vector</param>
 	/// <returns>A vector whose length is not longer than the specified maximum.</returns>
 	sf::Vector2f truncate(sf::Vector2f v, float const max);
-
 }

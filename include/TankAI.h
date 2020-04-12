@@ -6,6 +6,7 @@
 #include <SFML/Graphics.hpp>
 #include <Thor/Vectors.hpp>
 #include "GameState.h"
+#include "ProjectilePool.h"
 #include <iostream>
 #include <queue>
 
@@ -22,6 +23,12 @@ public:
 	TankAi(sf::Texture const & texture, std::map<int, std::list<GameObject*>>& t_obstacleMap);
 
 	/// <summary>
+	/// @brief Gives the AI tank a vector of obstacle sprites for raycast checks
+	/// </summary>
+	/// <param name="t_obstacleSprites">Vector of sprites</param>
+	void setupObstaclePositions(std::vector<sf::Sprite> t_obstacleSprites);
+
+	/// <summary>
 	/// @brief Steers the AI tank towards the player tank avoiding obstacles along the way.
 	/// Gets a vector to the player tank and sets steering and velocity vectors towards
 	/// the player if current behaviour is seek. If behaviour is stop, the velocity vector
@@ -31,7 +38,7 @@ public:
 	/// </summary>
 	/// <param name="playerTank">A reference to the player tank</param>
 	/// <param name="dt">update delta time</param>
-	void update(Tank const & playerTank, float dt);
+	void update(Tank const & playerTank, sf::Time dt);
 
 	/// <summary>
 	/// @brief Checks for collision between the AI and player tanks.
@@ -57,7 +64,7 @@ public:
 	void render(sf::RenderWindow & window);
 
 	/// <summary>
-	/// @brief Initialises the obstacle container and sets the tank base/turret sprites to the specified position.
+	/// @brief Sets the tank base/turret sprites to the specified position.
 	/// <param name="position">An x,y position</param>
 	/// </summary>
 	void init(sf::Vector2f position);
@@ -85,7 +92,12 @@ private:
 	/// @brief Updates our position and calculates our net steering force
 	/// </summary>
 	/// <param name="dt">Time since last frame</param>
-	void updateMovement(float dt);
+	void updateMovement(sf::Time dt);
+
+	/// <summary>
+	/// @brief Checks which obstacle corners could be within our vision cone
+	/// </summary>
+	void prioritiseCorners();
 
 	/// <summary>
 	/// @brief Updates the position of the vision cone
@@ -104,6 +116,11 @@ private:
 	/// <param name="playerPosition">Current position of the player</param>
 	/// <returns>Steering force which will guide us to the player</returns>
 	sf::Vector2f seek(sf::Vector2f playerPosition) const;
+
+	/// <summary>
+	/// @brief Fires a projectile in the direction of the turret
+	/// </summary>
+	void fire();
 
 	/// <summary>
 	/// @brief Looks ahead for obstacles that we're going to it
@@ -134,17 +151,27 @@ private:
 	// A sprite for the turret
 	sf::Sprite m_turret;
 
+	// Projectile pool for firing
+	ProjectilePool m_projectilePool;
+
 	// A reference to the container of wall sprites.
-	std::map<int, std::list<GameObject*>>& ref_obstacles;
+	std::map<int, std::list<GameObject*>>& ref_obstacleMap;
 
 	// A container of circles that represent the obstacles to avoid.
-	std::vector<sf::CircleShape> m_obstacles;
+	std::vector<sf::CircleShape> m_obstacleColliders;
+
+	// Positions on-screen of each corner of each obstacle
+	std::vector<sf::Vector2f> m_obstacleCorners;
 
 	// The current rotation in degrees as applied to tank base.
 	float m_baseRotation{ 0.0f };
 
 	// The current rotation in degrees as applied to turret.
 	float m_turretRotation{ 0.0f };
+
+	// Throttle the tank's fire rate to one shot per delay time
+	sf::Clock m_fireClock;
+	sf::Time m_fireDelay{ sf::seconds(2.0f) };
 
 	const float MASS{ 4.0f };
 

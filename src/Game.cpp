@@ -40,6 +40,16 @@ Game::Game()
 	init();
 
 	m_aiTank.init(m_level.m_aiTank.m_position.at(0));
+	
+	// Send obstacle sprites to the AI tank for vision cone checking
+	std::vector<sf::Sprite> obstacleSprites;
+
+	for (Obstacle obs : m_obstacles)
+	{
+		obstacleSprites.push_back(obs.getSprite());
+	}
+
+	m_aiTank.setupObstaclePositions(obstacleSprites);
 
 	// set state to GamePlay
 	m_gameState = GameState::GamePlay;
@@ -423,7 +433,7 @@ void Game::update(sf::Time dt)
 
 		m_tank.update(dt);
 
-		m_aiTank.update(m_tank, dt.asSeconds());
+		m_aiTank.update(m_tank, dt);
 
 		// Don't divide by 0!
 		m_accuracy = (m_shotsFired == 0) ? 0.0f : m_targetsHit / static_cast<float>(m_shotsFired);

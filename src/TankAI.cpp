@@ -4,7 +4,7 @@
 
 TankAi::TankAi(sf::Texture const & texture, std::map<int, std::list<GameObject*>>& t_obstacleMap) :
 	  m_texture(texture)
-	, ref_obstacles(t_obstacleMap)
+	, ref_obstacleMap(t_obstacleMap)
 	, m_steering(0, 0)
 {
 	// Initialises the tank base and turret sprites.
@@ -15,23 +15,32 @@ TankAi::TankAi(sf::Texture const & texture, std::map<int, std::list<GameObject*>
 
 ////////////////////////////////////////////////////////////
 
-void TankAi::update(Tank const & playerTank, float dt)
+void TankAi::setupObstaclePositions(std::vector<sf::Sprite> t_obstacleSprites)
+{
+	// For each sprite
+	for (sf::Sprite s : t_obstacleSprites)
+	{
+		// Get the corners
+		std::array<sf::Vector2f, 4> corners{ CellResolution::getCorners(s) };
+
+		// And push into our vector
+		for (sf::Vector2f pos : corners)
+		{
+			m_obstacleCorners.push_back(pos);
+		}
+	}
+}
+
+////////////////////////////////////////////////////////////
+
+void TankAi::update(Tank const & playerTank, sf::Time dt)
 {
 	updateGameObjects();
 	updateVisionCone();
+	
+	m_projectilePool.update(dt);
 
-	// ***** TEMP
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::R))
-	{
-		m_visionDistance += 5.0f;
-	}
-
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::F))
-	{
-		m_visionDistance -= 5.0f;
-	}
-
-	// *************
+	prioritiseCorners();
 
 	sf::Vector2f vectorToPlayer = seek(playerTank.position());
 
@@ -50,8 +59,13 @@ void TankAi::update(Tank const & playerTank, float dt)
 
 		acceleration = m_steering / MASS;
 
-		//m_velocity = MathUtility::truncate(m_velocity + m_steering, MAX_SPEED);
 		m_velocity = MathUtility::truncate(m_velocity + acceleration, MAX_SPEED);
+
+		if (m_fireClock.getElapsedTime() >= m_fireDelay)
+		{
+			fire();
+			m_fireClock.restart();
+		}
 
 		break;
 	case AIState::STOP:
@@ -103,6 +117,8 @@ void TankAi::update(Tank const & playerTank, float dt)
 
 void TankAi::render(sf::RenderWindow& window)
 {
+	m_projectilePool.render(window);
+
 	// TODO: Don't draw if off-screen...
 	window.draw(m_tankBase);
 
@@ -112,7 +128,7 @@ void TankAi::render(sf::RenderWindow& window)
 
 	if (DEBUG_mode)
 	{
-		for (sf::CircleShape& c : m_obstacles)
+		for (sf::CircleShape& c : m_obstacleColliders)
 		{
 			window.draw(c);
 		}
@@ -153,6 +169,20 @@ sf::Vector2f TankAi::seek(sf::Vector2f playerPosition) const
 
 ////////////////////////////////////////////////////////////
 
+void TankAi::fire()
+{
+		sf::Vector2f targetVector{
+			static_cast<float>(cos(MathUtility::DEG_TO_RAD * m_turretRotation)),
+			static_cast<float>(sin(MathUtility::DEG_TO_RAD * m_turretRotation))
+		};
+
+		m_projectilePool.create(m_turret.getPosition(), targetVector, 180);
+
+		//muzzleFlash(targetVector);
+}
+
+////////////////////////////////////////////////////////////
+
 sf::Vector2f TankAi::collisionAvoidance()
 {
 	float headingRadians = static_cast<float>(thor::toRadian(m_baseRotation));
@@ -182,11 +212,11 @@ const sf::CircleShape TankAi::findMostThreateningObstacle()
 {
 	sf::CircleShape mostThreatening;
 	
-	if (m_obstacles.size())
+	if (m_obstacleColliders.size())
 	{
-		mostThreatening = m_obstacles.at(0);
+		mostThreatening = m_obstacleColliders.at(0);
 
-		for (sf::CircleShape c : m_obstacles)
+		for (sf::CircleShape c : m_obstacleColliders)
 		{
 			// if this object is closer than our most threatening
 			if (thor::length(c.getPosition() - m_tankBase.getPosition()) < 
@@ -227,7 +257,7 @@ void TankAi::hit()
 void TankAi::updateGameObjects()
 {
 	// clear our array of circles
-	m_obstacles.clear();
+	m_obstacleColliders.clear();
 
 	// work out which cells we occupy
 	m_activeCells.clear();
@@ -260,16 +290,16 @@ void TankAi::updateGameObjects()
 	for (int i : m_activeCells)
 	{
 		// will return 0 if key not in map
-		if (ref_obstacles.count(i))
+		if (ref_obstacleMap.count(i))
 		{
-			for (GameObject* obj : ref_obstacles.at(i))
+			for (GameObject* obj : ref_obstacleMap.at(i))
 			{
 				sf::CircleShape circle(obj->getSprite().getTextureRect().width * 1.5f);
 				circle.setOrigin(circle.getRadius(), circle.getRadius());
 				circle.setPosition(obj->getSprite().getPosition());
 
 				circle.setFillColor(sf::Color(255, 255, 255, 128));
-				m_obstacles.push_back(circle);
+				m_obstacleColliders.push_back(circle);
 			}
 		}
 	}
@@ -290,6 +320,8 @@ void TankAi::initSprites()
 	sf::IntRect turretRect(122, 1, 83, 31);
 	m_turret.setTextureRect(turretRect);
 	m_turret.setOrigin(turretRect.width / 3.0f, turretRect.height / 2.0f);
+
+	m_projectilePool.setTexture(m_texture);
 }
 
 ////////////////////////////////////////////////////////////
@@ -305,15 +337,52 @@ void TankAi::initVisionCone()
 
 ////////////////////////////////////////////////////////////
 
-void TankAi::updateMovement(float dt)
+void TankAi::updateMovement(sf::Time dt)
 {
 	float speed = thor::length(m_velocity);
-	sf::Vector2f newPos(m_tankBase.getPosition().x + std::cos(thor::toRadian(m_baseRotation)) * speed * dt,
-		m_tankBase.getPosition().y + std::sin(thor::toRadian(m_baseRotation)) * speed * dt);
+	sf::Vector2f newPos(m_tankBase.getPosition().x + std::cos(thor::toRadian(m_baseRotation)) * speed * dt.asSeconds(),
+		m_tankBase.getPosition().y + std::sin(thor::toRadian(m_baseRotation)) * speed * dt.asSeconds());
 	m_tankBase.setPosition(newPos.x, newPos.y);
 	m_tankBase.setRotation(m_baseRotation);
 	m_turret.setPosition(m_tankBase.getPosition());
 	m_turret.setRotation(m_turretRotation);
+}
+
+////////////////////////////////////////////////////////////
+
+void TankAi::prioritiseCorners()
+{
+	std::vector<sf::Vector2f> priority;
+	sf::Vector2f pos{ m_turret.getPosition() };
+
+	for (sf::Vector2f corner : m_obstacleCorners)
+	{
+		// If it's within the range of our vision cone
+		if (thor::squaredLength(corner - pos) < std::pow(m_visionDistance, 2))
+		{
+			// If it's to the left of our last ray
+			if (MathUtility::isLeft(pos + m_visionRayCasts[NUM_RAYS - 1], pos, corner))
+			{
+				// If it's to the right of our first ray
+				if (!MathUtility::isLeft(pos + m_visionRayCasts[0], pos, corner))
+				{
+					// then it's in our vision cone
+					priority.push_back(corner);
+				}
+			}	
+		}
+	}
+
+	std::cout << priority.size() << std::endl;
+
+	m_visionCone.clear();
+
+	m_visionCone.append(sf::Vertex(pos, sf::Color(255, 255, 0, 128)));
+
+	for (sf::Vector2f corner : priority)
+	{
+		m_visionCone.append(sf::Vertex(corner, sf::Color(255, 255, 0, 128)));
+	}
 }
 
 ////////////////////////////////////////////////////////////
@@ -342,14 +411,14 @@ void TankAi::updateVisionCone()
 		startAngle += m_arcPerRay;
 	}
 
-	// Set the beginning of our triangle cone
-	m_visionCone[0].position = pos;
+	//// Set the beginning of our triangle cone
+	//m_visionCone[0].position = pos;
 
-	// Set the end positions of our vertices
-	for (int i = 1; i <= NUM_RAYS; i++)
-	{
-			m_visionCone[i].position = pos + m_visionRayCasts.at(i-1);
-	}
+	//// Set the end positions of our vertices
+	//for (int i = 1; i <= NUM_RAYS; i++)
+	//{
+	//		m_visionCone[i].position = pos + m_visionRayCasts.at(i-1);
+	//}
 }
 
 float TankAi::calculatePitch()
