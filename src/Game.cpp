@@ -8,7 +8,7 @@ static const sf::Time MS_PER_UPDATE = sf::seconds(1.0f/60.0f);
 ////////////////////////////////////////////////////////////
 Game::Game()
 	: m_window(sf::VideoMode(ScreenSize::s_width, ScreenSize::s_height, 32), "SFML Playground", sf::Style::Default),
-	m_tank(m_spriteSheetTexture, m_spatialMap, m_activeTargets, m_aiTank),
+	m_tank(m_spriteSheetTexture, m_spatialMap, m_activeTargets, m_aiTank, m_trauma),
 	m_aiTank(m_spriteSheetTexture, m_spatialMap),
 	m_HUD(m_font)
 {
@@ -310,29 +310,8 @@ void Game::processGameEvents(sf::Event& event)
 	// GAMEPLAY
 	if (GameState::GamePlay == m_gameState)
 	{
-		if (sf::Event::MouseButtonPressed == event.type)
-		{
-			if (sf::Mouse::Left == event.mouseButton.button)
-			{
-				/*if (m_tank.fire())
-				{
-					(m_trauma < 0.5f) ? m_trauma += 0.5f : m_trauma = 1.0f;
-					m_shotsFired++;
-				}*/
-			}
-		}
-
 		if (sf::Event::KeyPressed == event.type)
 		{
-			if (sf::Keyboard::Space == event.key.code)
-			{
-				/*if (m_tank.fire())
-				{
-					(m_trauma < 0.5f) ? m_trauma += 0.5f : m_trauma = 1.0f;
-					m_shotsFired++;
-				}*/
-			}
-
 			if (sf::Keyboard::P == event.key.code)
 			{
 				m_gameState = GameState::Paused;

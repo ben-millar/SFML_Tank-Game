@@ -2,11 +2,12 @@
 #include "MathUtility.h"
 #include <iostream>
 
-Tank::Tank(sf::Texture const& t_texture, std::map<int, std::list<GameObject*>>& t_obstacleMap, std::vector<Target>& t_targetVector, TankAi& t_enemyTank)
+Tank::Tank(sf::Texture const& t_texture, std::map<int, std::list<GameObject*>>& t_obstacleMap, std::vector<Target>& t_targetVector, TankAi& t_enemyTank, float& t_screenShake)
 	: m_texture(t_texture),
 	ref_obstacles(t_obstacleMap),
 	ref_targets(t_targetVector),
-	ref_enemyTank(t_enemyTank)
+	ref_enemyTank(t_enemyTank),
+	m_screenShake(t_screenShake)
 {
 	initSprites();
 
@@ -199,6 +200,8 @@ void Tank::toggleTurretFree()
 void Tank::hit()
 {
 	std::cout << "I'm hit!" << std::endl;
+
+	(m_screenShake < 0.5f) ? m_screenShake += 0.5f : m_screenShake = 1.0f;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////

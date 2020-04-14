@@ -34,7 +34,8 @@ public:
 	Tank(sf::Texture const & t_texture, 
 		std::map<int, std::list<GameObject*>>& t_obstacleMap, 
 		std::vector<Target>& t_targetVector,
-		TankAi& t_enemyTank);
+		TankAi& t_enemyTank,
+		float& t_screenShake);
 
 	inline sf::Vector2f position() const { return m_tankBase.getPosition(); }
 
@@ -206,12 +207,12 @@ private:
 	// rolling storage of our last speed
 	float m_previousSpeed;
 
-
 	std::set<int> m_activeCells;
 
 	// ####################################
 
-
+	// Linked to the game trauma variable, controls amount of screenshake
+	float& m_screenShake;
 
 	// ############# DEBUGGING ############
 
