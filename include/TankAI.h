@@ -72,9 +72,9 @@ public:
 	enum class AIState
 	{
 		PATROL_MAP,
-		ATTACK_PLAYER,
-		STOP
-	} m_currentState{ AIState::ATTACK_PLAYER };
+		FOLLOW_PLAYER,
+		ATTACK_PLAYER
+	} m_currentState{ AIState::FOLLOW_PLAYER };
 
 private:
 
@@ -93,6 +93,32 @@ private:
 	/// </summary>
 	/// <param name="dt">Time since last frame</param>
 	void updateMovement(sf::Time dt);
+
+	/// <summary>
+	/// @brief Aim our turret at the player position
+	/// </summary>
+	/// <param name="t_playerPos">Position of the player</param>
+	void aimTurret(sf::Vector2f t_playerPos);
+
+	/// <summary>
+	/// @brief Calculate our steering vector
+	/// </summary>
+	void steer();
+
+	/// <summary>
+	/// @brief Determine which way we should be facing given our movement vector
+	/// </summary>
+	void determineHeading();
+
+	/// <summary>
+	/// @brief Calculate a steering vector such that we follow the player
+	/// </summary>
+	void followPlayer(sf::Vector2f t_playerPos);
+
+	/// <summary>
+	/// @brief Roam around the map searching for the player
+	/// </summary>
+	void search();
 
 	/// <summary>
 	/// @brief Checks which obstacle corners could be within our vision cone
@@ -168,6 +194,9 @@ private:
 
 	// The current rotation in degrees as applied to turret.
 	float m_turretRotation{ 0.0f };
+
+	// How far our turret can turn per game tick
+	const float TURN_RATE{ 0.1f };
 
 	// Throttle the tank's fire rate to one shot per delay time
 	sf::Clock m_fireClock;
