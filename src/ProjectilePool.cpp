@@ -113,7 +113,7 @@ std::vector<sf::Vector2f> ProjectilePool::getActiveProjectilePos()
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
-void ProjectilePool::checkCollisions(std::vector<GameObject*>& t_gameObjVector, std::function<void(Tank*, sf::Vector2f)> t_smokeFunc, Tank* t_tank)
+void ProjectilePool::checkCollisions(std::vector<GameObject*>& t_gameObjVector, std::function<void(TankAi*, sf::Vector2f)> t_smokeFunc, TankAi* t_tank)
 {
 	for (Projectile& p : m_projectiles)
 	{

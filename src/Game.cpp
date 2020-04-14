@@ -179,9 +179,7 @@ void Game::init()
 	// Reset score counters
 	m_targetIndex = 0;
 	m_targetsHit = 0;
-	m_shotsFired = 0;
 	m_score = 0;
-	m_accuracy = 0.0f;
 
 	// Clear targets array and push back first target
 	m_activeTargets.clear();
@@ -316,11 +314,11 @@ void Game::processGameEvents(sf::Event& event)
 		{
 			if (sf::Mouse::Left == event.mouseButton.button)
 			{
-				if (m_tank.fire())
+				/*if (m_tank.fire())
 				{
 					(m_trauma < 0.5f) ? m_trauma += 0.5f : m_trauma = 1.0f;
 					m_shotsFired++;
-				}
+				}*/
 			}
 		}
 
@@ -328,11 +326,11 @@ void Game::processGameEvents(sf::Event& event)
 		{
 			if (sf::Keyboard::Space == event.key.code)
 			{
-				if (m_tank.fire())
+				/*if (m_tank.fire())
 				{
 					(m_trauma < 0.5f) ? m_trauma += 0.5f : m_trauma = 1.0f;
 					m_shotsFired++;
-				}
+				}*/
 			}
 
 			if (sf::Keyboard::P == event.key.code)
@@ -434,9 +432,6 @@ void Game::update(sf::Time dt)
 		m_tank.update(dt);
 
 		m_aiTank.update(m_tank, dt);
-
-		// Don't divide by 0!
-		m_accuracy = (m_shotsFired == 0) ? 0.0f : m_targetsHit / static_cast<float>(m_shotsFired);
 
 		// reduce trauma linearly to zero
 		(m_trauma > 0.005f) ? m_trauma -= 0.005f : m_trauma = 0.0f;
@@ -631,15 +626,6 @@ void Game::drawUI()
 	m_text.setString("Score: " + std::to_string(m_score));
 	m_window.draw(m_text);
 
-	// Accuracy
-	m_text.setPosition({ 10.0f,28.0f });
-	m_text.setString("Accuracy: " + std::to_string(static_cast<int>(m_accuracy * 100.0f)) + "%");
-	m_window.draw(m_text);
-
-	// Remaining Time
-	//int timeRemaining = (m_maxGameTime - m_gameClock.getElapsedTime()).asSeconds();
-	//m_text.setString("Time Remaining: " + std::to_string(timeRemaining));
-
 	// Right-hand side of the screen, minus the width of our text plus a buffer of 15px
 	m_text.setPosition({ ScreenSize::s_width - (m_text.getLocalBounds().width + 15.0f), 8.0f });
 	m_window.draw(m_text);
@@ -685,24 +671,10 @@ void Game::drawGameOverScreen()
 
 	m_window.draw(m_text);
 
-	// Accuracy
-	m_text.setString("Accuracy: " + std::to_string(static_cast<int>(m_accuracy * 100.0f)) + "%");
-	m_text.setOrigin(m_text.getLocalBounds().width, 0.0f);
-	m_text.setPosition({ (ScreenSize::s_width / 2.0f) - 100.0f, 400.0f });
-
-	m_window.draw(m_text);
-
 	// HighScore
 	m_text.setString("Highscore: " + std::to_string(m_highscore));
 	m_text.setOrigin(0.0f, 0.0f);
 	m_text.setPosition({ (ScreenSize::s_width / 2.0f) - 60.0f, 350.0f });
-
-	m_window.draw(m_text);
-
-	// Best Accuracy
-	m_text.setString("Best Accuracy: " + std::to_string(static_cast<int>(m_bestAccuracy * 100.0f)) + "%");
-	m_text.setOrigin(0.0f, 0.0f);
-	m_text.setPosition({ (ScreenSize::s_width / 2.0f) - 60.0f, 400.0f });
 
 	m_window.draw(m_text);
 
@@ -719,7 +691,6 @@ void Game::gameOver()
 	m_gameState = GameState::GameOver;
 
 	if (m_score > m_highscore) m_highscore = m_score;
-	if (m_accuracy > m_bestAccuracy) m_bestAccuracy = m_accuracy;
 
 	m_tank.reset();
 	m_aiTank.init({ 720.0f,450.0f });

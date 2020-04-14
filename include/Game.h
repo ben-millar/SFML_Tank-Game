@@ -198,14 +198,14 @@ private:
 
 	// Player Statistics
 	int m_score{ 0 };
-	float m_accuracy{ 0.0f };
+	//float m_accuracy{ 0.0f };
 
 	// highscores
 	int m_highscore{ 0 };
-	float m_bestAccuracy{ 0.0f };
+	//float m_bestAccuracy{ 0.0f };
 
 	// Used to calculate accuracy
-	int m_shotsFired{ 0 };
+	//int m_shotsFired{ 0 };
 	int m_targetsHit{ 0 };
 
 	// Shows the player how much time was added on destroying target

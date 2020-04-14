@@ -10,6 +10,12 @@ TankAi::TankAi(sf::Texture const & texture, std::map<int, std::list<GameObject*>
 	// Initialises the tank base and turret sprites.
 	initSprites();
 	initVisionCone();
+
+	f_projectileImpact = &TankAi::projectileImpact;
+	f_impactSmoke = &TankAi::impactSmoke;
+
+	m_smokeParticleSystem.clearEmitters();
+	m_sparkParticleSystem.clearEmitters();
 }
 
 ////////////////////////////////////////////////////////////
@@ -42,6 +48,27 @@ void TankAi::setupObstaclePositions(std::vector<sf::Sprite> t_obstacleSprites)
 
 void TankAi::initSprites()
 {
+	try
+	{
+		if (!m_smokeTexture.loadFromFile(".\\resources\\images\\smoke.png"))
+		{
+			throw std::exception("Error loading 'smoke.png' from within Tank.cpp >> initParticles");
+		}
+
+		if (!m_sparkTexture.loadFromFile(".\\resources\\images\\spark.png"))
+		{
+			throw std::exception("Error loading 'spark.png' from within Tank.cpp >> initParticles");
+		}
+	}
+	catch (std::exception e)
+	{
+		std::cout << e.what() << std::endl;
+	}
+
+	m_impactParticleSystem.setTexture(m_smokeTexture);
+	m_smokeParticleSystem.setTexture(m_smokeTexture);
+	m_sparkParticleSystem.setTexture(m_sparkTexture);
+
 	// Initialise the tank base
 	m_tankBase.setTexture(m_texture);
 	sf::IntRect baseRect(103, 43, 79, 43);
@@ -70,13 +97,24 @@ void TankAi::initVisionCone()
 
 ////////////////////////////////////////////////////////////
 
-void TankAi::update(Tank const & playerTank, sf::Time dt)
+void TankAi::update(Tank& playerTank, sf::Time dt)
 {
 	updateGameObjects();
 	updateVisionCone();
 	m_projectilePool.update(dt);
 
 	prioritiseCorners();
+
+	GameObject* tank = &playerTank;
+	std::vector<GameObject*> tankVec{ tank };
+
+	m_projectilePool.checkCollisions(m_obstacles, f_projectileImpact, this);
+	m_projectilePool.checkCollisions(tankVec, f_projectileImpact, this);
+
+	// update particles
+	m_smokeParticleSystem.update(dt);
+	m_sparkParticleSystem.update(dt);
+	m_impactParticleSystem.update(dt);
 
 	sf::Vector2f vectorToPlayer = seek(playerTank.position());
 
@@ -89,6 +127,8 @@ void TankAi::update(Tank const & playerTank, sf::Time dt)
 		// IMPLEMENT LOGIC
 		// ###############
 
+		
+
 		break;
 		
 	// ######## FOLLOWING PLAYER ########	
@@ -97,14 +137,13 @@ void TankAi::update(Tank const & playerTank, sf::Time dt)
 		followPlayer(vectorToPlayer);
 		m_turretRotation = m_baseRotation;
 
-		steer();
 		break;
 
 	// ######## ATTACKING PLAYER ########
 	case AIState::ATTACK_PLAYER:
 
 		// Stop the tank
-		m_velocity = { 0.0f,0.0f };
+		m_velocity = (thor::squaredLength(m_velocity) > 100.0f) ? m_velocity*0.99f : thor::unitVector(m_velocity);
 		aimTurret(vectorToPlayer);
 
 		// Fire at the player
@@ -117,6 +156,7 @@ void TankAi::update(Tank const & playerTank, sf::Time dt)
 		break;
 	}
 
+	steer();
 	determineHeading();
 
 	if (thor::length(vectorToPlayer) < 500.0f)
@@ -221,6 +261,10 @@ void TankAi::render(sf::RenderWindow& window)
 
 	window.draw(m_turret);
 
+	window.draw(m_impactParticleSystem);
+	window.draw(m_smokeParticleSystem);
+	window.draw(m_sparkParticleSystem);
+
 	if (DEBUG_mode)
 	{
 		for (sf::CircleShape& c : m_obstacleColliders)
@@ -265,7 +309,7 @@ void TankAi::fire()
 
 		m_projectilePool.create(m_turret.getPosition(), targetVector, 180);
 
-		//muzzleFlash(targetVector);
+		muzzleFlash(targetVector);
 }
 
 ////////////////////////////////////////////////////////////
@@ -346,6 +390,9 @@ void TankAi::updateGameObjects()
 	// clear our array of circles
 	m_obstacleColliders.clear();
 
+	// Clear our array of obstacle objects
+	m_obstacles.clear();
+
 	// work out which cells we occupy
 	m_activeCells.clear();
 
@@ -373,6 +420,17 @@ void TankAi::updateGameObjects()
 		m_activeCells.insert(gridPos);
 	}
 
+	// add positions of projectiles
+	for (sf::Vector2f pos : m_projectilePool.getActiveProjectilePos())
+	{
+		gridPos = CellResolution::getGridRef(pos);
+
+		// If we get an error value back, don't add to set
+		if (gridPos == -1) continue;
+
+		m_activeCells.insert(gridPos);
+	}
+
 	// populate our vector of obstacle bounding circles
 	for (int i : m_activeCells)
 	{
@@ -390,6 +448,86 @@ void TankAi::updateGameObjects()
 			}
 		}
 	}
+
+	// populate our vector of obstacle pointers
+	for (int i : m_activeCells)
+	{
+		// will return 0 if key not in map
+		if (ref_obstacleMap.count(i))
+		{
+			for (GameObject* obj : ref_obstacleMap.at(i))
+			{
+				m_obstacles.push_back(obj);
+			}
+		}
+	}
+}
+
+////////////////////////////////////////////////////////////
+
+void TankAi::muzzleFlash(sf::Vector2f t_fireDir)
+{
+	thor::FadeAnimation fade{ 0.0f,1.0f };
+
+	// Muzzle Flash/Sparks effects
+	m_sparksEmitter.setParticlePosition(m_tankBase.getPosition() + t_fireDir * 60.0f);
+	m_sparksEmitter.setEmissionRate(500);
+	m_sparksEmitter.setParticleVelocity(thor::Distributions::deflect(t_fireDir * 250.0f, 10.0f));
+	m_sparksEmitter.setParticleLifetime(thor::Distributions::uniform(sf::seconds(0.1f), sf::seconds(2.0f)));
+
+	m_sparkParticleSystem.addEmitter(m_sparksEmitter, sf::seconds(0.05f));
+	m_sparkParticleSystem.addAffector(thor::AnimationAffector(fade));
+
+	// Smoke/Dust effects
+	m_smokeEmitter.setParticlePosition(m_tankBase.getPosition() + t_fireDir * 60.0f);
+	m_smokeEmitter.setEmissionRate(500);
+	m_smokeEmitter.setParticleVelocity(thor::Distributions::deflect(t_fireDir * 60.0f, 120.0f));
+	m_smokeEmitter.setParticleLifetime(thor::Distributions::uniform(sf::seconds(0.1f), sf::seconds(1.5f)));
+
+
+	thor::ScaleAffector scale({ 1.1f,1.1f });
+	m_smokeParticleSystem.addEmitter(m_smokeEmitter, sf::seconds(0.1f));
+	m_smokeParticleSystem.addAffector(thor::AnimationAffector(fade));
+	m_smokeParticleSystem.addAffector(scale, sf::seconds(1));
+}
+
+////////////////////////////////////////////////////////////
+
+void TankAi::projectileImpact(sf::Vector2f t_impactPos)
+{
+	if (nullptr != m_smokeThread)
+	{
+		std::cout << "Waiting for thread [" << m_smokeThread->get_id() << "] to finish... ";
+		m_smokeThread->join();
+
+		// deallocate memory occupied by old thread ptr
+		delete m_smokeThread;
+	}
+
+	std::cout << "Creating thread [";
+	m_smokeThread = new std::thread(f_impactSmoke, this, t_impactPos);
+	std::cout << m_smokeThread->get_id() << "]" << std::endl;
+}
+
+////////////////////////////////////////////////////////////
+
+void TankAi::impactSmoke(sf::Vector2f t_impactPos)
+{
+	std::cout << "I'm making smoke!" << std::endl;
+
+	thor::FadeAnimation fade{ 0.0f,1.0f };
+
+	// Smoke/Dust effects
+	m_impactSmokeEmitter.setParticlePosition(t_impactPos);
+	m_impactSmokeEmitter.setEmissionRate(500);
+	m_impactSmokeEmitter.setParticleVelocity(thor::Distributions::deflect({ 40.0f,40.0f }, 360.0f));
+	m_impactSmokeEmitter.setParticleLifetime(thor::Distributions::uniform(sf::seconds(0.1f), sf::seconds(0.75f)));
+
+
+	thor::ScaleAffector scale({ 1.1f,1.1f });
+	m_impactParticleSystem.addEmitter(m_impactSmokeEmitter, sf::seconds(0.25f));
+	m_impactParticleSystem.addAffector(thor::AnimationAffector(fade));
+	m_impactParticleSystem.addAffector(scale, sf::seconds(1));
 }
 
 ////////////////////////////////////////////////////////////

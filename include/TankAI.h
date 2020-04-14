@@ -5,10 +5,14 @@
 #include "Tank.h"
 #include <SFML/Graphics.hpp>
 #include <Thor/Vectors.hpp>
+#include <Thor/Particles.hpp>
+#include <Thor/Animations.hpp>
+
 #include "GameState.h"
 #include "ProjectilePool.h"
 #include <iostream>
 #include <queue>
+#include <thread>
 
 class TankAi : public GameObject
 {
@@ -38,7 +42,7 @@ public:
 	/// </summary>
 	/// <param name="playerTank">A reference to the player tank</param>
 	/// <param name="dt">update delta time</param>
-	void update(Tank const & playerTank, sf::Time dt);
+	void update(Tank & playerTank, sf::Time dt);
 
 	/// <summary>
 	/// @brief Checks for collision between the AI and player tanks.
@@ -165,6 +169,58 @@ private:
 	/// </summary>
 	void updateGameObjects();
 
+	// ########### THOR VFX ############
+
+	/// <summary>
+	/// @brief Handles turret firing effects
+	/// </summary>
+	void muzzleFlash(sf::Vector2f t_fireDir);
+
+	/// <summary>
+	/// @brief Handles impact smoke effects
+	/// </summary>
+	/// <param name="t_impactPos">location of impact</param>
+	void projectileImpact(sf::Vector2f t_impactPos);
+
+	/// <summary>
+	/// @brief Alias for projectileImpact function
+	/// </summary>
+	std::function<void(TankAi*, sf::Vector2f)> f_projectileImpact;
+
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <param name="t_impactPos"></param>
+	void impactSmoke(sf::Vector2f t_impactPos);
+
+	/// <summary>
+	/// @brief Alias for impactSmoke function
+	/// </summary>
+	std::function<void(TankAi*, sf::Vector2f)> f_impactSmoke;
+
+	// ############# THREADS ##############
+
+	std::thread* m_smokeThread;
+
+	// ####################################
+
+
+	// ########## THOR PARTICLES ##########
+
+	sf::Texture m_smokeTexture;
+	sf::Texture m_sparkTexture;
+
+	thor::ParticleSystem m_smokeParticleSystem;
+	thor::ParticleSystem m_sparkParticleSystem;
+
+	thor::UniversalEmitter m_sparksEmitter = thor::UniversalEmitter();
+	thor::UniversalEmitter m_smokeEmitter = thor::UniversalEmitter();
+
+	thor::ParticleSystem m_impactParticleSystem;
+	thor::UniversalEmitter m_impactSmokeEmitter;
+
+	// ####################################
+
 	// Cells we should check for collisions in
 	std::set<int> m_activeCells;
 
@@ -185,6 +241,7 @@ private:
 
 	// A container of circles that represent the obstacles to avoid.
 	std::vector<sf::CircleShape> m_obstacleColliders;
+	std::vector<GameObject*> m_obstacles;
 
 	// Positions on-screen of each corner of each obstacle
 	std::vector<sf::Vector2f> m_obstacleCorners;

@@ -2,13 +2,13 @@
 #define DEBUG
 
 #include <SFML/Graphics.hpp>
-#include <Thor/Particles.hpp>
 #include <Thor/Math.hpp>
-#include <thread>
+
 #include "CollisionDetector.h"
 #include "CellResolution.h"
-#include "ProjectilePool.h"
+
 #include "GameState.h"
+#include "GameObject.h"
 
 #include "Obstacle.h"
 #include "Target.h"
@@ -21,7 +21,7 @@ class TankAi;
 /// 
 /// This class will manage all tank movement and rotations.
 /// </summary>
-class Tank
+class Tank : public GameObject
 {
 public:	
 /// <summary>
@@ -92,9 +92,15 @@ public:
 	inline sf::Sprite const getBase() const { return m_tankBase; }
 
 	/// <summary>
-	/// @brief Fires a projectile
+	/// @brief Called when the player tank is hit by a projectile
 	/// </summary>
-	bool fire();
+	void hit() override;
+
+	/// <summary>
+	/// @brief Overload of game object base function
+	/// </summary>
+	/// <returns>A reference to our base sprite</returns>
+	sf::Sprite& getSprite() override { return m_tankBase; }
 
 	void update(sf::Time dt);
 	void render(sf::RenderWindow & window);
@@ -140,64 +146,9 @@ private:
 	void initSprites();
 
 	/// <summary>
-	/// @brief Set up THOR particle system/emitters
-	/// </summary>
-	void initParticles();
-
-	/// <summary>
 	/// @brief Updates the game objects that are in our current grid space (spacially partitioned)
 	/// </summary>
 	void updateGameObjects();
-
-	/// <summary>
-	/// @brief Handles turret firing effects
-	/// </summary>
-	void muzzleFlash(sf::Vector2f t_fireDir);
-
-	/// <summary>
-	/// @brief Handles impact smoke effects
-	/// </summary>
-	/// <param name="t_impactPos">location of impact</param>
-	void projectileImpact(sf::Vector2f t_impactPos);
-
-	/// <summary>
-	/// @brief Alias for projectileImpact function
-	/// </summary>
-	std::function<void(Tank*, sf::Vector2f)> f_projectileImpact;
-
-	/// <summary>
-	/// 
-	/// </summary>
-	/// <param name="t_impactPos"></param>
-	void impactSmoke(sf::Vector2f t_impactPos);
-
-	/// <summary>
-	/// @brief Alias for impactSmoke function
-	/// </summary>
-	std::function<void(Tank*, sf::Vector2f)> f_impactSmoke;
-
-	// ############# THREADS ##############
-
-	std::thread* m_smokeThread;
-
-	// ####################################
-	
-
-	// ########## THOR PARTICLES ##########
-	
-	sf::Texture m_smokeTexture;
-	sf::Texture m_sparkTexture;
-
-	thor::ParticleSystem m_smokeParticleSystem;
-	thor::ParticleSystem m_sparkParticleSystem;
-
-	thor::UniversalEmitter m_sparksEmitter = thor::UniversalEmitter();
-	thor::UniversalEmitter m_smokeEmitter = thor::UniversalEmitter();
-
-	thor::ParticleSystem m_impactParticleSystem;
-	thor::UniversalEmitter m_impactSmokeEmitter;
-
-	// ####################################
 
 
 	// ####### SPRITES AND TEXTURES #######
@@ -220,12 +171,6 @@ private:
 
 	// ####################################
 
-
-	// ########### PROJECTILES ############
-
-	ProjectilePool m_projectilePool = ProjectilePool();
-
-	// ####################################
 
 
 	// ########## TANK ATTRIBUTES #########
