@@ -2,8 +2,8 @@
 
 ////////////////////////////////////////////////////////////
 
-TankAi::TankAi(sf::Texture const & texture, std::map<int, std::list<GameObject*>>& t_obstacleMap) :
-	  m_texture(texture)
+TankAi::TankAi(sf::Texture const& texture, std::map<int, std::list<GameObject*>>& t_obstacleMap) :
+	m_texture(texture)
 	, ref_obstacleMap(t_obstacleMap)
 	, m_steering(0, 0)
 {
@@ -16,6 +16,9 @@ TankAi::TankAi(sf::Texture const & texture, std::map<int, std::list<GameObject*>
 
 	m_smokeParticleSystem.clearEmitters();
 	m_sparkParticleSystem.clearEmitters();
+
+
+	m_shadow.setFillColor(sf::Color::Black);
 }
 
 ////////////////////////////////////////////////////////////
@@ -89,9 +92,11 @@ void TankAi::initSprites()
 void TankAi::initVisionCone()
 {
 	// Populate our vision cone with coloured vertices (should be 1 more than the number of rays)
-	for (int i = 0; i <= NUM_RAYS; i++)
+	m_visionCone.append(sf::Vertex({ -1.0f, -1.0f }, sf::Color(255, 0, 0, 128)));
+	
+	for (int i = 1; i <= NUM_RAYS; i++)
 	{
-		m_visionCone.append(sf::Vertex({ -1.0f, -1.0f }, sf::Color(255, 255, 0, 128)));
+		m_visionCone.append(sf::Vertex({ -1.0f, -1.0f }, sf::Color(255, 0, 0, 0)));
 	}
 }
 
@@ -137,15 +142,23 @@ void TankAi::update(Tank& playerTank, sf::Time dt)
 		aimTurret(vectorToPlayer);
 		followPlayer(vectorToPlayer);
 
+		steer();
+
 		break;
 
 	// ######## ATTACKING PLAYER ########
 	case AIState::ATTACK_PLAYER:
 
 		// Stop the tank
-		m_velocity = (thor::squaredLength(m_velocity) > 100.0f) ? m_velocity*0.99f : thor::unitVector(m_velocity);
-
-		//std::cout << "VELOCITY: " << thor::squaredLength(m_velocity) << std::endl;
+		if (thor::squaredLength(m_velocity) > 200.0f)
+		{
+			m_velocity *= 0.99f;
+		}
+		else
+		{
+			// Asymptotically reduce velocity toward 0 (sprite direction is based on velocity, we don't want to teleport to 0,0)
+			m_velocity = (m_velocity + sf::Vector2f{0.0f, 0.0f}) / 2.0f;
+		}
 
 		aimTurret(vectorToPlayer);
 
@@ -159,10 +172,9 @@ void TankAi::update(Tank& playerTank, sf::Time dt)
 		break;
 	}
 
-	steer();
 	determineHeading();
 
-	if (thor::length(vectorToPlayer) < 500.0f)
+	if (thor::length(vectorToPlayer) < 400.0f)
 	{
 		m_currentState = AIState::ATTACK_PLAYER;
 	}
@@ -256,6 +268,8 @@ void TankAi::updateMovement(sf::Time dt)
 void TankAi::render(sf::RenderWindow& window)
 {
 	m_projectilePool.render(window);
+
+	window.draw(m_shadow);
 
 	// TODO: Don't draw if off-screen...
 	window.draw(m_tankBase);
@@ -464,6 +478,19 @@ void TankAi::updateGameObjects()
 			}
 		}
 	}
+
+	// ************* TEMP *************
+	// Add all obstacles in our vision cone
+	for (auto it : ref_obstacleMap)
+	{
+		for (auto obs : it.second)
+		{
+			if (inCone(obs->getSprite().getPosition()))
+			{
+				m_obstacles.push_back(obs);
+			}
+		}
+	}
 }
 
 ////////////////////////////////////////////////////////////
@@ -547,15 +574,6 @@ void TankAi::prioritiseCorners()
 			priority.push_back(corner);
 		}
 	}
-
-	//m_visionCone.clear();
-
-	//m_visionCone.append(sf::Vertex(pos, sf::Color(255, 255, 0, 128)));
-
-	//for (sf::Vector2f corner : priority)
-	//{
-	//	m_visionCone.append(sf::Vertex(corner, sf::Color(255, 255, 0, 128)));
-	//}
 }
 
 ////////////////////////////////////////////////////////////
@@ -584,13 +602,45 @@ void TankAi::updateVisionCone()
 		startAngle += m_arcPerRay;
 	}
 
+	bool stop{ false };
+
+	for (sf::Vector2f& ray : m_visionRayCasts)
+	{
+		sf::Vector2f unit{ thor::unitVector(ray) * (m_visionDistance / 50.0f) };
+
+		ray = pos;
+
+		for (int i = 0; i < 50; i++)
+		{
+			ray += unit;
+
+			for (auto obs : m_obstacles)
+			{
+				if (obs->getSprite().getGlobalBounds().contains(ray))
+				{
+					stop = true;
+					break;
+				}
+			}
+
+			if (stop)
+			{
+				stop = false;
+				break;
+			}
+		}
+		
+
+		ray -= pos;
+	}
+
 	// Set the beginning of our triangle cone
 	m_visionCone[0].position = pos;
 
 	// Set the end positions of our vertices
 	for (int i = 1; i <= NUM_RAYS; i++)
 	{
-			m_visionCone[i].position = pos + m_visionRayCasts.at(i-1);
+		m_visionCone[i].position = pos + m_visionRayCasts.at(i-1);
 	}
 }
 
