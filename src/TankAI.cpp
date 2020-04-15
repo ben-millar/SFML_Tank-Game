@@ -16,9 +16,6 @@ TankAi::TankAi(sf::Texture const& texture, std::map<int, std::list<GameObject*>>
 
 	m_smokeParticleSystem.clearEmitters();
 	m_sparkParticleSystem.clearEmitters();
-
-
-	m_shadow.setFillColor(sf::Color::Black);
 }
 
 ////////////////////////////////////////////////////////////
@@ -27,24 +24,6 @@ void TankAi::init(sf::Vector2f position)
 {
 	m_tankBase.setPosition(position);
 	m_turret.setPosition(position);
-}
-
-////////////////////////////////////////////////////////////
-
-void TankAi::setupObstaclePositions(std::vector<sf::Sprite> t_obstacleSprites)
-{
-	// For each sprite
-	for (sf::Sprite s : t_obstacleSprites)
-	{
-		// Get the corners
-		std::array<sf::Vector2f, 4> corners{ CellResolution::getCorners(s) };
-
-		// And push into our vector
-		for (sf::Vector2f pos : corners)
-		{
-			m_obstacleCorners.push_back(pos);
-		}
-	}
 }
 
 ////////////////////////////////////////////////////////////
@@ -107,8 +86,6 @@ void TankAi::update(Tank& playerTank, sf::Time dt)
 	updateGameObjects();
 	updateVisionCone();
 	m_projectilePool.update(dt);
-
-	prioritiseCorners();
 
 	GameObject* tank = &playerTank;
 	std::vector<GameObject*> tankVec{ tank };
@@ -268,8 +245,6 @@ void TankAi::updateMovement(sf::Time dt)
 void TankAi::render(sf::RenderWindow& window)
 {
 	m_projectilePool.render(window);
-
-	window.draw(m_shadow);
 
 	// TODO: Don't draw if off-screen...
 	window.draw(m_tankBase);
@@ -562,22 +537,6 @@ void TankAi::impactSmoke(sf::Vector2f t_impactPos)
 
 ////////////////////////////////////////////////////////////
 
-void TankAi::prioritiseCorners()
-{
-	std::vector<sf::Vector2f> priority;
-	sf::Vector2f pos{ m_turret.getPosition() };
-
-	for (sf::Vector2f corner : m_obstacleCorners)
-	{
-		if (inCone(corner))
-		{
-			priority.push_back(corner);
-		}
-	}
-}
-
-////////////////////////////////////////////////////////////
-
 void TankAi::updateVisionCone()
 {
 	// Position of our turret
@@ -602,22 +561,30 @@ void TankAi::updateVisionCone()
 		startAngle += m_arcPerRay;
 	}
 
+	// Should we stop our ray cast
 	bool stop{ false };
 
+	// For each ray
 	for (sf::Vector2f& ray : m_visionRayCasts)
 	{
+		// Chose a unit to iterate along the ray by
 		sf::Vector2f unit{ thor::unitVector(ray) * (m_visionDistance / 50.0f) };
 
+		// Set start to our tank pos
 		ray = pos;
 
+		// For each unit along the ray
 		for (int i = 0; i < 50; i++)
 		{
 			ray += unit;
 
+			// For each obstacle in our spatial partition
 			for (auto obs : m_obstacles)
 			{
+				// If it contains our ray
 				if (obs->getSprite().getGlobalBounds().contains(ray))
 				{
+					// Break out of the loop and end the ray here
 					stop = true;
 					break;
 				}
@@ -629,8 +596,8 @@ void TankAi::updateVisionCone()
 				break;
 			}
 		}
-		
 
+		// Return the ray to local bounds
 		ray -= pos;
 	}
 

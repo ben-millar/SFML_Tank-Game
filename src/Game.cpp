@@ -40,16 +40,6 @@ Game::Game()
 	init();
 
 	m_aiTank.init(m_level.m_aiTank.m_position.at(0));
-	
-	// Send obstacle sprites to the AI tank for vision cone checking
-	std::vector<sf::Sprite> obstacleSprites;
-
-	for (Obstacle obs : m_obstacles)
-	{
-		obstacleSprites.push_back(obs.getSprite());
-	}
-
-	m_aiTank.setupObstaclePositions(obstacleSprites);
 
 	// set state to GamePlay
 	m_gameState = GameState::GamePlay;

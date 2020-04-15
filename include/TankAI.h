@@ -27,12 +27,6 @@ public:
 	TankAi(sf::Texture const & texture, std::map<int, std::list<GameObject*>>& t_obstacleMap);
 
 	/// <summary>
-	/// @brief Gives the AI tank a vector of obstacle sprites for raycast checks
-	/// </summary>
-	/// <param name="t_obstacleSprites">Vector of sprites</param>
-	void setupObstaclePositions(std::vector<sf::Sprite> t_obstacleSprites);
-
-	/// <summary>
 	/// @brief Steers the AI tank towards the player tank avoiding obstacles along the way.
 	/// Gets a vector to the player tank and sets steering and velocity vectors towards
 	/// the player if current behaviour is seek. If behaviour is stop, the velocity vector
@@ -123,11 +117,6 @@ private:
 	/// @brief Roam around the map searching for the player
 	/// </summary>
 	void search();
-
-	/// <summary>
-	/// @brief Checks which obstacle corners could be within our vision cone
-	/// </summary>
-	void prioritiseCorners();
 
 	/// <summary>
 	/// @brief Updates the position of the vision cone
@@ -248,9 +237,6 @@ private:
 	std::vector<sf::CircleShape> m_obstacleColliders;
 	std::vector<GameObject*> m_obstacles;
 
-	// Positions on-screen of each corner of each obstacle
-	std::vector<sf::Vector2f> m_obstacleCorners;
-
 	// The current rotation in degrees as applied to tank base.
 	float m_baseRotation{ 0.0f };
 
@@ -316,8 +302,5 @@ private:
 	std::array<sf::Vector2f, NUM_RAYS> m_visionRayCasts;
 
 	// Used for drawing the ray casts on-screen.
-	// We will replace this with a convex shape
 	sf::VertexArray m_visionCone{ sf::TriangleFan };
-
-	sf::ConvexShape m_shadow{ 10 };
 };
