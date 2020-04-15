@@ -52,12 +52,12 @@ void TankAi::initSprites()
 	{
 		if (!m_smokeTexture.loadFromFile(".\\resources\\images\\smoke.png"))
 		{
-			throw std::exception("Error loading 'smoke.png' from within Tank.cpp >> initParticles");
+			throw std::exception("Error loading 'smoke.png' from within TankAi.cpp >> initSprites");
 		}
 
 		if (!m_sparkTexture.loadFromFile(".\\resources\\images\\spark.png"))
 		{
-			throw std::exception("Error loading 'spark.png' from within Tank.cpp >> initParticles");
+			throw std::exception("Error loading 'spark.png' from within TankAi.cpp >> initSprites");
 		}
 	}
 	catch (std::exception e)
@@ -134,8 +134,8 @@ void TankAi::update(Tank& playerTank, sf::Time dt)
 	// ######## FOLLOWING PLAYER ########	
 	case AIState::FOLLOW_PLAYER:
 
+		aimTurret(vectorToPlayer);
 		followPlayer(vectorToPlayer);
-		m_turretRotation = m_baseRotation;
 
 		break;
 
@@ -144,6 +144,9 @@ void TankAi::update(Tank& playerTank, sf::Time dt)
 
 		// Stop the tank
 		m_velocity = (thor::squaredLength(m_velocity) > 100.0f) ? m_velocity*0.99f : thor::unitVector(m_velocity);
+
+		//std::cout << "VELOCITY: " << thor::squaredLength(m_velocity) << std::endl;
+
 		aimTurret(vectorToPlayer);
 
 		// Fire at the player
@@ -539,30 +542,20 @@ void TankAi::prioritiseCorners()
 
 	for (sf::Vector2f corner : m_obstacleCorners)
 	{
-		// If it's within the range of our vision cone
-		if (thor::squaredLength(corner - pos) < std::pow(m_visionDistance, 2))
+		if (inCone(corner))
 		{
-			// If it's to the left of our last ray
-			if (MathUtility::isLeft(pos + m_visionRayCasts[NUM_RAYS - 1], pos, corner))
-			{
-				// If it's to the right of our first ray
-				if (!MathUtility::isLeft(pos + m_visionRayCasts[0], pos, corner))
-				{
-					// then it's in our vision cone
-					priority.push_back(corner);
-				}
-			}	
+			priority.push_back(corner);
 		}
 	}
 
-	m_visionCone.clear();
+	//m_visionCone.clear();
 
-	m_visionCone.append(sf::Vertex(pos, sf::Color(255, 255, 0, 128)));
+	//m_visionCone.append(sf::Vertex(pos, sf::Color(255, 255, 0, 128)));
 
-	for (sf::Vector2f corner : priority)
-	{
-		m_visionCone.append(sf::Vertex(corner, sf::Color(255, 255, 0, 128)));
-	}
+	//for (sf::Vector2f corner : priority)
+	//{
+	//	m_visionCone.append(sf::Vertex(corner, sf::Color(255, 255, 0, 128)));
+	//}
 }
 
 ////////////////////////////////////////////////////////////
@@ -591,15 +584,40 @@ void TankAi::updateVisionCone()
 		startAngle += m_arcPerRay;
 	}
 
-	//// Set the beginning of our triangle cone
-	//m_visionCone[0].position = pos;
+	// Set the beginning of our triangle cone
+	m_visionCone[0].position = pos;
 
-	//// Set the end positions of our vertices
-	//for (int i = 1; i <= NUM_RAYS; i++)
-	//{
-	//		m_visionCone[i].position = pos + m_visionRayCasts.at(i-1);
-	//}
+	// Set the end positions of our vertices
+	for (int i = 1; i <= NUM_RAYS; i++)
+	{
+			m_visionCone[i].position = pos + m_visionRayCasts.at(i-1);
+	}
 }
+
+////////////////////////////////////////////////////////////
+
+bool TankAi::inCone(sf::Vector2f t_pos)
+{
+	sf::Vector2f myPosition{ m_tankBase.getPosition() };
+
+	// If it's within the range of our vision cone
+	if (thor::squaredLength(t_pos - myPosition) < std::pow(m_visionDistance, 2))
+	{
+		// If it's to the left of our last ray
+		if (MathUtility::isLeft(myPosition + m_visionRayCasts[NUM_RAYS - 1], myPosition, t_pos))
+		{
+			// If it's to the right of our first ray
+			if (!MathUtility::isLeft(myPosition + m_visionRayCasts[0], myPosition, t_pos))
+			{
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
+////////////////////////////////////////////////////////////
 
 float TankAi::calculatePitch()
 {

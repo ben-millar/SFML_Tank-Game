@@ -135,6 +135,11 @@ private:
 	void updateVisionCone();
 
 	/// <summary>
+	/// @brief Given a position, this function returns whether or not it's in our vision cone
+	/// </summary>
+	bool inCone(sf::Vector2f t_pos);
+
+	/// <summary>
 	/// @brief Determines the angle between ray casts given their magnitude and arc length
 	/// </summary>
 	/// <returns>Angle between two rays</returns>

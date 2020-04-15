@@ -10,8 +10,45 @@ Tank::Tank(sf::Texture const& t_texture, std::map<int, std::list<GameObject*>>& 
 	m_screenShake(t_screenShake)
 {
 	initSprites();
+	loadParticleTextures();
 
 	temp_debugInit();
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+
+void Tank::loadParticleTextures()
+{
+	try
+	{
+		if (!m_smokeTexture.loadFromFile(".\\resources\\images\\smoke.png"))
+		{
+			throw std::exception("Error loading 'smoke.png' from within Tank.cpp >> loadParticleTextures");
+		}
+
+		if (!m_sparkTexture.loadFromFile(".\\resources\\images\\spark.png"))
+		{
+			throw std::exception("Error loading 'spark.png' from within Tank.cpp >> loadParticleTextures");
+		}
+	}
+	catch (std::exception e)
+	{
+		std::cout << e.what() << std::endl;
+	}
+
+	m_smokeParticleSystem.setTexture(m_smokeTexture);
+	m_sparkParticleSystem.setTexture(m_sparkTexture);
+
+	// Smoke/Dust effects
+	m_smokeEmitter.setEmissionRate(m_smokeEmissionRate);
+	m_smokeEmitter.setParticleVelocity(thor::Distributions::deflect({ 30.0f,30.0f }, 360.0f));
+	m_smokeEmitter.setParticleLifetime(thor::Distributions::uniform(sf::seconds(0.1f), sf::seconds(1.5f)));
+
+	thor::ScaleAffector scale({ 1.1f,1.25f });
+	m_smokeParticleSystem.addAffector(scale);
+
+	thor::FadeAnimation fade{ 0.0f,1.0f };
+	m_smokeParticleSystem.addAffector(thor::AnimationAffector(fade));
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -202,12 +239,18 @@ void Tank::hit()
 	std::cout << "I'm hit!" << std::endl;
 
 	(m_screenShake < 0.5f) ? m_screenShake += 0.5f : m_screenShake = 1.0f;
+
+	// Increase the amount of smoke coming from our tank
+	(m_smokeEmissionRate < 10) ? m_smokeEmissionRate++ : m_smokeEmissionRate = 10;
+	m_smokeEmitter.setEmissionRate(m_smokeEmissionRate);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
 void Tank::update(sf::Time dt)
 {
+	updateParticles(dt);
+
 	// keep track of previous position
 	m_previousPosition = m_tankBase.getPosition();
 
@@ -250,8 +293,12 @@ void Tank::update(sf::Time dt)
 
 void Tank::render(sf::RenderWindow & window) 
 {
+	window.draw(m_smokeParticleSystem);
+
 	window.draw(m_tankBase);
 	window.draw(m_turret);	
+	
+	window.draw(m_sparkParticleSystem);
 
 	if (DEBUG_mode)
 	{
@@ -338,4 +385,17 @@ void Tank::updateGameObjects()
 
 	// populate our vector of tank pointers (right now it's just one!)
 	m_enemyTanks.push_back(&ref_enemyTank);
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+
+void Tank::updateParticles(sf::Time t_dt)
+{
+	// Update position for particle FX
+	m_smokeEmitter.setParticlePosition(m_turret.getPosition());
+
+	m_smokeParticleSystem.addEmitter(m_smokeEmitter, sf::seconds(0.5f));
+
+	m_smokeParticleSystem.update(t_dt);
+	m_sparkParticleSystem.update(t_dt);
 }

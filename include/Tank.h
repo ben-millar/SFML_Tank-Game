@@ -3,6 +3,8 @@
 
 #include <SFML/Graphics.hpp>
 #include <Thor/Math.hpp>
+#include <Thor/Particles.hpp>
+#include <Thor/Animations.hpp>
 
 #include "CollisionDetector.h"
 #include "CellResolution.h"
@@ -147,6 +149,11 @@ private:
 	void initSprites();
 
 	/// <summary>
+	/// @brief Loads particle textures from file
+	/// </summary>
+	void loadParticleTextures();
+
+	/// <summary>
 	/// @brief Updates the game objects that are in our current grid space (spacially partitioned)
 	/// </summary>
 	void updateGameObjects();
@@ -174,11 +181,33 @@ private:
 
 
 
+	// ########## THOR PARTICLES ##########
+
+	void updateParticles(sf::Time t_dt);
+
+	sf::Texture m_smokeTexture;
+	sf::Texture m_sparkTexture;
+
+	int m_smokeEmissionRate{ 0 };
+
+	thor::ParticleSystem m_smokeParticleSystem;
+	thor::ParticleSystem m_sparkParticleSystem;
+
+	thor::UniversalEmitter m_sparksEmitter = thor::UniversalEmitter();
+	thor::UniversalEmitter m_smokeEmitter = thor::UniversalEmitter();
+
+	// ####################################
+
+
+
 	// ########## TANK ATTRIBUTES #########
 	
 	static constexpr float M_MAX_SPEED = 100.0f;
 	static constexpr float M_MIN_SPEED = -100.0f;
 	static constexpr float M_FRICTION = 0.2f;
+
+	// Keeps track of how damaged the tank is
+	float m_damage{ 0.0f };
 
 	// Fire clock 
 	sf::Clock m_fireClock;
