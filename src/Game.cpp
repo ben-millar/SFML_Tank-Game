@@ -9,7 +9,7 @@ static const sf::Time MS_PER_UPDATE = sf::seconds(1.0f/60.0f);
 Game::Game()
 	: m_window(sf::VideoMode(ScreenSize::s_width, ScreenSize::s_height, 32), "SFML Playground", sf::Style::Default),
 	m_tank(m_spriteSheetTexture, m_spatialMap, m_activeTargets, m_aiTank, m_trauma),
-	m_aiTank(m_spriteSheetTexture, m_spatialMap),
+	m_aiTank(m_spriteSheetTexture, m_spatialMap, m_obstacles),
 	m_HUD(m_font)
 {
 	// Game runs much faster with this commented out. Why?

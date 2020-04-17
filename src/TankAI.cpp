@@ -2,9 +2,10 @@
 
 ////////////////////////////////////////////////////////////
 
-TankAi::TankAi(sf::Texture const& texture, std::map<int, std::list<GameObject*>>& t_obstacleMap) :
+TankAi::TankAi(sf::Texture const& texture, std::map<int, std::list<GameObject*>>& t_obstacleMap, std::vector<Obstacle>& t_obstacleVector) :
 	m_texture(texture)
 	, ref_obstacleMap(t_obstacleMap)
+	, ref_obstacleVector(t_obstacleVector)
 	, m_steering(0, 0)
 {
 	// Initialises the tank base and turret sprites.
@@ -87,10 +88,12 @@ void TankAi::update(Tank& playerTank, sf::Time dt)
 	updateVisionCone();
 	m_projectilePool.update(dt);
 
+	updateVisionCone();
+
 	GameObject* tank = &playerTank;
 	std::vector<GameObject*> tankVec{ tank };
 
-	m_projectilePool.checkCollisions(m_obstacles, f_projectileImpact, this);
+	m_projectilePool.checkCollisions(m_obstaclesInPartition, f_projectileImpact, this);
 	m_projectilePool.checkCollisions(tankVec, f_projectileImpact, this);
 
 	// update particles
@@ -382,8 +385,8 @@ void TankAi::updateGameObjects()
 	// clear our array of circles
 	m_obstacleColliders.clear();
 
-	// Clear our array of obstacle objects
-	m_obstacles.clear();
+	// Clear elements from last check
+	m_obstaclesInPartition.clear();
 
 	// work out which cells we occupy
 	m_activeCells.clear();
@@ -441,7 +444,7 @@ void TankAi::updateGameObjects()
 		}
 	}
 
-	// populate our vector of obstacle pointers
+	// populate our vector of obstacle pointers for collision checking
 	for (int i : m_activeCells)
 	{
 		// will return 0 if key not in map
@@ -449,21 +452,22 @@ void TankAi::updateGameObjects()
 		{
 			for (GameObject* obj : ref_obstacleMap.at(i))
 			{
-				m_obstacles.push_back(obj);
+				m_obstaclesInPartition.push_back(obj);
 			}
 		}
 	}
 
-	// ************* TEMP *************
-	// Add all obstacles in our vision cone
-	for (auto it : ref_obstacleMap)
+	// Clear the obstacles from the last frame
+	m_obstaclesInCone.clear();
+
+	// Determine which objects are in our vision cone
+	for (Obstacle& obs : ref_obstacleVector)
 	{
-		for (auto obs : it.second)
+		sf::Sprite* spr = &obs.getSprite();
+
+		if (inCone(spr->getPosition()))
 		{
-			if (inCone(obs->getSprite().getPosition()))
-			{
-				m_obstacles.push_back(obs);
-			}
+			m_obstaclesInCone.push_back(spr->getGlobalBounds());
 		}
 	}
 }
@@ -578,11 +582,11 @@ void TankAi::updateVisionCone()
 		{
 			ray += unit;
 
-			// For each obstacle in our spatial partition
-			for (auto obs : m_obstacles)
+			// For each obstacle in our vision cone
+			for (sf::FloatRect& obstacleBounds : m_obstaclesInCone)
 			{
 				// If it contains our ray
-				if (obs->getSprite().getGlobalBounds().contains(ray))
+				if (obstacleBounds.contains(ray))
 				{
 					// Break out of the loop and end the ray here
 					stop = true;

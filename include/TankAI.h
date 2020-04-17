@@ -24,7 +24,7 @@ public:
 	/// </summary>
 	/// <param name="texture">A reference to the sprite sheet texture</param>
 	///< param name="wallSprites">A reference to the container of wall sprites</param>
-	TankAi(sf::Texture const & texture, std::map<int, std::list<GameObject*>>& t_obstacleMap);
+	TankAi(sf::Texture const & texture, std::map<int, std::list<GameObject*>>& t_obstacleMap, std::vector<Obstacle>& t_obstacleVector);
 
 	/// <summary>
 	/// @brief Steers the AI tank towards the player tank avoiding obstacles along the way.
@@ -192,6 +192,7 @@ private:
 	/// </summary>
 	std::function<void(TankAi*, sf::Vector2f)> f_impactSmoke;
 
+
 	// ############# THREADS ##############
 
 	std::thread* m_smokeThread;
@@ -230,12 +231,20 @@ private:
 	// Projectile pool for firing
 	ProjectilePool m_projectilePool;
 
+	// ######### OBSTACLE TRACKING ##########
+
 	// A reference to the container of wall sprites.
 	std::map<int, std::list<GameObject*>>& ref_obstacleMap;
 
 	// A container of circles that represent the obstacles to avoid.
 	std::vector<sf::CircleShape> m_obstacleColliders;
-	std::vector<GameObject*> m_obstacles;
+	std::vector<GameObject*> m_obstaclesInPartition;
+
+	// We use these for calculating vision cone occlusion
+	std::vector<Obstacle>& ref_obstacleVector;
+	std::vector<sf::FloatRect> m_obstaclesInCone;
+
+	// ######################################
 
 	// The current rotation in degrees as applied to tank base.
 	float m_baseRotation{ 0.0f };

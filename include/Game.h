@@ -175,7 +175,7 @@ private:
 	sf::Texture m_bgTexture;
 	sf::Sprite m_bgSprite;
 
-	// obstacle sprites
+	// obstacles
 	std::vector<Obstacle> m_obstacles;
 
 	// target sprites
