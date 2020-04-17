@@ -10,11 +10,25 @@ HUD::HUD(sf::Font& hudFont)
 	m_gameStateText.setString("Game Running");
 
 	//Setting up our hud properties 
-	m_hudOutline.setSize(sf::Vector2f(1440.0f, 60.0f));
-	m_hudOutline.setFillColor(sf::Color(0, 0, 0, 38));
-	m_hudOutline.setOutlineThickness(-.5f);
-	m_hudOutline.setOutlineColor(sf::Color(0, 0, 0, 100));
-	m_hudOutline.setPosition(0, 0);
+	m_hudBackground[0].position = { 0.0f,0.0f };
+	m_hudBackground[1].position = { m_width,0.0f };
+	m_hudBackground[2].position = { m_width, m_height };
+	m_hudBackground[3].position = { 0.0f, m_height };
+
+	m_hudBackground[0].color = { sf::Color(128,128,128,128) };
+	m_hudBackground[1].color = { sf::Color(128,128,128,128) };
+	m_hudBackground[2].color = { sf::Color(0,0,0,128) };
+	m_hudBackground[3].color = { sf::Color(0,0,0,128) };
+
+	m_hudOutline[0].position = { 0.0f,m_height };
+	m_hudOutline[1].position = { m_width,m_height};
+	m_hudOutline[2].position = { m_width, m_height + m_outlineThickness };
+	m_hudOutline[3].position = { 0.0f, m_height + m_outlineThickness };
+
+	m_hudOutline[0].color = { sf::Color::White};
+	m_hudOutline[1].color = { sf::Color::White};
+	m_hudOutline[2].color = { sf::Color(128,128,128,255) };
+	m_hudOutline[3].color = { sf::Color(128,128,128,255) };
 }
 
 ////////////////////////////////////////////////////////////
@@ -38,6 +52,7 @@ void HUD::update(GameState const& gameState)
 
 void HUD::render(sf::RenderWindow& window)
 {
+	window.draw(m_hudBackground);
 	window.draw(m_hudOutline);
 	window.draw(m_gameStateText);
 }

@@ -292,6 +292,9 @@ private:
 	// Distance the vision cone projects out
 	float m_visionDistance{ 200.0f };
 
+	// We will only allow a ray cast through a gap larger than this circle
+	sf::CircleShape m_visionCircle{ 7.5f };
+
 	// Arc subtended by the cone (inversely related to the length)
 	float m_visionArc{ thor::Pi / 3.0f }; // 60 degrees
 

@@ -78,6 +78,8 @@ void TankAi::initVisionCone()
 	{
 		m_visionCone.append(sf::Vertex({ -1.0f, -1.0f }, sf::Color(255, 0, 0, 0)));
 	}
+
+	m_visionCircle.setOrigin(m_visionCircle.getRadius(), m_visionCircle.getRadius());
 }
 
 ////////////////////////////////////////////////////////////
@@ -585,8 +587,10 @@ void TankAi::updateVisionCone()
 			// For each obstacle in our vision cone
 			for (sf::FloatRect& obstacleBounds : m_obstaclesInCone)
 			{
+				m_visionCircle.setPosition(ray);
+
 				// If it contains our ray
-				if (obstacleBounds.contains(ray))
+				if (obstacleBounds.intersects(m_visionCircle.getGlobalBounds()))
 				{
 					// Break out of the loop and end the ray here
 					stop = true;

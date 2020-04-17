@@ -201,6 +201,20 @@ private:
 
 
 	// ########## TANK ATTRIBUTES #########
+
+	// #### DAMAGE ####
+
+	bool m_reducedSpeed{ false };
+
+	bool m_reducedTurnRate{ false };
+
+	bool m_leftTrackDamaged;
+
+	bool m_rightTrackDamaged;
+
+	std::vector<bool*> m_damageBools;
+
+	// ################
 	
 	static constexpr float M_MAX_SPEED = 100.0f;
 	static constexpr float M_MIN_SPEED = -100.0f;

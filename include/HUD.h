@@ -32,5 +32,9 @@ private:
 	sf::Text m_gameStateText;
 
 	// A simple background shape for the HUD.
-	sf::RectangleShape m_hudOutline;
+	sf::VertexArray m_hudBackground{ sf::Quads, 4U };
+	sf::VertexArray m_hudOutline{ sf::Quads, 4U };
+
+	float m_width{ 1440.0f }, m_height{ 80.0f };
+	float m_outlineThickness{ 5.0f };
 };
