@@ -87,9 +87,10 @@ void TankAi::initVisionCone()
 void TankAi::update(Tank& playerTank, sf::Time dt)
 {
 	updateGameObjects();
-	updateVisionCone();
 	m_projectilePool.update(dt);
 
+	// We could use if (frameCount % 2) to run this only every second frame, if we ran into speed issues.
+	// It's performing perfectly fine for me at the moment though, so I decided there's no need
 	updateVisionCone();
 
 	GameObject* tank = &playerTank;
@@ -99,9 +100,17 @@ void TankAi::update(Tank& playerTank, sf::Time dt)
 	m_projectilePool.checkCollisions(tankVec, f_projectileImpact, this);
 
 	// update particles
-	m_smokeParticleSystem.update(dt);
-	m_sparkParticleSystem.update(dt);
-	m_impactParticleSystem.update(dt);
+	// (these functions sometimes throw internal exceptions)
+	try
+	{
+		m_smokeParticleSystem.update(dt);
+		m_sparkParticleSystem.update(dt);
+		m_impactParticleSystem.update(dt);
+	}
+	catch (std::exception& e)
+	{
+		std::cout << e.what() << std::endl;
+	}
 
 	sf::Vector2f vectorToPlayer = seek(playerTank.position());
 

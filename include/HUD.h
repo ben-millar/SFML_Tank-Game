@@ -1,5 +1,6 @@
 #pragma once
 #include <SFML/Graphics.hpp>
+#include <iostream>
 #include "ScreenSize.h"
 #include "GameState.h"
 #include "GameData.h"
@@ -33,9 +34,28 @@ public:
 private:
 
 	/// <summary>
+	/// @brief Loads in our icon spritesheet
+	/// </summary>
+	void loadIcons();
+
+	sf::Texture m_iconTexture;
+	sf::Sprite m_iconSprite;
+	sf::Vector2i m_iconSize{ 64,64 };
+
+	// This will cover up the icons if their effects are inactive
+	sf::RectangleShape m_iconOcclusion;
+
+	/// <summary>
 	/// @brief Set the string and position for our text object
 	/// </summary>
-	void setText(std::string t_str, sf::Vector2f t_position, unsigned int t_fontSize);
+	void setText(std::string t_str, sf::Vector2f t_position, unsigned int t_fontSize, bool t_center);
+
+	/// <summary>
+	/// @brief Converts seconds to MM:SS notation
+	/// </summary>
+	/// <param name="t_time">Time in seconds</param>
+	/// <returns>MM:SS in string form</returns>
+	std::string timeAsString(float t_time);
 
 	// Keep track of the game state
 	GameState& m_gameState;

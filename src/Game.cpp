@@ -171,6 +171,7 @@ void Game::init()
 
 	m_gameData.totalTargets = 10;
 	m_gameData.targetsCollected = 0;
+	m_gameData.timePerTarget.clear();
 	m_gameData.score = 0;
 
 	// Clear targets array and push back first target
@@ -405,6 +406,9 @@ void Game::update(sf::Time dt)
 
 		m_aiTank.update(m_tank, dt);
 
+		// update game time for HUD
+		m_gameData.timeElapsed = m_gameClock.getElapsedTime().asSeconds();
+
 		// reduce trauma linearly to zero
 		(m_trauma > 0.005f) ? m_trauma -= 0.005f : m_trauma = 0.0f;
 		m_traumaMeter.setString(std::to_string(m_trauma));
@@ -434,7 +438,7 @@ void Game::checkTargetsHit()
 		{
 			// How long did it take the player to hit the target?
 			sf::Time targetTime{ m_targetClock.getElapsedTime() };
-			m_gameData.timeSinceLastTarget = targetTime.asSeconds();
+			m_gameData.timePerTarget.push_back(targetTime.asSeconds());
 
 			m_targetClock.restart();
 
