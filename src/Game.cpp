@@ -10,7 +10,7 @@ Game::Game()
 	: m_window(sf::VideoMode(ScreenSize::s_width, ScreenSize::s_height, 32), "SFML Playground", sf::Style::Default),
 	m_tank(m_spriteSheetTexture, m_spatialMap, m_activeTargets, m_aiTank, m_trauma),
 	m_aiTank(m_spriteSheetTexture, m_spatialMap, m_obstacles),
-	m_HUD(m_font)
+	m_HUD(m_font, m_gameData, m_gameState)
 {
 	// Game runs much faster with this commented out. Why?
 	// Seems to limit our refresh rate to that of the monitor
@@ -168,8 +168,10 @@ void Game::init()
 
 	// Reset score counters
 	m_targetIndex = 0;
-	m_targetsHit = 0;
-	m_score = 0;
+
+	m_gameData.totalTargets = 10;
+	m_gameData.targetsCollected = 0;
+	m_gameData.score = 0;
 
 	// Clear targets array and push back first target
 	m_activeTargets.clear();
@@ -179,6 +181,8 @@ void Game::init()
 	m_deltaScoreText.setPosition({ -100.0f,-100.0f });
 
 	buildMap();
+
+	m_HUD.init();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -374,11 +378,10 @@ void Game::handleKeyInput()
 void Game::update(sf::Time dt)
 {
 
-	if (m_targetsHit >= 10)
+	if (m_gameData.targetsCollected >= m_gameData.totalTargets)
 	{
 		gameOver();
 	}
-
 
 	switch (m_gameState)
 	{
@@ -417,7 +420,7 @@ void Game::update(sf::Time dt)
 		break;
 	}
 
-	m_HUD.update(m_gameState);
+	m_HUD.update();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -429,14 +432,16 @@ void Game::checkTargetsHit()
 	{
 		if (t.isHit())
 		{
-			// How long did it take the player to hit the targ4t?
+			// How long did it take the player to hit the target?
 			sf::Time targetTime{ m_targetClock.getElapsedTime() };
+			m_gameData.timeSinceLastTarget = targetTime.asSeconds();
+
 			m_targetClock.restart();
 
-			m_targetsHit++;
+			m_gameData.targetsCollected++;
 
 			int deltaScore{ calculateScore(targetTime) };
-			m_score += deltaScore;
+			m_gameData.score += deltaScore;
 			
 			t.reset();
 
@@ -563,41 +568,15 @@ void Game::render()
 
 		if (m_deltaScoreClock.getElapsedTime() < DELTA_SCORE_TIME) m_window.draw(m_deltaScoreText);
 
-		drawUI();
-
-		//m_window.draw(m_traumaMeter);
-
 		// PAUSED
 		if (GameState::Paused == m_gameState)
 		{
 			drawPauseScreen();
 		}
 	}
-	else if (GameState::GameOver == m_gameState)
-	{
-		drawGameOverScreen();
-	}
 
 	m_HUD.render(m_window);
 	m_window.display();
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////
-
-void Game::drawUI()
-{
-	m_text.setOrigin({ 0.0f,0.0f });
-	m_text.setCharacterSize(16U);
-	m_text.setOutlineThickness(0.0f);
-
-	// Score
-	m_text.setPosition({ 10.0f,8.0f });
-	m_text.setString("Score: " + std::to_string(m_score));
-	m_window.draw(m_text);
-
-	// Right-hand side of the screen, minus the width of our text plus a buffer of 15px
-	m_text.setPosition({ ScreenSize::s_width - (m_text.getLocalBounds().width + 15.0f), 8.0f });
-	m_window.draw(m_text);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -625,41 +604,11 @@ void Game::drawPauseScreen()
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
-void Game::drawGameOverScreen()
-{
-	m_window.draw(m_menuBackgroundSprite);
-
-	m_text.setCharacterSize(36U);
-	m_text.setOutlineColor(sf::Color::Black);
-	m_text.setOutlineThickness(2.0f);
-
-	// Score
-	m_text.setString("Score: " + std::to_string(m_score));
-	m_text.setOrigin(m_text.getLocalBounds().width, 0.0f);
-	m_text.setPosition({ (ScreenSize::s_width / 2.0f) - 100.0f, 350.0f });
-
-	m_window.draw(m_text);
-
-	// HighScore
-	m_text.setString("Highscore: " + std::to_string(m_highscore));
-	m_text.setOrigin(0.0f, 0.0f);
-	m_text.setPosition({ (ScreenSize::s_width / 2.0f) - 60.0f, 350.0f });
-
-	m_window.draw(m_text);
-
-	// Restart text
-	m_text.setString("Press [R] to Restart!");
-	m_text.setOrigin(m_text.getLocalBounds().width / 2.0f, 0.0f);
-	m_text.setPosition({ (ScreenSize::s_width / 2.0f), 800.0f });
-
-	m_window.draw(m_text);
-}
-
 void Game::gameOver()
 {
 	m_gameState = GameState::GameOver;
 
-	if (m_score > m_highscore) m_highscore = m_score;
+	//if (m_score > m_highscore) m_highscore = m_score;
 
 	m_tank.reset();
 	m_aiTank.init({ 720.0f,450.0f });

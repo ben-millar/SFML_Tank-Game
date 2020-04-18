@@ -12,6 +12,7 @@
 #include "Obstacle.h"
 
 #include "GameState.h"
+#include "GameData.h"
 #include "HUD.h"
 
 #include <map>
@@ -131,19 +132,9 @@ private:
 	void handleKeyInput();
 
 	/// <summary>
-	/// @brief Draw our time/score/accuracy
-	/// </summary>
-	void drawUI();
-
-	/// <summary>
 	/// @brief Draws our PAUSE overlay with flashing text
 	/// </summary>
 	void drawPauseScreen();
-
-	/// <summary>
-	/// @brief Draws our game over screen with game stats
-	/// </summary>
-	void drawGameOverScreen();
 
 	/// <summary>
 	/// @brief Ends the game, upstates highscores
@@ -196,17 +187,7 @@ private:
 	// An instance representing the AI controlled tank.
 	TankAi m_aiTank;
 
-	// Player Statistics
-	int m_score{ 0 };
-	//float m_accuracy{ 0.0f };
-
-	// highscores
-	int m_highscore{ 0 };
-	//float m_bestAccuracy{ 0.0f };
-
-	// Used to calculate accuracy
-	//int m_shotsFired{ 0 };
-	int m_targetsHit{ 0 };
+	GameData m_gameData;
 
 	// Shows the player how much time was added on destroying target
 	sf::Text m_deltaScoreText;
