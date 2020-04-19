@@ -7,6 +7,7 @@
 #include <Thor/Vectors.hpp>
 #include <Thor/Particles.hpp>
 #include <Thor/Animations.hpp>
+#include <Thor/Time.hpp>
 
 #include "GameState.h"
 #include "ProjectilePool.h"
@@ -111,17 +112,22 @@ private:
 	/// <summary>
 	/// @brief Calculate a steering vector such that we follow the player
 	/// </summary>
-	void followPlayer(sf::Vector2f t_playerPos);
+	void driveTo(sf::Vector2f t_playerPos);
 
 	/// <summary>
-	/// @brief Roam around the map searching for the player
+	/// @brief Randomly select a new target on-screen for our patrol
 	/// </summary>
-	void patrol();
+	void choosePatrolTarget();
 
 	/// <summary>
 	/// @brief Updates the position of the vision cone
 	/// </summary>
 	void updateVisionCone();
+
+	/// <summary>
+	/// @brief Updates the colour of our vision cone, given our current state
+	/// </summary>
+	void updateVisionColor();
 
 	/// <summary>
 	/// @brief Given a position, this function returns whether or not it's in our vision cone
@@ -253,10 +259,21 @@ private:
 	sf::FloatRect m_playerTankRect;
 
 	// Restarts every time the player is seen
-	sf::Clock m_playerLastSeen;
+	thor::StopWatch m_playerLastSeen;
 
 	// If the player hasn't been seen in this time period, our AI tank will resume patrolling the map
-	sf::Time m_timeToLosePlayer{ sf::seconds(1.0f) };
+	sf::Time m_timeToLosePlayer{ sf::seconds(1.5f) };
+
+	// ######################################
+
+	// ########## PATROL BEHAVIOUR ##########
+
+	// This will be randomly assigned within the bounds of the screen
+	// for the AI tank to navigate to
+	sf::Vector2f m_patrolTarget;
+
+	// A collider for our nav target
+	sf::CircleShape m_patrolTargetBounds{ 20.0f };
 
 	// ######################################
 
@@ -310,6 +327,8 @@ private:
 
 	// Arc subtended by the cone (inversely related to the length)
 	float m_visionArc{ thor::Pi / 3.0f }; // 60 degrees
+
+	float m_visionConeRotation;
 
 	// Angle between each ray
 	float m_arcPerRay;

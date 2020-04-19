@@ -15,8 +15,7 @@ TankAi::TankAi(sf::Texture const& texture, std::map<int, std::list<GameObject*>>
 	f_projectileImpact = &TankAi::projectileImpact;
 	f_impactSmoke = &TankAi::impactSmoke;
 
-	m_smokeParticleSystem.clearEmitters();
-	m_sparkParticleSystem.clearEmitters();
+	m_patrolTargetBounds.setOrigin(20.0f, 20.0f);
 }
 
 ////////////////////////////////////////////////////////////
@@ -25,6 +24,11 @@ void TankAi::init(sf::Vector2f position)
 {
 	m_tankBase.setPosition(position);
 	m_turret.setPosition(position);
+
+	m_smokeParticleSystem.clearEmitters();
+	m_sparkParticleSystem.clearEmitters();
+
+	choosePatrolTarget();
 }
 
 ////////////////////////////////////////////////////////////
@@ -72,11 +76,12 @@ void TankAi::initSprites()
 void TankAi::initVisionCone()
 {
 	// Populate our vision cone with coloured vertices (should be 1 more than the number of rays)
-	m_visionCone.append(sf::Vertex({ -1.0f, -1.0f }, sf::Color(255, 0, 0, 128)));
+	m_visionCone.append(sf::Vertex({ -1.0f, -1.0f }, m_visionConeColorPatrol));
+	m_visionCone[0].color.a = 128;
 	
 	for (int i = 1; i <= NUM_RAYS; i++)
 	{
-		m_visionCone.append(sf::Vertex({ -1.0f, -1.0f }, sf::Color(255, 0, 0, 0)));
+		m_visionCone.append(sf::Vertex({ -1.0f, -1.0f }, m_visionConeColorPatrol));
 	}
 
 	m_visionCircle.setOrigin(m_visionCircle.getRadius(), m_visionCircle.getRadius());
@@ -125,12 +130,22 @@ void TankAi::update(Tank& playerTank, sf::Time dt)
 	// ######### PATROLLING MAP #########
 	case AIState::PATROL_MAP:
 
-		// ###############
-		// IMPLEMENT LOGIC
-		// ###############
+		// Spin our vision cone
+		m_visionConeRotation++;
 
-		patrol();
+		m_visionDistance = 300.0f;
+
+		// Drive towards our target
+		driveTo(seek(m_patrolTarget));
+
+		// If we hit our target
+		if (m_tankBase.getGlobalBounds().intersects(m_patrolTargetBounds.getGlobalBounds()))
+		{
+			// Decide where to patrol next
+			choosePatrolTarget();
+		}
 		
+		// Avoid obstacles
 		steer();
 
 		break;
@@ -138,8 +153,10 @@ void TankAi::update(Tank& playerTank, sf::Time dt)
 	// ######## FOLLOWING PLAYER ########	
 	case AIState::FOLLOW_PLAYER:
 
+		m_visionConeRotation = m_turretRotation;
+
 		aimTurret(vectorToPlayer);
-		followPlayer(vectorToPlayer);
+		driveTo(vectorToPlayer);
 
 		steer();
 
@@ -147,6 +164,8 @@ void TankAi::update(Tank& playerTank, sf::Time dt)
 
 	// ######## ATTACKING PLAYER ########
 	case AIState::ATTACK_PLAYER:
+
+		m_visionConeRotation = m_turretRotation;
 
 		// Stop the tank
 		if (thor::squaredLength(m_velocity) > 200.0f)
@@ -173,8 +192,18 @@ void TankAi::update(Tank& playerTank, sf::Time dt)
 
 	determineHeading();
 
-	// If we've seen the player in the last (time)
-	if (m_playerLastSeen.getElapsedTime() < m_timeToLosePlayer)
+	// If we haven't seen the player in (time) seconds
+	if (m_playerLastSeen.getElapsedTime() > m_timeToLosePlayer)
+	{
+		// Stop and restart the stopwatch
+		m_playerLastSeen.reset();
+
+		// Return to patrol
+		m_currentState = AIState::PATROL_MAP;
+
+		choosePatrolTarget();
+	}
+	else if (m_playerLastSeen.isRunning()) // If stopwatch is running but not over time
 	{
 		// And we're in range, engage
 		if (thor::length(vectorToPlayer) < 400.0f)
@@ -186,27 +215,8 @@ void TankAi::update(Tank& playerTank, sf::Time dt)
 		{
 			m_currentState = AIState::FOLLOW_PLAYER;
 		}
-
-		m_visionCone[0].color = sf::Color(255, 0, 0, 128);
-
-		for (int i = 0; i <= NUM_RAYS; i++)
-		{
-			m_visionCone[i].color = m_visionConeColorAlert;
-		}
-		m_visionCone[0].color.a = 128;
 	}
-	// If we haven't seen the player, resume patrol
-	else
-	{
-		for (int i = 0; i <= NUM_RAYS; i++)
-		{
-			m_visionCone[i].color = m_visionConeColorPatrol;
-		}
 
-		m_visionCone[0].color.a = 128;
-
-		m_currentState = AIState::PATROL_MAP;
-	}
 
 	updateMovement(dt);
 }
@@ -222,9 +232,23 @@ void TankAi::aimTurret(sf::Vector2f t_playerPos)
 
 ////////////////////////////////////////////////////////////
 
-void TankAi::followPlayer(sf::Vector2f t_playerPos)
+void TankAi::driveTo(sf::Vector2f t_navPos)
 {
-	m_steering += thor::unitVector(t_playerPos);
+	m_steering += thor::unitVector(t_navPos);
+}
+
+////////////////////////////////////////////////////////////
+
+void TankAi::choosePatrolTarget()
+{
+	// Choose within the bounds, with a margin of 50-100 pixels from the edge of the screen
+	float xPos = static_cast<float>(rand() % (ScreenSize::s_width - 200) + 100);
+	float yPos = static_cast<float>(rand() % (ScreenSize::s_height - 100) + 50);
+
+	m_patrolTarget = { xPos, yPos };
+	m_patrolTargetBounds.setPosition(m_patrolTarget);
+
+	std::cout << "New patrol target: {" << xPos << ", " << yPos << "}" << std::endl;
 }
 
 ////////////////////////////////////////////////////////////
@@ -267,13 +291,6 @@ void TankAi::determineHeading()
 		// rotate anti-clockwise
 		m_baseRotation = static_cast<int>((m_baseRotation)-1) % 360;
 	}
-}
-
-////////////////////////////////////////////////////////////
-
-void TankAi::patrol()
-{
-	m_steering += {-1.0f, 0.0f};
 }
 
 ////////////////////////////////////////////////////////////
@@ -589,6 +606,8 @@ void TankAi::impactSmoke(sf::Vector2f t_impactPos)
 
 void TankAi::updateVisionCone()
 {
+	updateVisionColor();
+
 	// Position of our turret
 	sf::Vector2f pos{ m_turret.getPosition() };
 
@@ -602,7 +621,7 @@ void TankAi::updateVisionCone()
 	m_visionArc = m_arcPerRay * NUM_RAYS;
 
 	// At what angle do we start drawing
-	float startAngle{ thor::toRadian(m_turretRotation) - m_visionArc / 2.0f };
+	float startAngle{ thor::toRadian(m_visionConeRotation) - m_visionArc / 2.0f };
 
 	// Initialise each ray, tracked in local coordinates (i.e., origin @ 0,0)
 	for (sf::Vector2f& ray : m_visionRayCasts)
@@ -674,6 +693,30 @@ void TankAi::updateVisionCone()
 	{
 		m_visionCone[i].position = pos + m_visionRayCasts.at(i-1);
 	}
+}
+
+////////////////////////////////////////////////////////////
+
+void TankAi::updateVisionColor()
+{
+	sf::Color coneColor{ sf::Color::White };
+
+	if (AIState::PATROL_MAP == m_currentState)
+	{
+		coneColor = m_visionConeColorPatrol;
+	}
+	else
+	{
+		coneColor = m_visionConeColorAlert;
+	}
+
+	// Change vision cone colour
+	for (int i = 0; i <= NUM_RAYS; i++)
+	{
+		m_visionCone[i].color = coneColor;
+	}
+
+	m_visionCone[0].color.a = 128;
 }
 
 ////////////////////////////////////////////////////////////
