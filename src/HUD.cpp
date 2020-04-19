@@ -8,6 +8,9 @@ HUD::HUD(sf::Font& hudFont, GameData& t_gameData, GameState& t_state) :
 {
 	loadIcons();
 
+	m_iconOcclusion.setFillColor(sf::Color(0, 0, 0, 128));
+	m_iconOcclusion.setSize(static_cast<sf::Vector2f>(m_iconSize));
+
 	m_gameText.setFont(hudFont);
 	m_gameText.setCharacterSize(30);
 	m_gameText.setFillColor(sf::Color::White);
@@ -113,9 +116,15 @@ void HUD::render(sf::RenderWindow& t_window)
 		m_iconSprite.setPosition({ 1100.0f, 10.0f });
 		t_window.draw(m_iconSprite);
 
+		m_iconOcclusion.setPosition(m_iconSprite.getPosition());
+		//t_window.draw(m_iconOcclusion);
+
 		// Reduced Turn Rate
 		m_iconSprite.setTextureRect({ m_iconSize.x, 0, m_iconSize.x, m_iconSize.y });
 		m_iconSprite.setPosition({ 1170.0f, 10.0f });
+
+		m_iconSprite.setColor(sf::Color(255, 255, 255, 64));
+
 		t_window.draw(m_iconSprite);
 
 		// ###### TEXT ######

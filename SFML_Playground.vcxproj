@@ -34,6 +34,7 @@
     <ClInclude Include="include\Tank.h" />
     <ClInclude Include="include\TankAI.h" />
     <ClInclude Include="include\Target.h" />
+    <ClInclude Include="TankDamage.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\CellResolution.cpp" />

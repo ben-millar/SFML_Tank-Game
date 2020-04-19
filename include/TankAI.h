@@ -72,7 +72,7 @@ public:
 		PATROL_MAP,
 		FOLLOW_PLAYER,
 		ATTACK_PLAYER
-	} m_currentState{ AIState::FOLLOW_PLAYER };
+	} m_currentState{ AIState::PATROL_MAP };
 
 private:
 
@@ -116,7 +116,7 @@ private:
 	/// <summary>
 	/// @brief Roam around the map searching for the player
 	/// </summary>
-	void search();
+	void patrol();
 
 	/// <summary>
 	/// @brief Updates the position of the vision cone
@@ -246,6 +246,20 @@ private:
 
 	// ######################################
 
+	// ########## PLAYER DETECTION ##########
+
+	sf::Vector2f vectorToPlayer{ 0.0f,0.0f };
+
+	sf::FloatRect m_playerTankRect;
+
+	// Restarts every time the player is seen
+	sf::Clock m_playerLastSeen;
+
+	// If the player hasn't been seen in this time period, our AI tank will resume patrolling the map
+	sf::Time m_timeToLosePlayer{ sf::seconds(1.0f) };
+
+	// ######################################
+
 	// The current rotation in degrees as applied to tank base.
 	float m_baseRotation{ 0.0f };
 
@@ -288,7 +302,6 @@ private:
 
 	// ##### VISION CONE #####
 
-
 	// Distance the vision cone projects out
 	float m_visionDistance{ 200.0f };
 
@@ -315,4 +328,7 @@ private:
 
 	// Used for drawing the ray casts on-screen.
 	sf::VertexArray m_visionCone{ sf::TriangleFan };
+
+	sf::Color m_visionConeColorPatrol{ 64, 128, 255, 0 };
+	sf::Color m_visionConeColorAlert{ 255, 0, 0, 0 };
 };

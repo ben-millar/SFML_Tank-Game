@@ -89,6 +89,9 @@ void TankAi::update(Tank& playerTank, sf::Time dt)
 	updateGameObjects();
 	m_projectilePool.update(dt);
 
+	// Update the float rect of the player tank
+	m_playerTankRect = playerTank.getSprite().getGlobalBounds();
+
 	// We could use if (frameCount % 2) to run this only every second frame, if we ran into speed issues.
 	// It's performing perfectly fine for me at the moment though, so I decided there's no need
 	updateVisionCone();
@@ -112,7 +115,10 @@ void TankAi::update(Tank& playerTank, sf::Time dt)
 		std::cout << e.what() << std::endl;
 	}
 
-	sf::Vector2f vectorToPlayer = seek(playerTank.position());
+	if (m_playerLastSeen.getElapsedTime() < m_timeToLosePlayer)
+	{
+		vectorToPlayer = seek(playerTank.getSprite().getPosition());
+	}
 
 	switch (m_currentState)
 	{
@@ -123,7 +129,9 @@ void TankAi::update(Tank& playerTank, sf::Time dt)
 		// IMPLEMENT LOGIC
 		// ###############
 
+		patrol();
 		
+		steer();
 
 		break;
 		
@@ -165,13 +173,39 @@ void TankAi::update(Tank& playerTank, sf::Time dt)
 
 	determineHeading();
 
-	if (thor::length(vectorToPlayer) < 400.0f)
+	// If we've seen the player in the last (time)
+	if (m_playerLastSeen.getElapsedTime() < m_timeToLosePlayer)
 	{
-		m_currentState = AIState::ATTACK_PLAYER;
+		// And we're in range, engage
+		if (thor::length(vectorToPlayer) < 400.0f)
+		{
+			m_currentState = AIState::ATTACK_PLAYER;
+		}
+		// Otherwise, get in range
+		else
+		{
+			m_currentState = AIState::FOLLOW_PLAYER;
+		}
+
+		m_visionCone[0].color = sf::Color(255, 0, 0, 128);
+
+		for (int i = 0; i <= NUM_RAYS; i++)
+		{
+			m_visionCone[i].color = m_visionConeColorAlert;
+		}
+		m_visionCone[0].color.a = 128;
 	}
+	// If we haven't seen the player, resume patrol
 	else
 	{
-		m_currentState = AIState::FOLLOW_PLAYER;
+		for (int i = 0; i <= NUM_RAYS; i++)
+		{
+			m_visionCone[i].color = m_visionConeColorPatrol;
+		}
+
+		m_visionCone[0].color.a = 128;
+
+		m_currentState = AIState::PATROL_MAP;
 	}
 
 	updateMovement(dt);
@@ -237,8 +271,9 @@ void TankAi::determineHeading()
 
 ////////////////////////////////////////////////////////////
 
-void TankAi::search()
+void TankAi::patrol()
 {
+	m_steering += {-1.0f, 0.0f};
 }
 
 ////////////////////////////////////////////////////////////
@@ -579,6 +614,9 @@ void TankAi::updateVisionCone()
 	// Should we stop our ray cast
 	bool stop{ false };
 
+	// If we find the player with one raycast, do not continue to check
+	bool playerDetected{ false };
+
 	// For each ray
 	for (sf::Vector2f& ray : m_visionRayCasts)
 	{
@@ -593,11 +631,21 @@ void TankAi::updateVisionCone()
 		{
 			ray += unit;
 
+			m_visionCircle.setPosition(ray);
+
+			// Check for the player in our vision cone
+			if (!playerDetected)
+			{
+				if (m_playerTankRect.contains(ray))
+				{
+					playerDetected = true;
+					m_playerLastSeen.restart();
+				}
+			}
+				
 			// For each obstacle in our vision cone
 			for (sf::FloatRect& obstacleBounds : m_obstaclesInCone)
 			{
-				m_visionCircle.setPosition(ray);
-
 				// If it contains our ray
 				if (obstacleBounds.intersects(m_visionCircle.getGlobalBounds()))
 				{

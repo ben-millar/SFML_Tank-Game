@@ -11,6 +11,7 @@
 
 #include "GameState.h"
 #include "GameObject.h"
+#include "TankDamage.h"
 
 #include "Obstacle.h"
 #include "Target.h"
@@ -204,15 +205,7 @@ private:
 
 	// #### DAMAGE ####
 
-	bool m_reducedSpeed{ false };
-
-	bool m_reducedTurnRate{ false };
-
-	bool m_leftTrackDamaged;
-
-	bool m_rightTrackDamaged;
-
-	std::vector<bool*> m_damageBools;
+	TankDamage m_damageLevels;
 
 	// ################
 	
