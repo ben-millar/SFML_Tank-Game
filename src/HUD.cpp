@@ -63,16 +63,12 @@ void HUD::init()
 	m_hudOutline[2].color = { sf::Color(128,128,128,255) };
 	m_hudOutline[3].color = { sf::Color(128,128,128,255) };
 
-	float padding{ 2.0f };
-	m_healthBarBackground[0].position = { HEALTH_BAR_POS - sf::Vector2f{padding, padding} };
-	m_healthBarBackground[1].position = { HEALTH_BAR_POS + sf::Vector2f{HEALTH_BAR_SIZE.x + padding, -padding} };
-	m_healthBarBackground[2].position = { HEALTH_BAR_POS + HEALTH_BAR_SIZE + sf::Vector2f{padding, padding } };
-	m_healthBarBackground[3].position = { HEALTH_BAR_POS + sf::Vector2f{ -padding, HEALTH_BAR_SIZE.y + padding} };
+	m_healthBarOutline.setFillColor(sf::Color(0, 0, 0, 0));
+	m_healthBarOutline.setOutlineColor(sf::Color::White);
+	m_healthBarOutline.setOutlineThickness(2.0f);
+	m_healthBarOutline.setPosition(HEALTH_BAR_POS);
+	m_healthBarOutline.setSize(HEALTH_BAR_SIZE);
 
-	for (int i = 0; i < 4; i++)
-	{
-		m_healthBarBackground[i].color = sf::Color::White;
-	}
 
 	m_healthBar[0].position = { HEALTH_BAR_POS };
 	m_healthBar[1].position = { HEALTH_BAR_POS + sf::Vector2f{HEALTH_BAR_SIZE.x, 0.0f} };
@@ -108,8 +104,8 @@ void HUD::update()
 
 void HUD::render(sf::RenderWindow& t_window)
 {
-	t_window.draw(m_hudBackground);
 	t_window.draw(m_hudOutline);
+	t_window.draw(m_hudBackground);
 
 	if (GameState::GameOver == m_gameState)
 	{
@@ -137,8 +133,9 @@ void HUD::render(sf::RenderWindow& t_window)
 	{
 		// ##### HEALTH BAR #####
 
-		t_window.draw(m_healthBarBackground);
+		
 		t_window.draw(m_healthBar);
+		t_window.draw(m_healthBarOutline);
 
 		setText("Health:", { 925.0f,5.0f }, 24U, false);
 		t_window.draw(m_gameText);

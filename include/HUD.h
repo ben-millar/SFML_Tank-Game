@@ -83,7 +83,7 @@ private:
 	sf::VertexArray m_hudOutline{ sf::Quads, 4U };
 
 	sf::VertexArray m_healthBar{ sf::Quads, 4U };
-	sf::VertexArray m_healthBarBackground{ sf::Quads, 4U };
+	sf::RectangleShape m_healthBarOutline;
 
 	const sf::Vector2f HEALTH_BAR_POS{ 925.0f,37.5f };
 	const sf::Vector2f HEALTH_BAR_SIZE{ 300.0f,35.0f };
