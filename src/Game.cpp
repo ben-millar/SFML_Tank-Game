@@ -184,6 +184,8 @@ void Game::init()
 	buildMap();
 
 	m_HUD.init();
+
+	m_aiTank.init({ 720.0f,450.0f });
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -378,12 +380,6 @@ void Game::handleKeyInput()
 
 void Game::update(sf::Time dt)
 {
-
-	if (m_gameData.targetsCollected >= m_gameData.totalTargets)
-	{
-		gameOver();
-	}
-
 	switch (m_gameState)
 	{
 	case GameState::Loading:
@@ -400,6 +396,16 @@ void Game::update(sf::Time dt)
 			gameOver();
 		}
 
+		if (m_gameData.targetsCollected >= m_gameData.totalTargets)
+		{
+			gameOver();
+		}
+
+		if (m_tank.getHealth() <= 0.0f)
+		{
+			gameOver();
+		}
+
 		checkTargetsHit();
 
 		m_tank.update(dt);
@@ -408,6 +414,9 @@ void Game::update(sf::Time dt)
 
 		// update game time for HUD
 		m_gameData.timeElapsed = m_gameClock.getElapsedTime().asSeconds();
+
+		// update player health for HUD
+		m_gameData.playerHealth = m_tank.getHealth();
 
 		// reduce trauma linearly to zero
 		(m_trauma > 0.005f) ? m_trauma -= 0.005f : m_trauma = 0.0f;
@@ -615,5 +624,4 @@ void Game::gameOver()
 	//if (m_score > m_highscore) m_highscore = m_score;
 
 	m_tank.reset();
-	m_aiTank.init({ 720.0f,450.0f });
 }

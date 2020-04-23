@@ -5,9 +5,10 @@
 /// </summary>
 struct GameData
 {
-	int totalTargets{ 0 };
-	int targetsCollected{ 0 };
-	float timeElapsed{ 0.0f };
+	float playerHealth{ -1.0f };
+	int totalTargets{ -1 };
+	int targetsCollected{ -1 };
+	float timeElapsed{ 0-1.0f };
 	std::vector<float> timePerTarget;
-	float score{ 0.0f };
+	float score{ -1.0f };
 };

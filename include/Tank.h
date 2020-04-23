@@ -84,16 +84,22 @@ public:
 	void toggleTurretFree();
 
 	/// <summary>
-	/// 
+	/// @brief Get the tank turret sprite
 	/// </summary>
-	/// <returns></returns>
+	/// <returns>SF::Sprite object for tank turret</returns>
 	inline sf::Sprite const getTurret() const { return m_turret; }
 
 	/// <summary>
-	/// 
+	/// @brief Get the tank base sprite
 	/// </summary>
-	/// <returns></returns>
+	/// <returns>SF::Sprite object for tank base</returns>
 	inline sf::Sprite const getBase() const { return m_tankBase; }
+
+	/// <summary>
+	/// @brief Get the players health value
+	/// </summary>
+	/// <returns>Tank's health as a float</returns>
+	inline float getHealth() const { return m_health; }
 
 	/// <summary>
 	/// @brief Called when the player tank is hit by a projectile
@@ -215,6 +221,9 @@ private:
 
 	// Keeps track of how damaged the tank is
 	float m_damage{ 0.0f };
+
+	const float MAX_HEALTH{ 100.0f };
+	float m_health{MAX_HEALTH};
 
 	// Fire clock 
 	sf::Clock m_fireClock;

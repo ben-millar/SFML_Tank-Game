@@ -19,7 +19,10 @@
 #pragma comment(lib,"libyaml-cppmdd")
 #include "Game.h"
 
-// TODO: Refactor spatial partition map to hold sets rather than lists
+// KNOWN BUGS: Sometimes the top 1/4 of the screen will be filled by some kind of 'wood grain' texture. 
+// This has happened twice in the several hundred times I've run the game, so I'm struggling to narrow down the cause.
+// Perhaps the effect of some race condition; SFML may handle file loading asynchronously under the hood, and I may be
+// assigning textures before they're fully loaded into memory.
 
 /// <summary>
 /// @brief starting point for all C++ programs.

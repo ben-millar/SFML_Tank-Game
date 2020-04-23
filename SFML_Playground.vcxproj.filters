@@ -87,10 +87,10 @@
     <ClInclude Include="include\TankAI.h">
       <Filter>Header Files\GameObjects</Filter>
     </ClInclude>
-    <ClInclude Include="GameData.h">
+    <ClInclude Include="include\GameData.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="TankDamage.h">
+    <ClInclude Include="include\TankDamage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -62,6 +62,27 @@ void HUD::init()
 	m_hudOutline[1].color = { sf::Color::White };
 	m_hudOutline[2].color = { sf::Color(128,128,128,255) };
 	m_hudOutline[3].color = { sf::Color(128,128,128,255) };
+
+	float padding{ 2.0f };
+	m_healthBarBackground[0].position = { HEALTH_BAR_POS - sf::Vector2f{padding, padding} };
+	m_healthBarBackground[1].position = { HEALTH_BAR_POS + sf::Vector2f{HEALTH_BAR_SIZE.x + padding, -padding} };
+	m_healthBarBackground[2].position = { HEALTH_BAR_POS + HEALTH_BAR_SIZE + sf::Vector2f{padding, padding } };
+	m_healthBarBackground[3].position = { HEALTH_BAR_POS + sf::Vector2f{ -padding, HEALTH_BAR_SIZE.y + padding} };
+
+	for (int i = 0; i < 4; i++)
+	{
+		m_healthBarBackground[i].color = sf::Color::White;
+	}
+
+	m_healthBar[0].position = { HEALTH_BAR_POS };
+	m_healthBar[1].position = { HEALTH_BAR_POS + sf::Vector2f{HEALTH_BAR_SIZE.x, 0.0f} };
+	m_healthBar[2].position = { HEALTH_BAR_POS + HEALTH_BAR_SIZE};
+	m_healthBar[3].position = { HEALTH_BAR_POS + sf::Vector2f{0.0f, HEALTH_BAR_SIZE.y} };
+
+	m_healthBar[0].color = sf::Color::Red;
+	m_healthBar[1].color = sf::Color::Red;
+	m_healthBar[2].color = sf::Color(128, 0, 0, 255);
+	m_healthBar[3].color = sf::Color(128, 0, 0, 255);
 }
 
 ////////////////////////////////////////////////////////////
@@ -75,6 +96,11 @@ void HUD::update()
 
 		m_hudOutline[1].position = { 0.0f,0.0f };
 		m_hudOutline[2].position = { 0.0f,0.0f };
+	}
+	else
+	{
+		m_healthBar[1].position = { HEALTH_BAR_POS + sf::Vector2f{HEALTH_BAR_SIZE.x * (m_gameData.playerHealth / 100.0f), 0.0f} };
+		m_healthBar[2].position = { HEALTH_BAR_POS + sf::Vector2f{HEALTH_BAR_SIZE.x * (m_gameData.playerHealth / 100.0f), HEALTH_BAR_SIZE.y} };
 	}
 }
 
@@ -109,11 +135,19 @@ void HUD::render(sf::RenderWindow& t_window)
 	}
 	else
 	{
+		// ##### HEALTH BAR #####
+
+		t_window.draw(m_healthBarBackground);
+		t_window.draw(m_healthBar);
+
+		setText("Health:", { 925.0f,5.0f }, 24U, false);
+		t_window.draw(m_gameText);
+
 		// ###### ICONS ######
 
 		// Reduced Speed
 		m_iconSprite.setTextureRect({ 0, 0, m_iconSize.x, m_iconSize.y });
-		m_iconSprite.setPosition({ 1100.0f, 10.0f });
+		m_iconSprite.setPosition({ 1280.0f, 10.0f });
 		t_window.draw(m_iconSprite);
 
 		m_iconOcclusion.setPosition(m_iconSprite.getPosition());
@@ -121,7 +155,7 @@ void HUD::render(sf::RenderWindow& t_window)
 
 		// Reduced Turn Rate
 		m_iconSprite.setTextureRect({ m_iconSize.x, 0, m_iconSize.x, m_iconSize.y });
-		m_iconSprite.setPosition({ 1170.0f, 10.0f });
+		m_iconSprite.setPosition({ 1350.0f, 10.0f });
 
 		m_iconSprite.setColor(sf::Color(255, 255, 255, 64));
 

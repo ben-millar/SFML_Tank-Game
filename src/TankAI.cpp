@@ -195,6 +195,8 @@ void TankAi::update(Tank& playerTank, sf::Time dt)
 	// If we haven't seen the player in (time) seconds
 	if (m_playerLastSeen.getElapsedTime() > m_timeToLosePlayer)
 	{
+		std::cout << "I've lost the player. Returning to patrol." << std::endl;
+
 		// Stop and restart the stopwatch
 		m_playerLastSeen.reset();
 

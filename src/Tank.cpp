@@ -56,6 +56,7 @@ void Tank::loadParticleTextures()
 void Tank::reset()
 {
 	setPosition({ 80.0f,80.0f });
+	m_health = MAX_HEALTH;
 	m_speed = 0.0;
 }
 
@@ -243,6 +244,8 @@ void Tank::hit()
 	// Increase the amount of smoke coming from our tank
 	(m_smokeEmissionRate < 10) ? m_smokeEmissionRate++ : m_smokeEmissionRate = 10;
 	m_smokeEmitter.setEmissionRate(m_smokeEmissionRate);
+
+	m_health -= 10.0f;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
