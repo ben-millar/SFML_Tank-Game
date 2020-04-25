@@ -1,5 +1,5 @@
 background:
-   file: ./resources/images/Background.jpg # Sample comment
+   file: ./resources/images/Background.png
 tank:
    max_projectiles: 10
    reload_time: 1000

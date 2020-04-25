@@ -192,16 +192,39 @@ void Game::init()
 
 void Game::generateWalls()
 {
-	sf::IntRect wallRect(2, 129, 33, 23);
+	//sf::IntRect wallRect(2, 129, 33, 23);
+
+	sf::IntRect wallRect;
+
 	// Create the Walls 
 	for (ObstacleData const& obstacle : m_level.m_obstacles)
 	{
+		// Randomly choose one of our rock sprites
+		switch (rand() % 3)
+		{
+		case 0:
+			wallRect = { 48, 90, 64, 64 };
+			break;
+		case 1:
+			wallRect = { 112, 90, 96, 64 };
+			break;
+		case 2:
+			wallRect = { 48, 160, 80, 64 };
+			break;
+		default:
+			break;
+		}	
+
+		// Random rotation
+		int rotation = rand() % 360;
+
 		sf::Sprite sprite;
 		sprite.setTexture(m_spriteSheetTexture);
 		sprite.setTextureRect(wallRect);
 		sprite.setOrigin(wallRect.width / 2.0f, wallRect.height / 2.0f);
 		sprite.setPosition(obstacle.m_position);
-		sprite.setRotation(obstacle.m_baseRotation);
+		//sprite.setRotation(obstacle.m_baseRotation);
+		sprite.setRotation(rotation);
 
 		m_obstacles.push_back(Obstacle(sprite));
 	}
