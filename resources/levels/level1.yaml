@@ -4,10 +4,11 @@ tank:
    max_projectiles: 10
    reload_time: 1000
    spawns: 
-      - pos: {x: 100, y: 100}
-      - pos: {x: 1300, y: 100}
-      - pos: {x: 100, y: 800}
-      - pos: {x: 1300, y: 800}
+      - pos: {x: 150, y: 150}
+      - pos: {x: 150, y: 150}
+      - pos: {x: 150, y: 150}
+      - pos: {x: 150, y: 150}
+# The top left spawn works nicely with my new camera system
 ai_tank:
    spawns:
       - pos: {x: 400, y: 700}

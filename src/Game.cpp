@@ -149,9 +149,6 @@ void Game::setupSprites()
 
 	// overdraw the background slightly to account for later screenshake
 	m_bgSprite.setScale(1.1f, 1.1f);
-	m_bgSprite.setOrigin(m_bgSprite.getGlobalBounds().width / 2.0f, 
-						 m_bgSprite.getGlobalBounds().height / 2.0f);
-	m_bgSprite.setPosition({ ScreenSize::s_width / 2.0f, ScreenSize::s_height / 2.0f });
 
 	m_menuBackgroundSprite.setTexture(m_menuBackgroundTexture);
 }
@@ -538,6 +535,18 @@ void Game::shakeScreen()
 
 	view.setRotation(angleOffset);
 
+	// View target
+	sf::Vector2f target = (m_tank.getBase().getPosition());
+	
+	target = ((target * 0.75f) + (view.getCenter() * 0.25f));
+
+	// Center cannot go outside of the background
+	target.x = std::clamp(target.x, ScreenSize::s_width / 2.0f, ScreenSize::s_width * 1.5f);
+	target.y = std::clamp(target.y, ScreenSize::s_height / 2.0f, ScreenSize::s_height * 1.5f);
+
+	// Asymptotic average of target and current view; lazy camera
+	view.setCenter(target);
+
 	m_window.setView(view);
 }
 
@@ -611,7 +620,16 @@ void Game::render()
 		}
 	}
 
+	// Store the current view transform
+	sf::View currentView = m_window.getView();
+
+	// we want to draw the HUD such that it ignores the global view transforms
+	m_window.setView(m_window.getDefaultView()); 
 	m_HUD.render(m_window);
+
+	// Restore the view transforms
+	m_window.setView(currentView);
+
 	m_window.display();
 }
 

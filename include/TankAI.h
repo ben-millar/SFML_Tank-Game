@@ -262,7 +262,7 @@ private:
 	thor::StopWatch m_playerLastSeen;
 
 	// If the player hasn't been seen in this time period, our AI tank will resume patrolling the map
-	sf::Time m_timeToLosePlayer{ sf::seconds(1.5f) };
+	sf::Time m_timeToLosePlayer{ sf::seconds(2.0f) };
 
 	// ######################################
 
