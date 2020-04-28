@@ -8,8 +8,11 @@ static const sf::Time MS_PER_UPDATE = sf::seconds(1.0f/60.0f);
 ////////////////////////////////////////////////////////////
 Game::Game()
 	: m_window(sf::VideoMode(ScreenSize::s_width, ScreenSize::s_height, 32), "SFML Playground", sf::Style::Default),
-	m_tank(m_spriteSheetTexture, m_spatialMap, m_activeTargets, m_aiTank, m_trauma),
-	m_aiTank(m_spriteSheetTexture, m_spatialMap, m_obstacles),
+	m_tank(m_spriteSheetTexture, m_spatialMap, m_activeTargets, m_topLeftAI, m_trauma),
+	m_topLeftAI(m_spriteSheetTexture, m_spatialMap, m_obstacles),
+	m_topRightAI(m_spriteSheetTexture, m_spatialMap, m_obstacles),
+	m_bottomLeftAI(m_spriteSheetTexture, m_spatialMap, m_obstacles),
+	m_bottomRightAI(m_spriteSheetTexture, m_spatialMap, m_obstacles),
 	m_HUD(m_font, m_gameData, m_gameState)
 {
 	// Game runs much faster with this commented out. Why?
@@ -37,9 +40,12 @@ Game::Game()
 	generateTargets();
 	setupSprites();
 
-	init();
+	m_topLeftAI.setPatrolZone({ 50.0f, 50.0f, 1390.0f, 800.0f });
+	m_topRightAI.setPatrolZone({ 1490.0f, 50.0f, 1390.0f, 800.0f });
+	m_bottomLeftAI.setPatrolZone({ 50.0f, 950.0f, 1390.0f, 800.0f });
+	m_bottomRightAI.setPatrolZone({ 1490.0f, 950.0f, 1390.0f, 800.0f });
 
-	m_aiTank.init(m_level.m_aiTank.m_position.at(0));
+	init();
 
 	// set state to GamePlay
 	m_gameState = GameState::GamePlay;
@@ -182,7 +188,10 @@ void Game::init()
 
 	m_HUD.init();
 
-	m_aiTank.init({ 720.0f,450.0f });
+	m_topLeftAI.init({ 400.0f, 500.0f });
+	m_topRightAI.init({ 2480.0f, 500.0f });
+	m_bottomLeftAI.init({ 400.0f, 1400.0f });
+	m_bottomRightAI.init({ 2480.0f, 1400.0f });
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -411,8 +420,11 @@ void Game::update(sf::Time dt)
 		getTurretRotation();
 
 		// Check for collisions with AI tank
-		if (m_aiTank.collidesWithPlayer(m_tank))
-		{
+		if (m_topLeftAI.collidesWithPlayer(m_tank) ||
+			m_topRightAI.collidesWithPlayer(m_tank) ||
+			m_bottomLeftAI.collidesWithPlayer(m_tank) ||
+			m_bottomRightAI.collidesWithPlayer(m_tank))
+		{ 
 			gameOver();
 		}
 
@@ -430,7 +442,10 @@ void Game::update(sf::Time dt)
 
 		m_tank.update(dt);
 
-		m_aiTank.update(m_tank, dt);
+		m_topLeftAI.update(m_tank, dt);
+		m_topRightAI.update(m_tank, dt);
+		m_bottomLeftAI.update(m_tank, dt);
+		m_bottomRightAI.update(m_tank, dt);
 
 		// update game time for HUD
 		m_gameData.timeElapsed = m_gameClock.getElapsedTime().asSeconds();
@@ -609,7 +624,10 @@ void Game::render()
 
 		m_tank.render(m_window);
 
-		m_aiTank.render(m_window);
+		m_topLeftAI.render(m_window);
+		m_topRightAI.render(m_window);
+		m_bottomLeftAI.render(m_window);
+		m_bottomRightAI.render(m_window);
 
 		if (m_deltaScoreClock.getElapsedTime() < DELTA_SCORE_TIME) m_window.draw(m_deltaScoreText);
 

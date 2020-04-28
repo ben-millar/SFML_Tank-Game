@@ -185,7 +185,12 @@ private:
 	Tank m_tank;
 
 	// An instance representing the AI controlled tank.
-	TankAi m_aiTank;
+	//std::array<TankAi*, 4U> m_aiTank;
+
+	TankAi m_topLeftAI;
+	TankAi m_topRightAI;
+	TankAi m_bottomLeftAI;
+	TankAi m_bottomRightAI;
 
 	GameData m_gameData;
 

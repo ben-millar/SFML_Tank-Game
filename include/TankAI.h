@@ -40,6 +40,12 @@ public:
 	void update(Tank & playerTank, sf::Time dt);
 
 	/// <summary>
+	/// @brief Tells our AI tank in which area it should patrol
+	/// </summary>
+	/// <param name="t_zone">Zone to patrol</param>
+	inline void setPatrolZone(sf::FloatRect t_zone) { m_patrolZone = t_zone; }
+
+	/// <summary>
 	/// @brief Checks for collision between the AI and player tanks.
 	/// </summary>
 	/// <param name="player">The player tank instance</param>
@@ -267,6 +273,8 @@ private:
 	// ######################################
 
 	// ########## PATROL BEHAVIOUR ##########
+
+	sf::FloatRect m_patrolZone{ 50.0f,50.0f,1390.0f,800.0f };
 
 	// This will be randomly assigned within the bounds of the screen
 	// for the AI tank to navigate to

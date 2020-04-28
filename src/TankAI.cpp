@@ -243,9 +243,9 @@ void TankAi::driveTo(sf::Vector2f t_navPos)
 
 void TankAi::choosePatrolTarget()
 {
-	// Choose within the bounds, with a margin of 50-100 pixels from the edge of the screen
-	float xPos = static_cast<float>(rand() % (ScreenSize::s_width - 200) + 100);
-	float yPos = static_cast<float>(rand() % (ScreenSize::s_height - 100) + 50);
+	// Choose a target within the bounds of our patrol zone
+	float xPos = static_cast<float>(rand() % (static_cast<int>(m_patrolZone.width)) + m_patrolZone.left);
+	float yPos = static_cast<float>(rand() % (static_cast<int>(m_patrolZone.height)) + m_patrolZone.top);
 
 	m_patrolTarget = { xPos, yPos };
 	m_patrolTargetBounds.setPosition(m_patrolTarget);
