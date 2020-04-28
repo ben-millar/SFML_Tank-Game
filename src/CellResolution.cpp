@@ -8,7 +8,7 @@ int CellResolution::getGridRef(sf::Vector2f t_pos)
 {
 	if (t_pos.x > 0.0f && t_pos.y > 0.0f)
 	{
-		if (t_pos.x < ScreenSize::s_width && t_pos.y < ScreenSize::s_height)
+		if (t_pos.x < ScreenSize::s_width * 2.0f && t_pos.y < ScreenSize::s_height * 2.0f)
 		{
 			return (floor(t_pos.x / CELL_SIZE.x) * 10) + floor(t_pos.y / CELL_SIZE.y);
 		}
