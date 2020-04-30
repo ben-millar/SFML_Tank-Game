@@ -35,6 +35,7 @@ Game::Game()
 	}
 
 	loadTextures();
+	loadAudio();
 	loadFonts();
 	generateWalls();
 	generateTargets();
@@ -89,56 +90,96 @@ void Game::run()
 /// @brief Loads all game textures from file
 /// </summary>
 void Game::loadTextures()
+try
 {
-	try
+	if (!m_bgTexture.loadFromFile(m_level.m_background.m_fileName))
 	{
-		if (!m_bgTexture.loadFromFile(m_level.m_background.m_fileName))
-		{
-			throw std::exception("Error loading background texture from file in game.cpp>loadTextures");
-		}
-		if (!m_spriteSheetTexture.loadFromFile(".\\resources\\images\\SpriteSheet.png"))
-		{
-			throw std::exception("Error loading SpriteSheet texture from file in game.cpp>loadTextures");
-		}
-		if (!m_menuBackgroundTexture.loadFromFile(".\\resources\\images\\MainMenuBackground.png"))
-		{
-			throw std::exception("Error loading menuBackgroundTexture from file in game.cpp>loadTextures");
-		}
+		throw std::exception("Error loading background texture from file in game.cpp>loadTextures");
 	}
-	catch(std::exception& e)
+	if (!m_spriteSheetTexture.loadFromFile(".\\resources\\images\\SpriteSheet.png"))
 	{
-		std::cout << e.what();
+		throw std::exception("Error loading SpriteSheet texture from file in game.cpp>loadTextures");
 	}
+	if (!m_menuBackgroundTexture.loadFromFile(".\\resources\\images\\MainMenuBackground.png"))
+	{
+		throw std::exception("Error loading menuBackgroundTexture from file in game.cpp>loadTextures");
+	}
+}
+catch(std::exception& e)
+{
+	std::cout << e.what();
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+
+void Game::loadAudio()
+try
+{
+	std::string filePath{ ".\\resources\\audio\\TankFire.wav" };
+
+	if (!m_enemyTankFiringBuffer.loadFromFile(filePath))
+	{
+		std::string msg{ "ERROR: Unable to open file '" + filePath + "'" };
+		throw std::exception(msg.c_str());
+	}
+
+	filePath = ".\\resources\\audio\\ShellImpact.wav";
+
+	if (!m_shellImpactBuffer.loadFromFile(filePath))
+	{
+		std::string msg{ "ERROR: Unable to open file '" + filePath + "'" };
+		throw std::exception(msg.c_str());
+	}
+	
+	m_topLeftAI.setAudio(m_enemyTankFiringBuffer, m_shellImpactBuffer);
+	m_topRightAI.setAudio(m_enemyTankFiringBuffer, m_shellImpactBuffer);
+	m_bottomLeftAI.setAudio(m_enemyTankFiringBuffer, m_shellImpactBuffer);
+	m_bottomRightAI.setAudio(m_enemyTankFiringBuffer, m_shellImpactBuffer);
+	
+
+	filePath = ".\\resources\\audio\\BackgroundMusic.wav";
+
+	if (!m_backgroundMusic.openFromFile(filePath))
+	{
+		std::string msg{ "ERROR: Unable to open file '" + filePath + "'" };
+		throw std::exception(msg.c_str());
+	}
+	else
+	{
+
+	}
+}
+catch (const std::exception& e)
+{
+	std::cout << e.what() << std::endl;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
 void Game::loadFonts()
+try
 {
-	try
+	if (!m_font.loadFromFile(".\\resources\\fonts\\joystix.monospace.ttf"))
 	{
-		if (!m_font.loadFromFile(".\\resources\\fonts\\joystix.monospace.ttf"))
-		{
-			throw std::exception("Error loading joystix font from file in game.cpp:100");
-		}
-
-		m_text.setFont(m_font);
-		m_text.setCharacterSize(16U);
-		m_text.setPosition({ 10.0f,10.0f });
-
-		m_traumaMeter.setFont(m_font);
-		m_traumaMeter.setPosition({ 10.0f,30.0f });
-
-		m_deltaScoreText.setFont(m_font);
-		m_deltaScoreText.setCharacterSize(16U);
-		m_deltaScoreText.setFillColor(sf::Color::Yellow);
-		m_deltaScoreText.setOutlineColor(sf::Color::Black);
-		m_deltaScoreText.setOutlineThickness(2.0f);
+		throw std::exception("Error loading joystix font from file in game.cpp:100");
 	}
-	catch (std::exception e)
-	{
-		std::cout << e.what() << std::endl;
-	}
+
+	m_text.setFont(m_font);
+	m_text.setCharacterSize(16U);
+	m_text.setPosition({ 10.0f,10.0f });
+
+	m_traumaMeter.setFont(m_font);
+	m_traumaMeter.setPosition({ 10.0f,30.0f });
+
+	m_deltaScoreText.setFont(m_font);
+	m_deltaScoreText.setCharacterSize(16U);
+	m_deltaScoreText.setFillColor(sf::Color::Yellow);
+	m_deltaScoreText.setOutlineColor(sf::Color::Black);
+	m_deltaScoreText.setOutlineThickness(2.0f);
+}
+catch (std::exception e)
+{
+	std::cout << e.what() << std::endl;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -192,6 +233,9 @@ void Game::init()
 	m_topRightAI.init({ 2480.0f, 500.0f });
 	m_bottomLeftAI.init({ 400.0f, 1400.0f });
 	m_bottomRightAI.init({ 2480.0f, 1400.0f });
+
+	m_backgroundMusic.setVolume(100.0f);
+	m_backgroundMusic.play();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -362,8 +406,9 @@ void Game::processGameEvents(sf::Event& event)
 			}
 		}
 	}
-	// GAME OVER
-	else if (GameState::GameOver == m_gameState)
+	// GAME OVER/WON
+	else if (GameState::GameOver == m_gameState ||
+			 GameState::GameWin == m_gameState)
 	{
 		if (sf::Event::KeyPressed == event.type)
 		{
@@ -463,6 +508,24 @@ void Game::update(sf::Time dt)
 
 		break;
 	case GameState::GameOver:
+		if (m_backgroundMusic.getVolume() > 0.2f)
+		{
+			m_backgroundMusic.setVolume(m_backgroundMusic.getVolume() * 0.95);
+		}
+		else
+		{
+			m_backgroundMusic.stop();
+		}
+		break;
+	case GameState::GameWin:
+		if (m_backgroundMusic.getVolume() > 0.2f)
+		{
+			m_backgroundMusic.setVolume(m_backgroundMusic.getVolume() * 0.95);
+		}
+		else
+		{
+			m_backgroundMusic.stop();
+		}
 		break;
 	default:
 		break;

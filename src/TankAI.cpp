@@ -378,6 +378,9 @@ void TankAi::fire()
 
 		// Shake the screen
 		(m_screenShake < 0.5f) ? m_screenShake += 0.25f : m_screenShake = 0.5f;
+
+		m_firingSound.setPosition(sf::Vector3f{ m_tankBase.getPosition().x, m_tankBase.getPosition().y, 0.0f });
+		m_firingSound.play();
 }
 
 ////////////////////////////////////////////////////////////
@@ -590,6 +593,9 @@ void TankAi::projectileImpact(sf::Vector2f t_impactPos)
 	std::cout << "Creating thread [";
 	m_smokeThread = new std::thread(f_impactSmoke, this, t_impactPos);
 	std::cout << m_smokeThread->get_id() << "]" << std::endl;
+
+	m_impactSound.setPosition(sf::Vector3f{ t_impactPos.x, t_impactPos.y, 0.0f });
+	m_impactSound.play();
 }
 
 ////////////////////////////////////////////////////////////

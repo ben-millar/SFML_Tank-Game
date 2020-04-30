@@ -3,6 +3,7 @@
 // TODO: Setup all asset file paths in YAML file
 
 #include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
 #include <Thor/Time.hpp>
 #include "ScreenSize.h"
 #include "CellResolution.h"
@@ -63,6 +64,11 @@ private:
 	/// @brief Loads all game textures from file
 	/// </summary>
 	void loadTextures();
+
+	/// <summary>
+	/// @brief Loads all audio assets from file
+	/// </summary>
+	void loadAudio();
 
 	/// <summary>
 	/// @brief Loads all fonts from file
@@ -180,6 +186,14 @@ private:
 	// font and text
 	sf::Font m_font;
 	sf::Text m_text;
+
+	// Audio
+	sf::SoundBuffer m_enemyTankFiringBuffer;
+
+	sf::SoundBuffer m_shellImpactBuffer;
+
+	sf::SoundBuffer m_backgroundMusicBuffer;
+	sf::Music m_backgroundMusic;
 
 	// An instance representing the player controlled tank.
 	Tank m_tank;

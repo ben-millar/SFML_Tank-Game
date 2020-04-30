@@ -85,7 +85,7 @@ void HUD::init()
 
 void HUD::update()
 {
-	if (GameState::GameOver == m_gameState)
+	if (GameState::GameOver == m_gameState || GameState::GameWin == m_gameState)
 	{
 		m_hudBackground[2].position = { m_width, ScreenSize::s_height };
 		m_hudBackground[3].position = { 0.0f, ScreenSize::s_height };
@@ -107,7 +107,7 @@ void HUD::render(sf::RenderWindow& t_window)
 	t_window.draw(m_hudOutline);
 	t_window.draw(m_hudBackground);
 
-	if (GameState::GameOver == m_gameState)
+	if (GameState::GameOver == m_gameState || GameState::GameWin == m_gameState)
 	{
 		// Game State Text
 		setText(m_gameStateStrings.at(static_cast<int>(m_gameState)), { ScreenSize::s_width / 2.0f, 100.0f }, 72U, true);

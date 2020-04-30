@@ -66,6 +66,7 @@ private:
 		"Loading",
 		"Gameplay",
 		"Paused",
+		"You Win!",
 		"Game Over"
 	};
 

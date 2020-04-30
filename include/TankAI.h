@@ -4,6 +4,7 @@
 #include "MathUtility.h"
 #include "Tank.h"
 #include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
 #include <Thor/Vectors.hpp>
 #include <Thor/Particles.hpp>
 #include <Thor/Animations.hpp>
@@ -26,6 +27,12 @@ public:
 	/// <param name="texture">A reference to the sprite sheet texture</param>
 	///< param name="wallSprites">A reference to the container of wall sprites</param>
 	TankAi(sf::Texture const & texture, std::map<int, std::list<GameObject*>>& t_obstacleMap, std::vector<Obstacle>& t_obstacleVector, float& t_screenShake);
+
+	/// <summary>
+	/// @brief Passes in audio to the AI tank
+	/// </summary>
+	/// <param name="t_firingSFXbuffer">A reference to the soundbuffer</param>
+	inline void setAudio(sf::SoundBuffer& t_firingSFXbuffer, sf::SoundBuffer& t_shellImpact) { m_firingSound.setBuffer(t_firingSFXbuffer), m_impactSound.setBuffer(t_shellImpact); }
 
 	/// <summary>
 	/// @brief Steers the AI tank towards the player tank avoiding obstacles along the way.
@@ -255,6 +262,10 @@ private:
 
 	// Used for screenshake effect when firing
 	float& m_screenShake;
+
+	// Cannon firing SFX
+	sf::Sound m_firingSound;
+	sf::Sound m_impactSound;
 
 	// Projectile pool for firing
 	ProjectilePool m_projectilePool;
