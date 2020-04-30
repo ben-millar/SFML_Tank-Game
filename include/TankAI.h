@@ -25,7 +25,7 @@ public:
 	/// </summary>
 	/// <param name="texture">A reference to the sprite sheet texture</param>
 	///< param name="wallSprites">A reference to the container of wall sprites</param>
-	TankAi(sf::Texture const & texture, std::map<int, std::list<GameObject*>>& t_obstacleMap, std::vector<Obstacle>& t_obstacleVector);
+	TankAi(sf::Texture const & texture, std::map<int, std::list<GameObject*>>& t_obstacleMap, std::vector<Obstacle>& t_obstacleVector, float& t_screenShake);
 
 	/// <summary>
 	/// @brief Steers the AI tank towards the player tank avoiding obstacles along the way.
@@ -252,6 +252,9 @@ private:
 
 	// A sprite for the turret
 	sf::Sprite m_turret;
+
+	// Used for screenshake effect when firing
+	float& m_screenShake;
 
 	// Projectile pool for firing
 	ProjectilePool m_projectilePool;

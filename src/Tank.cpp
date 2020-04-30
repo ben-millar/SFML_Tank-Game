@@ -65,6 +65,15 @@ void Tank::reset()
 	setPosition({ 80.0f,80.0f });
 	m_health = MAX_HEALTH;
 	m_speed = 0.0;
+	m_smokeEmissionRate = 0;
+
+	m_smokeParticleSystem.clearEmitters();
+	m_sparkParticleSystem.clearEmitters();
+
+	m_smokeEmitter.setEmissionRate(0);
+
+	m_damageLevels.reset();
+	m_damageClock.reset();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -202,7 +211,7 @@ void Tank::decreaseSpeed()
 void Tank::increaseRotation()
 {
 	// Decrease turn rate if our track is damaged
-	double rotateBy{ (m_damageLevels.m_rightTrackDamage) ? 0.5 : 1.0f };
+	double rotateBy{ (m_damageLevels.m_rightTrackDamaged) ? 0.5 : 1.0f };
 
 	m_previousBaseRotation = m_baseRotation;
 	(m_baseRotation > 360.0) ? m_baseRotation -= 360.0 : m_baseRotation += rotateBy;
@@ -213,7 +222,7 @@ void Tank::increaseRotation()
 void Tank::decreaseRotation()
 {
 	// Decrease turn rate if our track is damaged
-	double rotateBy{ (m_damageLevels.m_rightTrackDamage) ? 0.5 : 1.0f };
+	double rotateBy{ (m_damageLevels.m_rightTrackDamaged) ? 0.5 : 1.0f };
 
 	m_previousBaseRotation = m_baseRotation;
 	(m_baseRotation < 0.0) ? m_baseRotation += 360.0 : m_baseRotation -= rotateBy;
@@ -259,6 +268,27 @@ void Tank::hit()
 	m_smokeEmitter.setEmissionRate(m_smokeEmissionRate);
 
 	m_health -= 10.0f;
+
+	// If neither track is damaged
+	if (!m_damageLevels.m_leftTrackDamaged && !m_damageLevels.m_rightTrackDamaged)
+	{
+		// 1 in 3 chance of damaging a track
+		if (1 == rand() % 3)
+		{
+			// flip a coin to decide which side is damaged
+			if (1 == rand() % 2)
+			{
+				m_damageLevels.m_leftTrackDamaged = true;
+			}
+			else
+			{
+				m_damageLevels.m_rightTrackDamaged = true;
+			}
+
+			// Restart the time to repair damage
+			m_damageClock.restart();
+		}
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -292,14 +322,40 @@ void Tank::update(sf::Time dt)
 	// keep track of previous speed
 	m_previousSpeed = m_speed;
 
+	// if either track is damaged
+	if (m_damageLevels.m_leftTrackDamaged || m_damageLevels.m_rightTrackDamaged)
+	{
+		// if our time to repair has elapsed
+		if (m_damageClock.getElapsedTime() > m_damageTime)
+		{
+			// remove damage and stop clock
+			m_damageLevels.reset();
+			m_damageClock.reset();
+		}
+	}
+
+	// Pull the steering if one track is damaged
+	float steeringOffset{ 0.0f };
+
+	if (m_damageLevels.m_leftTrackDamaged)
+	{
+		steeringOffset = 0.2f;
+	}
+	else if (m_damageLevels.m_rightTrackDamaged)
+	{
+		steeringOffset = -0.2f;
+	}
+
 	if (m_speed > 0.0)
 	{
 		m_speed -= M_FRICTION;
+		m_baseRotation -= steeringOffset;
 	}
 
 	if (m_speed < 0.0)
 	{
 		m_speed += M_FRICTION;
+		m_baseRotation += steeringOffset;
 	}
 
 	updateGameObjects();
@@ -407,8 +463,6 @@ void Tank::updateGameObjects()
 void Tank::updateParticles(sf::Time t_dt)
 {
 	// Update position for particle FX
-	m_smokeEmitter.setParticlePosition(m_turret.getPosition());
-
 	if (m_damageLevels.m_leftTrackDamaged)
 	{
 		// 90 degrees off our rotation; portside of the tank
@@ -419,7 +473,7 @@ void Tank::updateParticles(sf::Time t_dt)
 		m_sparkParticleSystem.addEmitter(m_sparksEmitter, sf::seconds(0.5f));
 	}
 	
-	if (m_damageLevels.m_rightTrackDamage)
+	if (m_damageLevels.m_rightTrackDamaged)
 	{
 		// 90 degrees off our rotation; starboard side of the tank
 		float deltaAngle = thor::toRadian(m_baseRotation + 90.0f);
@@ -429,6 +483,7 @@ void Tank::updateParticles(sf::Time t_dt)
 		m_sparkParticleSystem.addEmitter(m_sparksEmitter, sf::seconds(0.5f));
 	}
 
+	m_smokeEmitter.setParticlePosition(m_turret.getPosition());
 	m_smokeParticleSystem.addEmitter(m_smokeEmitter, sf::seconds(0.5f));
 
 	m_smokeParticleSystem.update(t_dt);

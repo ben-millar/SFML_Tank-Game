@@ -9,10 +9,10 @@ static const sf::Time MS_PER_UPDATE = sf::seconds(1.0f/60.0f);
 Game::Game()
 	: m_window(sf::VideoMode(ScreenSize::s_width, ScreenSize::s_height, 32), "SFML Playground", sf::Style::Default),
 	m_tank(m_spriteSheetTexture, m_spatialMap, m_activeTargets, m_topLeftAI, m_trauma),
-	m_topLeftAI(m_spriteSheetTexture, m_spatialMap, m_obstacles),
-	m_topRightAI(m_spriteSheetTexture, m_spatialMap, m_obstacles),
-	m_bottomLeftAI(m_spriteSheetTexture, m_spatialMap, m_obstacles),
-	m_bottomRightAI(m_spriteSheetTexture, m_spatialMap, m_obstacles),
+	m_topLeftAI(m_spriteSheetTexture, m_spatialMap, m_obstacles, m_trauma),
+	m_topRightAI(m_spriteSheetTexture, m_spatialMap, m_obstacles, m_trauma),
+	m_bottomLeftAI(m_spriteSheetTexture, m_spatialMap, m_obstacles, m_trauma),
+	m_bottomRightAI(m_spriteSheetTexture, m_spatialMap, m_obstacles, m_trauma),
 	m_HUD(m_font, m_gameData, m_gameState)
 {
 	// Game runs much faster with this commented out. Why?

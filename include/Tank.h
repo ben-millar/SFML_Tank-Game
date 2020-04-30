@@ -3,6 +3,7 @@
 
 #include <SFML/Graphics.hpp>
 #include <Thor/Math.hpp>
+#include <Thor/Time.hpp>
 #include <Thor/Particles.hpp>
 #include <Thor/Animations.hpp>
 
@@ -213,14 +214,16 @@ private:
 
 	TankDamage m_damageLevels;
 
+	// How long have we been damaged for?
+	thor::StopWatch m_damageClock;
+	// How long should we be damaged for before it's repaired?
+	sf::Time m_damageTime{ sf::seconds(7.5f) };
+
 	// ################
 	
 	static constexpr float M_MAX_SPEED = 100.0f;
 	static constexpr float M_MIN_SPEED = -100.0f;
 	static constexpr float M_FRICTION = 0.2f;
-
-	// Keeps track of how damaged the tank is
-	float m_damage{ 0.0f };
 
 	const float MAX_HEALTH{ 100.0f };
 	float m_health{MAX_HEALTH};

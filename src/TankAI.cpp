@@ -2,11 +2,12 @@
 
 ////////////////////////////////////////////////////////////
 
-TankAi::TankAi(sf::Texture const& texture, std::map<int, std::list<GameObject*>>& t_obstacleMap, std::vector<Obstacle>& t_obstacleVector) :
+TankAi::TankAi(sf::Texture const& texture, std::map<int, std::list<GameObject*>>& t_obstacleMap, std::vector<Obstacle>& t_obstacleVector, float& t_screenShake) :
 	m_texture(texture)
 	, ref_obstacleMap(t_obstacleMap)
 	, ref_obstacleVector(t_obstacleVector)
 	, m_steering(0, 0)
+	, m_screenShake(t_screenShake)
 {
 	// Initialises the tank base and turret sprites.
 	initSprites();
@@ -27,6 +28,12 @@ void TankAi::init(sf::Vector2f position)
 
 	m_smokeParticleSystem.clearEmitters();
 	m_sparkParticleSystem.clearEmitters();
+
+	// Stop and restart the stopwatch
+	m_playerLastSeen.reset();
+
+	// Return to patrol
+	m_currentState = AIState::PATROL_MAP;
 
 	choosePatrolTarget();
 }
@@ -368,6 +375,9 @@ void TankAi::fire()
 		m_projectilePool.create(m_turret.getPosition(), targetVector, 180);
 
 		muzzleFlash(targetVector);
+
+		// Shake the screen
+		(m_screenShake < 0.5f) ? m_screenShake += 0.25f : m_screenShake = 0.5f;
 }
 
 ////////////////////////////////////////////////////////////

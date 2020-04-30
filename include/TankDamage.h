@@ -2,7 +2,11 @@
 
 struct TankDamage
 {
-	bool m_leftTrackDamaged{ false };
+	/// <summary>
+	/// @brief Reset all tank damage
+	/// </summary>
+	void reset() { m_leftTrackDamaged = false, m_rightTrackDamaged = false; }
 
-	bool m_rightTrackDamage{ false };
+	bool m_leftTrackDamaged{ false };
+	bool m_rightTrackDamaged{ false };
 };
