@@ -115,6 +115,7 @@ catch(std::exception& e)
 void Game::loadAudio()
 try
 {
+	// ###### ENEMY TANK FIRING SFX ######
 	std::string filePath{ ".\\resources\\audio\\TankFire.wav" };
 
 	if (!m_enemyTankFiringBuffer.loadFromFile(filePath))
@@ -123,6 +124,7 @@ try
 		throw std::exception(msg.c_str());
 	}
 
+	// ###### SHELL IMPACT SFX ######
 	filePath = ".\\resources\\audio\\ShellImpact.wav";
 
 	if (!m_shellImpactBuffer.loadFromFile(filePath))
@@ -135,18 +137,53 @@ try
 	m_topRightAI.setAudio(m_enemyTankFiringBuffer, m_shellImpactBuffer);
 	m_bottomLeftAI.setAudio(m_enemyTankFiringBuffer, m_shellImpactBuffer);
 	m_bottomRightAI.setAudio(m_enemyTankFiringBuffer, m_shellImpactBuffer);
-	
 
-	filePath = ".\\resources\\audio\\BackgroundMusic.wav";
+	// ###### TARGET PICKUP SFX ######
+	filePath = ".\\resources\\audio\\PickupTarget.wav";
 
-	if (!m_backgroundMusic.openFromFile(filePath))
+	if (!m_targetPickupSoundBuffer.loadFromFile(filePath))
 	{
 		std::string msg{ "ERROR: Unable to open file '" + filePath + "'" };
 		throw std::exception(msg.c_str());
 	}
 	else
 	{
+		m_targetPickupSound.setBuffer(m_targetPickupSoundBuffer);
+	}
+	
+	// ###### VICTORY FANFARE ######
+	filePath = ".\\resources\\audio\\VictoryFanfare.wav";
 
+	if (!m_victoryFanfareBuffer.loadFromFile(filePath))
+	{
+		std::string msg{ "ERROR: Unable to open file '" + filePath + "'" };
+		throw std::exception(msg.c_str());
+	}
+	else
+	{
+		m_victoryFanfareSound.setBuffer(m_victoryFanfareBuffer);
+	}
+
+	// ###### GAME OVER MUSIC ######
+	filePath = ".\\resources\\audio\\GameOver.wav";
+
+	if (!m_gameOverMusicBuffer.loadFromFile(filePath))
+	{
+		std::string msg{ "ERROR: Unable to open file '" + filePath + "'" };
+		throw std::exception(msg.c_str());
+	}
+	else
+	{
+		m_gameOverMusic.setBuffer(m_gameOverMusicBuffer);
+	}
+
+	// ###### BACKGROUND MUSIC ######
+	filePath = ".\\resources\\audio\\BackgroundMusic.wav";
+
+	if (!m_backgroundMusic.openFromFile(filePath))
+	{
+		std::string msg{ "ERROR: Unable to open file '" + filePath + "'" };
+		throw std::exception(msg.c_str());
 	}
 }
 catch (const std::exception& e)
@@ -236,6 +273,9 @@ void Game::init()
 
 	m_backgroundMusic.setVolume(100.0f);
 	m_backgroundMusic.play();
+
+	m_victoryFanfareSound.stop();
+	m_gameOverMusic.stop();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -385,6 +425,7 @@ void Game::processGameEvents(sf::Event& event)
 			if (sf::Keyboard::P == event.key.code)
 			{
 				m_gameState = GameState::Paused;
+				m_backgroundMusic.setVolume(40.0f);
 				m_gameClock.stop();
 			}
 
@@ -402,6 +443,7 @@ void Game::processGameEvents(sf::Event& event)
 			if (sf::Keyboard::P == event.key.code)
 			{
 				m_gameState = GameState::GamePlay;
+				m_backgroundMusic.setVolume(100.0f);
 				m_gameClock.start();
 			}
 		}
@@ -475,7 +517,9 @@ void Game::update(sf::Time dt)
 
 		if (m_gameData.targetsCollected >= m_gameData.totalTargets)
 		{
-			gameOver();
+			m_gameState = GameState::GameWin;
+			m_victoryFanfareSound.play();
+			m_tank.reset();
 		}
 
 		if (m_tank.getHealth() <= 0.0f)
@@ -549,6 +593,7 @@ void Game::checkTargetsHit()
 
 			m_targetClock.restart();
 
+			m_targetPickupSound.play();
 			m_gameData.targetsCollected++;
 
 			int deltaScore{ calculateScore(targetTime) };
@@ -743,7 +788,7 @@ void Game::gameOver()
 {
 	m_gameState = GameState::GameOver;
 
-	//if (m_score > m_highscore) m_highscore = m_score;
+	m_gameOverMusic.play();
 
 	m_tank.reset();
 }

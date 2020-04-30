@@ -189,8 +189,16 @@ private:
 
 	// Audio
 	sf::SoundBuffer m_enemyTankFiringBuffer;
-
 	sf::SoundBuffer m_shellImpactBuffer;
+
+	sf::SoundBuffer m_victoryFanfareBuffer;
+	sf::Sound m_victoryFanfareSound;
+
+	sf::SoundBuffer m_gameOverMusicBuffer;
+	sf::Sound m_gameOverMusic;
+
+	sf::SoundBuffer m_targetPickupSoundBuffer;
+	sf::Sound m_targetPickupSound;
 
 	sf::SoundBuffer m_backgroundMusicBuffer;
 	sf::Music m_backgroundMusic;

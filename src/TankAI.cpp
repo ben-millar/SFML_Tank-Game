@@ -372,7 +372,7 @@ void TankAi::fire()
 			static_cast<float>(sin(MathUtility::DEG_TO_RAD * m_turretRotation))
 		};
 
-		m_projectilePool.create(m_turret.getPosition(), targetVector, 180);
+		m_projectilePool.create(m_turret.getPosition(), targetVector, 240);
 
 		muzzleFlash(targetVector);
 
@@ -657,13 +657,13 @@ void TankAi::updateVisionCone()
 	for (sf::Vector2f& ray : m_visionRayCasts)
 	{
 		// Chose a unit to iterate along the ray by
-		sf::Vector2f unit{ thor::unitVector(ray) * (m_visionDistance / 100.0f) };
+		sf::Vector2f unit{ thor::unitVector(ray) * (m_visionDistance / 50.0f) };
 
 		// Set start to our tank pos
 		ray = pos;
 
 		// For each unit along the ray
-		for (int i = 0; i < 100; i++)
+		for (int i = 0; i < 50; i++)
 		{
 			ray += unit;
 
