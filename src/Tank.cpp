@@ -36,18 +36,25 @@ void Tank::loadParticleTextures()
 		std::cout << e.what() << std::endl;
 	}
 
+	thor::FadeAnimation fade{ 0.0f,1.0f };
+
 	m_smokeParticleSystem.setTexture(m_smokeTexture);
 	m_sparkParticleSystem.setTexture(m_sparkTexture);
 
-	// Smoke/Dust effects
+	// Spark effects
+	m_sparksEmitter.setEmissionRate(5);
+	m_sparksEmitter.setParticleVelocity(thor::Distributions::deflect({ 30.0f,30.0f }, 180.0f));
+	m_sparksEmitter.setParticleLifetime(thor::Distributions::uniform(sf::seconds(0.1f), sf::seconds(1.5f)));
+
+	m_sparkParticleSystem.addAffector(thor::AnimationAffector(fade));
+
+	// Smoke effects
 	m_smokeEmitter.setEmissionRate(m_smokeEmissionRate);
 	m_smokeEmitter.setParticleVelocity(thor::Distributions::deflect({ 30.0f,30.0f }, 360.0f));
 	m_smokeEmitter.setParticleLifetime(thor::Distributions::uniform(sf::seconds(0.1f), sf::seconds(1.5f)));
 
 	thor::ScaleAffector scale({ 1.1f,1.25f });
 	m_smokeParticleSystem.addAffector(scale);
-
-	thor::FadeAnimation fade{ 0.0f,1.0f };
 	m_smokeParticleSystem.addAffector(thor::AnimationAffector(fade));
 }
 
@@ -194,16 +201,22 @@ void Tank::decreaseSpeed()
 
 void Tank::increaseRotation()
 {
+	// Decrease turn rate if our track is damaged
+	double rotateBy{ (m_damageLevels.m_rightTrackDamage) ? 0.5 : 1.0f };
+
 	m_previousBaseRotation = m_baseRotation;
-	(m_baseRotation > 360.0) ? m_baseRotation -= 360.0 : m_baseRotation += 1.0;
+	(m_baseRotation > 360.0) ? m_baseRotation -= 360.0 : m_baseRotation += rotateBy;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
 void Tank::decreaseRotation()
 {
+	// Decrease turn rate if our track is damaged
+	double rotateBy{ (m_damageLevels.m_rightTrackDamage) ? 0.5 : 1.0f };
+
 	m_previousBaseRotation = m_baseRotation;
-	(m_baseRotation < 0.0) ? m_baseRotation += 360.0 : m_baseRotation -= 1.0;
+	(m_baseRotation < 0.0) ? m_baseRotation += 360.0 : m_baseRotation -= rotateBy;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -297,11 +310,10 @@ void Tank::update(sf::Time dt)
 void Tank::render(sf::RenderWindow & window) 
 {
 	window.draw(m_smokeParticleSystem);
+	window.draw(m_sparkParticleSystem);
 
 	window.draw(m_tankBase);
 	window.draw(m_turret);	
-	
-	window.draw(m_sparkParticleSystem);
 
 	if (DEBUG_mode)
 	{
@@ -396,6 +408,26 @@ void Tank::updateParticles(sf::Time t_dt)
 {
 	// Update position for particle FX
 	m_smokeEmitter.setParticlePosition(m_turret.getPosition());
+
+	if (m_damageLevels.m_leftTrackDamaged)
+	{
+		// 90 degrees off our rotation; portside of the tank
+		float deltaAngle{ thor::toRadian(m_baseRotation - 90.0f) };
+		sf::Vector2f leftTrack{ std::cos(deltaAngle) * 20.0f, std::sin(deltaAngle) * 20.0f };
+
+		m_sparksEmitter.setParticlePosition(m_turret.getPosition() + leftTrack);
+		m_sparkParticleSystem.addEmitter(m_sparksEmitter, sf::seconds(0.5f));
+	}
+	
+	if (m_damageLevels.m_rightTrackDamage)
+	{
+		// 90 degrees off our rotation; starboard side of the tank
+		float deltaAngle = thor::toRadian(m_baseRotation + 90.0f);
+		sf::Vector2f rightTrack{ std::cos(deltaAngle) * 20.0f, std::sin(deltaAngle) * 20.0f };
+
+		m_sparksEmitter.setParticlePosition(m_turret.getPosition() + rightTrack);
+		m_sparkParticleSystem.addEmitter(m_sparksEmitter, sf::seconds(0.5f));
+	}
 
 	m_smokeParticleSystem.addEmitter(m_smokeEmitter, sf::seconds(0.5f));
 
