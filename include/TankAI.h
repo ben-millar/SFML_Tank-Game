@@ -204,6 +204,19 @@ private:
 	/// </summary>
 	std::function<void(TankAi*, sf::Vector2f)> f_impactSmoke;
 
+	/// <summary>
+	/// @brief I want a more lightweight version of an SF::CircleShape with
+	/// public data and no drawing functionality, for quick collision checks
+	/// </summary>
+	struct CircleBounds
+	{
+		CircleBounds(sf::Vector2f t_pos, float t_radius) : 
+			position{ t_pos }, radius{ t_radius } {}
+
+		sf::Vector2f position;
+		float radius;
+	};
+
 
 	// ############# THREADS ##############
 
@@ -254,7 +267,7 @@ private:
 
 	// We use these for calculating vision cone occlusion
 	std::vector<Obstacle>& ref_obstacleVector;
-	std::vector<sf::FloatRect> m_obstaclesInCone;
+	std::vector<CircleBounds> m_obstaclesInCone;
 
 	// ######################################
 
@@ -329,9 +342,6 @@ private:
 
 	// Distance the vision cone projects out
 	float m_visionDistance{ 200.0f };
-
-	// We will only allow a ray cast through a gap larger than this circle
-	sf::CircleShape m_visionCircle{ 5.0f };
 
 	// Arc subtended by the cone (inversely related to the length)
 	float m_visionArc{ thor::Pi / 3.0f }; // 60 degrees

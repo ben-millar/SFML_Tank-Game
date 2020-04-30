@@ -83,8 +83,6 @@ void TankAi::initVisionCone()
 	{
 		m_visionCone.append(sf::Vertex({ -1.0f, -1.0f }, m_visionConeColorPatrol));
 	}
-
-	m_visionCircle.setOrigin(m_visionCircle.getRadius(), m_visionCircle.getRadius());
 }
 
 ////////////////////////////////////////////////////////////
@@ -532,7 +530,8 @@ void TankAi::updateGameObjects()
 
 		if (inCone(spr->getPosition()))
 		{
-			m_obstaclesInCone.push_back(spr->getGlobalBounds());
+			CircleBounds c(spr->getPosition(), 35.0f);
+			m_obstaclesInCone.push_back(c);
 		}
 	}
 }
@@ -642,17 +641,15 @@ void TankAi::updateVisionCone()
 	for (sf::Vector2f& ray : m_visionRayCasts)
 	{
 		// Chose a unit to iterate along the ray by
-		sf::Vector2f unit{ thor::unitVector(ray) * (m_visionDistance / 50.0f) };
+		sf::Vector2f unit{ thor::unitVector(ray) * (m_visionDistance / 100.0f) };
 
 		// Set start to our tank pos
 		ray = pos;
 
 		// For each unit along the ray
-		for (int i = 0; i < 50; i++)
+		for (int i = 0; i < 100; i++)
 		{
 			ray += unit;
-
-			m_visionCircle.setPosition(ray);
 
 			// Check for the player in our vision cone
 			if (!playerDetected)
@@ -665,10 +662,10 @@ void TankAi::updateVisionCone()
 			}
 				
 			// For each obstacle in our vision cone
-			for (sf::FloatRect& obstacleBounds : m_obstaclesInCone)
+			for (CircleBounds& obstacleBounds : m_obstaclesInCone)
 			{
 				// If it contains our ray
-				if (obstacleBounds.intersects(m_visionCircle.getGlobalBounds()))
+				if (thor::squaredLength(obstacleBounds.position - ray) < std::powf(obstacleBounds.radius,2))
 				{
 					// Break out of the loop and end the ray here
 					stop = true;
