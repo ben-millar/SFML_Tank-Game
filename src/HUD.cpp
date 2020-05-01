@@ -3,13 +3,11 @@
 ////////////////////////////////////////////////////////////
 HUD::HUD(sf::Font& hudFont, GameData& t_gameData, GameState& t_state) :
 	m_gameData{t_gameData},
-	m_gameState{t_state},
-	m_iconSize{64,64}
+	m_gameState{t_state}
 {
 	loadIcons();
 
-	m_iconOcclusion.setFillColor(sf::Color(0, 0, 0, 128));
-	m_iconOcclusion.setSize(static_cast<sf::Vector2f>(m_iconSize));
+	m_HUDTankSprite.setPosition({ 1260.0f,6.0f });
 
 	m_gameText.setFont(hudFont);
 	m_gameText.setCharacterSize(30);
@@ -23,14 +21,18 @@ HUD::HUD(sf::Font& hudFont, GameData& t_gameData, GameState& t_state) :
 void HUD::loadIcons()
 try
 {
-	if (!m_iconTexture.loadFromFile(".\\resources\\images\\IconSpriteSheet.png"))
+	if (!m_HUDTankTexture.loadFromFile(".\\resources\\images\\HUD_Tank.png"))
 	{
 		std::string msg{ "Error loading icon texture in HUD>>loadIcons" };
 		throw std::exception(msg.c_str());
 	}
 	else
 	{
-		m_iconSprite.setTexture(m_iconTexture);
+		m_HUDTankSprite.setTexture(m_HUDTankTexture);
+		m_HUDTankSprite.setTextureRect({ 0,0,148,79 });
+
+		m_damagedTrackSprite.setTexture(m_HUDTankTexture);
+		m_damagedTrackSprite.setTextureRect({ 0,79,88,13 });
 	}
 }
 catch (const std::exception& e)
@@ -140,23 +142,26 @@ void HUD::render(sf::RenderWindow& t_window)
 		setText("Health:", { 925.0f,5.0f }, 24U, false);
 		t_window.draw(m_gameText);
 
-		// ###### ICONS ######
+		// ###### TANK ICON ######
 
-		// Reduced Speed
-		m_iconSprite.setTextureRect({ 0, 0, m_iconSize.x, m_iconSize.y });
-		m_iconSprite.setPosition({ 1280.0f, 10.0f });
-		t_window.draw(m_iconSprite);
+		t_window.draw(m_HUDTankSprite);
+		
+		if (m_gameData.tankDamage.m_leftTrackDamaged)
+		{
+			flashIcon();
 
-		m_iconOcclusion.setPosition(m_iconSprite.getPosition());
-		//t_window.draw(m_iconOcclusion);
+			m_damagedTrackSprite.setPosition(LEFT_TRACK_POS);
+			t_window.draw(m_damagedTrackSprite);
+		}
 
-		// Reduced Turn Rate
-		m_iconSprite.setTextureRect({ m_iconSize.x, 0, m_iconSize.x, m_iconSize.y });
-		m_iconSprite.setPosition({ 1350.0f, 10.0f });
+		if (m_gameData.tankDamage.m_rightTrackDamaged)
+		{
+			flashIcon();
 
-		m_iconSprite.setColor(sf::Color(255, 255, 255, 64));
+			m_damagedTrackSprite.setPosition(RIGHT_TRACK_POS);
+			t_window.draw(m_damagedTrackSprite);
+		}
 
-		t_window.draw(m_iconSprite);
 
 		// ###### TEXT ######
 
@@ -176,6 +181,16 @@ void HUD::render(sf::RenderWindow& t_window)
 		setText("Time: " + timeAsString(m_gameData.timeElapsed), { ScreenSize::s_width / 2.0f, 50.0f }, 24U, true);
 		t_window.draw(m_gameText);
 	}
+}
+
+////////////////////////////////////////////////////////////
+
+void HUD::flashIcon()
+{
+	// Take the absolute value of a sine wave (range 0.0 to 1.0) and use it as a coefficient for our alpha
+	sf::Uint8 alpha = std::abs(std::sin(MathUtility::DEG_TO_RAD*(m_sineFlash+=10))) * 255;
+
+	m_damagedTrackSprite.setColor(sf::Color(255U, 255U, 255U, alpha));
 }
 
 ////////////////////////////////////////////////////////////

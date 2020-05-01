@@ -103,6 +103,12 @@ public:
 	inline float getHealth() const { return m_health; }
 
 	/// <summary>
+	/// @brief Get the players damage data
+	/// </summary>
+	/// <returns>TankDamage struct</returns>
+	inline TankDamage getDamage() const { return m_damageLevels; }
+
+	/// <summary>
 	/// @brief Called when the player tank is hit by a projectile
 	/// </summary>
 	void hit() override;

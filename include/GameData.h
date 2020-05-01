@@ -1,5 +1,7 @@
 #pragma once
 
+#include "TankDamage.h"
+
 /// <summary>
 /// @brief This struct contains game data to communicate to the HUD class
 /// </summary>
@@ -11,4 +13,6 @@ struct GameData
 	float timeElapsed{ 0-1.0f };
 	std::vector<float> timePerTarget;
 	float score{ -1.0f };
+
+	TankDamage tankDamage;
 };

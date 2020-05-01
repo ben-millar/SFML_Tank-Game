@@ -211,7 +211,7 @@ void Tank::decreaseSpeed()
 void Tank::increaseRotation()
 {
 	// Decrease turn rate if our track is damaged
-	double rotateBy{ (m_damageLevels.m_rightTrackDamaged) ? 0.5 : 1.0f };
+	double rotateBy{ (m_damageLevels.m_leftTrackDamaged || m_damageLevels.m_rightTrackDamaged) ? 0.5 : 1.0f };
 
 	m_previousBaseRotation = m_baseRotation;
 	(m_baseRotation > 360.0) ? m_baseRotation -= 360.0 : m_baseRotation += rotateBy;
@@ -222,7 +222,7 @@ void Tank::increaseRotation()
 void Tank::decreaseRotation()
 {
 	// Decrease turn rate if our track is damaged
-	double rotateBy{ (m_damageLevels.m_rightTrackDamaged) ? 0.5 : 1.0f };
+	double rotateBy{ (m_damageLevels.m_leftTrackDamaged || m_damageLevels.m_rightTrackDamaged) ? 0.5 : 1.0f };
 
 	m_previousBaseRotation = m_baseRotation;
 	(m_baseRotation < 0.0) ? m_baseRotation += 360.0 : m_baseRotation -= rotateBy;

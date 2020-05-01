@@ -542,6 +542,9 @@ void Game::update(sf::Time dt)
 		// update player health for HUD
 		m_gameData.playerHealth = m_tank.getHealth();
 
+		// update player damage for HUD
+		m_gameData.tankDamage = m_tank.getDamage();
+
 		// reduce trauma linearly to zero
 		(m_trauma > 0.005f) ? m_trauma -= 0.005f : m_trauma = 0.0f;
 		m_traumaMeter.setString(std::to_string(m_trauma));

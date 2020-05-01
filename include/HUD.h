@@ -2,6 +2,7 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
 #include "ScreenSize.h"
+#include "MathUtility.h"
 #include "GameState.h"
 #include "GameData.h"
 
@@ -38,12 +39,20 @@ private:
 	/// </summary>
 	void loadIcons();
 
-	sf::Texture m_iconTexture;
-	sf::Sprite m_iconSprite;
-	sf::Vector2i m_iconSize{ 64,64 };
+	sf::Texture m_HUDTankTexture;
+	sf::Sprite m_HUDTankSprite;
+	sf::Sprite m_damagedTrackSprite;
 
-	// This will cover up the icons if their effects are inactive
-	sf::RectangleShape m_iconOcclusion;
+	const sf::Vector2f LEFT_TRACK_POS{ 1287.0f,14.0f };
+	const sf::Vector2f RIGHT_TRACK_POS{ 1286.0f,66.0f };
+
+	/// <summary>
+	/// @brief Flashes the tank damage icon when it's damaged
+	/// </summary>
+	void flashIcon();
+
+	// We use this to generate a sine wave to flash the damage icon
+	int m_sineFlash;
 
 	/// <summary>
 	/// @brief Set the string and position for our text object
@@ -89,6 +98,6 @@ private:
 	const sf::Vector2f HEALTH_BAR_POS{ 925.0f,37.5f };
 	const sf::Vector2f HEALTH_BAR_SIZE{ 300.0f,35.0f };
 
-	float m_width{ ScreenSize::s_width }, m_height{ 80.0f };
+	float m_width{ ScreenSize::s_width }, m_height{ 90.0f };
 	float m_outlineThickness{ 5.0f };
 };
