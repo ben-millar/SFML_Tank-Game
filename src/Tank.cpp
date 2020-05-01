@@ -62,7 +62,7 @@ void Tank::loadParticleTextures()
 
 void Tank::reset()
 {
-	setPosition({ 80.0f,80.0f });
+	setPosition({ 150.0f,170.0f });
 	m_health = MAX_HEALTH;
 	m_speed = 0.0;
 	m_smokeEmissionRate = 0;
