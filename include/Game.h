@@ -3,6 +3,7 @@
 // TODO: Setup all asset file paths in YAML file
 
 #include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
 #include <Thor/Time.hpp>
 #include "ScreenSize.h"
 #include "CellResolution.h"
@@ -12,6 +13,7 @@
 #include "Obstacle.h"
 
 #include "GameState.h"
+#include "GameData.h"
 #include "HUD.h"
 
 #include <map>
@@ -62,6 +64,11 @@ private:
 	/// @brief Loads all game textures from file
 	/// </summary>
 	void loadTextures();
+
+	/// <summary>
+	/// @brief Loads all audio assets from file
+	/// </summary>
+	void loadAudio();
 
 	/// <summary>
 	/// @brief Loads all fonts from file
@@ -131,19 +138,9 @@ private:
 	void handleKeyInput();
 
 	/// <summary>
-	/// @brief Draw our time/score/accuracy
-	/// </summary>
-	void drawUI();
-
-	/// <summary>
 	/// @brief Draws our PAUSE overlay with flashing text
 	/// </summary>
 	void drawPauseScreen();
-
-	/// <summary>
-	/// @brief Draws our game over screen with game stats
-	/// </summary>
-	void drawGameOverScreen();
 
 	/// <summary>
 	/// @brief Ends the game, upstates highscores
@@ -175,7 +172,7 @@ private:
 	sf::Texture m_bgTexture;
 	sf::Sprite m_bgSprite;
 
-	// obstacle sprites
+	// obstacles
 	std::vector<Obstacle> m_obstacles;
 
 	// target sprites
@@ -190,23 +187,34 @@ private:
 	sf::Font m_font;
 	sf::Text m_text;
 
+	// Audio
+	sf::SoundBuffer m_enemyTankFiringBuffer;
+	sf::SoundBuffer m_shellImpactBuffer;
+
+	sf::SoundBuffer m_victoryFanfareBuffer;
+	sf::Sound m_victoryFanfareSound;
+
+	sf::SoundBuffer m_gameOverMusicBuffer;
+	sf::Sound m_gameOverMusic;
+
+	sf::SoundBuffer m_targetPickupSoundBuffer;
+	sf::Sound m_targetPickupSound;
+
+	sf::SoundBuffer m_backgroundMusicBuffer;
+	sf::Music m_backgroundMusic;
+
 	// An instance representing the player controlled tank.
 	Tank m_tank;
 
 	// An instance representing the AI controlled tank.
-	TankAi m_aiTank;
+	//std::array<TankAi*, 4U> m_aiTank;
 
-	// Player Statistics
-	int m_score{ 0 };
-	float m_accuracy{ 0.0f };
+	TankAi m_topLeftAI;
+	TankAi m_topRightAI;
+	TankAi m_bottomLeftAI;
+	TankAi m_bottomRightAI;
 
-	// highscores
-	int m_highscore{ 0 };
-	float m_bestAccuracy{ 0.0f };
-
-	// Used to calculate accuracy
-	int m_shotsFired{ 0 };
-	int m_targetsHit{ 0 };
+	GameData m_gameData;
 
 	// Shows the player how much time was added on destroying target
 	sf::Text m_deltaScoreText;

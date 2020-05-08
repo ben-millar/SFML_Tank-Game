@@ -8,9 +8,12 @@ static const sf::Time MS_PER_UPDATE = sf::seconds(1.0f/60.0f);
 ////////////////////////////////////////////////////////////
 Game::Game()
 	: m_window(sf::VideoMode(ScreenSize::s_width, ScreenSize::s_height, 32), "SFML Playground", sf::Style::Default),
-	m_tank(m_spriteSheetTexture, m_spatialMap, m_activeTargets, m_aiTank),
-	m_aiTank(m_spriteSheetTexture, m_spatialMap),
-	m_HUD(m_font)
+	m_tank(m_spriteSheetTexture, m_spatialMap, m_activeTargets, m_topLeftAI, m_trauma),
+	m_topLeftAI(m_spriteSheetTexture, m_spatialMap, m_obstacles, m_trauma),
+	m_topRightAI(m_spriteSheetTexture, m_spatialMap, m_obstacles, m_trauma),
+	m_bottomLeftAI(m_spriteSheetTexture, m_spatialMap, m_obstacles, m_trauma),
+	m_bottomRightAI(m_spriteSheetTexture, m_spatialMap, m_obstacles, m_trauma),
+	m_HUD(m_font, m_gameData, m_gameState)
 {
 	// Game runs much faster with this commented out. Why?
 	// Seems to limit our refresh rate to that of the monitor
@@ -32,14 +35,18 @@ Game::Game()
 	}
 
 	loadTextures();
+	loadAudio();
 	loadFonts();
 	generateWalls();
 	generateTargets();
 	setupSprites();
 
-	init();
+	m_topLeftAI.setPatrolZone({ 50.0f, 50.0f, 1390.0f, 800.0f });
+	m_topRightAI.setPatrolZone({ 1490.0f, 50.0f, 1390.0f, 800.0f });
+	m_bottomLeftAI.setPatrolZone({ 50.0f, 950.0f, 1390.0f, 800.0f });
+	m_bottomRightAI.setPatrolZone({ 1490.0f, 950.0f, 1390.0f, 800.0f });
 
-	m_aiTank.init(m_level.m_aiTank.m_position.at(0));
+	init();
 
 	// set state to GamePlay
 	m_gameState = GameState::GamePlay;
@@ -83,56 +90,133 @@ void Game::run()
 /// @brief Loads all game textures from file
 /// </summary>
 void Game::loadTextures()
+try
 {
-	try
+	if (!m_bgTexture.loadFromFile(m_level.m_background.m_fileName))
 	{
-		if (!m_bgTexture.loadFromFile(m_level.m_background.m_fileName))
-		{
-			throw std::exception("Error loading background texture from file in game.cpp>loadTextures");
-		}
-		if (!m_spriteSheetTexture.loadFromFile(".\\resources\\images\\SpriteSheet.png"))
-		{
-			throw std::exception("Error loading SpriteSheet texture from file in game.cpp>loadTextures");
-		}
-		if (!m_menuBackgroundTexture.loadFromFile(".\\resources\\images\\MainMenuBackground.png"))
-		{
-			throw std::exception("Error loading menuBackgroundTexture from file in game.cpp>loadTextures");
-		}
+		throw std::exception("Error loading background texture from file in game.cpp>loadTextures");
 	}
-	catch(std::exception& e)
+	if (!m_spriteSheetTexture.loadFromFile(".\\resources\\images\\SpriteSheet.png"))
 	{
-		std::cout << e.what();
+		throw std::exception("Error loading SpriteSheet texture from file in game.cpp>loadTextures");
 	}
+	if (!m_menuBackgroundTexture.loadFromFile(".\\resources\\images\\MainMenuBackground.png"))
+	{
+		throw std::exception("Error loading menuBackgroundTexture from file in game.cpp>loadTextures");
+	}
+}
+catch(std::exception& e)
+{
+	std::cout << e.what();
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+
+void Game::loadAudio()
+try
+{
+	// ###### ENEMY TANK FIRING SFX ######
+	std::string filePath{ ".\\resources\\audio\\TankFire.wav" };
+
+	if (!m_enemyTankFiringBuffer.loadFromFile(filePath))
+	{
+		std::string msg{ "ERROR: Unable to open file '" + filePath + "'" };
+		throw std::exception(msg.c_str());
+	}
+
+	// ###### SHELL IMPACT SFX ######
+	filePath = ".\\resources\\audio\\ShellImpact.wav";
+
+	if (!m_shellImpactBuffer.loadFromFile(filePath))
+	{
+		std::string msg{ "ERROR: Unable to open file '" + filePath + "'" };
+		throw std::exception(msg.c_str());
+	}
+	
+	m_topLeftAI.setAudio(m_enemyTankFiringBuffer, m_shellImpactBuffer);
+	m_topRightAI.setAudio(m_enemyTankFiringBuffer, m_shellImpactBuffer);
+	m_bottomLeftAI.setAudio(m_enemyTankFiringBuffer, m_shellImpactBuffer);
+	m_bottomRightAI.setAudio(m_enemyTankFiringBuffer, m_shellImpactBuffer);
+
+	// ###### TARGET PICKUP SFX ######
+	filePath = ".\\resources\\audio\\PickupTarget.wav";
+
+	if (!m_targetPickupSoundBuffer.loadFromFile(filePath))
+	{
+		std::string msg{ "ERROR: Unable to open file '" + filePath + "'" };
+		throw std::exception(msg.c_str());
+	}
+	else
+	{
+		m_targetPickupSound.setBuffer(m_targetPickupSoundBuffer);
+	}
+	
+	// ###### VICTORY FANFARE ######
+	filePath = ".\\resources\\audio\\VictoryFanfare.wav";
+
+	if (!m_victoryFanfareBuffer.loadFromFile(filePath))
+	{
+		std::string msg{ "ERROR: Unable to open file '" + filePath + "'" };
+		throw std::exception(msg.c_str());
+	}
+	else
+	{
+		m_victoryFanfareSound.setBuffer(m_victoryFanfareBuffer);
+	}
+
+	// ###### GAME OVER MUSIC ######
+	filePath = ".\\resources\\audio\\GameOver.wav";
+
+	if (!m_gameOverMusicBuffer.loadFromFile(filePath))
+	{
+		std::string msg{ "ERROR: Unable to open file '" + filePath + "'" };
+		throw std::exception(msg.c_str());
+	}
+	else
+	{
+		m_gameOverMusic.setBuffer(m_gameOverMusicBuffer);
+	}
+
+	// ###### BACKGROUND MUSIC ######
+	filePath = ".\\resources\\audio\\BackgroundMusic.wav";
+
+	if (!m_backgroundMusic.openFromFile(filePath))
+	{
+		std::string msg{ "ERROR: Unable to open file '" + filePath + "'" };
+		throw std::exception(msg.c_str());
+	}
+}
+catch (const std::exception& e)
+{
+	std::cout << e.what() << std::endl;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
 void Game::loadFonts()
+try
 {
-	try
+	if (!m_font.loadFromFile(".\\resources\\fonts\\joystix.monospace.ttf"))
 	{
-		if (!m_font.loadFromFile(".\\resources\\fonts\\joystix.monospace.ttf"))
-		{
-			throw std::exception("Error loading joystix font from file in game.cpp:100");
-		}
-
-		m_text.setFont(m_font);
-		m_text.setCharacterSize(16U);
-		m_text.setPosition({ 10.0f,10.0f });
-
-		m_traumaMeter.setFont(m_font);
-		m_traumaMeter.setPosition({ 10.0f,30.0f });
-
-		m_deltaScoreText.setFont(m_font);
-		m_deltaScoreText.setCharacterSize(16U);
-		m_deltaScoreText.setFillColor(sf::Color::Yellow);
-		m_deltaScoreText.setOutlineColor(sf::Color::Black);
-		m_deltaScoreText.setOutlineThickness(2.0f);
+		throw std::exception("Error loading joystix font from file in game.cpp:100");
 	}
-	catch (std::exception e)
-	{
-		std::cout << e.what() << std::endl;
-	}
+
+	m_text.setFont(m_font);
+	m_text.setCharacterSize(16U);
+	m_text.setPosition({ 10.0f,10.0f });
+
+	m_traumaMeter.setFont(m_font);
+	m_traumaMeter.setPosition({ 10.0f,30.0f });
+
+	m_deltaScoreText.setFont(m_font);
+	m_deltaScoreText.setCharacterSize(16U);
+	m_deltaScoreText.setFillColor(sf::Color::Yellow);
+	m_deltaScoreText.setOutlineColor(sf::Color::Black);
+	m_deltaScoreText.setOutlineThickness(2.0f);
+}
+catch (std::exception e)
+{
+	std::cout << e.what() << std::endl;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -149,9 +233,6 @@ void Game::setupSprites()
 
 	// overdraw the background slightly to account for later screenshake
 	m_bgSprite.setScale(1.1f, 1.1f);
-	m_bgSprite.setOrigin(m_bgSprite.getGlobalBounds().width / 2.0f, 
-						 m_bgSprite.getGlobalBounds().height / 2.0f);
-	m_bgSprite.setPosition({ ScreenSize::s_width / 2.0f, ScreenSize::s_height / 2.0f });
 
 	m_menuBackgroundSprite.setTexture(m_menuBackgroundTexture);
 }
@@ -168,10 +249,11 @@ void Game::init()
 
 	// Reset score counters
 	m_targetIndex = 0;
-	m_targetsHit = 0;
-	m_shotsFired = 0;
-	m_score = 0;
-	m_accuracy = 0.0f;
+
+	m_gameData.totalTargets = 10;
+	m_gameData.targetsCollected = 0;
+	m_gameData.timePerTarget.clear();
+	m_gameData.score = 0;
 
 	// Clear targets array and push back first target
 	m_activeTargets.clear();
@@ -181,22 +263,58 @@ void Game::init()
 	m_deltaScoreText.setPosition({ -100.0f,-100.0f });
 
 	buildMap();
+
+	m_HUD.init();
+
+	m_topLeftAI.init({ 400.0f, 500.0f });
+	m_topRightAI.init({ 2480.0f, 500.0f });
+	m_bottomLeftAI.init({ 400.0f, 1400.0f });
+	m_bottomRightAI.init({ 2480.0f, 1400.0f });
+
+	m_backgroundMusic.setVolume(100.0f);
+	m_backgroundMusic.play();
+
+	m_victoryFanfareSound.stop();
+	m_gameOverMusic.stop();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
 void Game::generateWalls()
 {
-	sf::IntRect wallRect(2, 129, 33, 23);
+	//sf::IntRect wallRect(2, 129, 33, 23);
+
+	sf::IntRect wallRect;
+
 	// Create the Walls 
 	for (ObstacleData const& obstacle : m_level.m_obstacles)
 	{
+		// Randomly choose one of our rock sprites
+		switch (rand() % 3)
+		{
+		case 0:
+			wallRect = { 48, 90, 64, 64 };
+			break;
+		case 1:
+			wallRect = { 112, 90, 96, 64 };
+			break;
+		case 2:
+			wallRect = { 48, 160, 80, 64 };
+			break;
+		default:
+			break;
+		}	
+
+		// Random rotation
+		int rotation = rand() % 360;
+
 		sf::Sprite sprite;
 		sprite.setTexture(m_spriteSheetTexture);
 		sprite.setTextureRect(wallRect);
 		sprite.setOrigin(wallRect.width / 2.0f, wallRect.height / 2.0f);
 		sprite.setPosition(obstacle.m_position);
-		sprite.setRotation(obstacle.m_rotation);
+		//sprite.setRotation(obstacle.m_baseRotation);
+		sprite.setRotation(rotation);
 
 		m_obstacles.push_back(Obstacle(sprite));
 	}
@@ -302,32 +420,12 @@ void Game::processGameEvents(sf::Event& event)
 	// GAMEPLAY
 	if (GameState::GamePlay == m_gameState)
 	{
-		if (sf::Event::MouseButtonPressed == event.type)
-		{
-			if (sf::Mouse::Left == event.mouseButton.button)
-			{
-				if (m_tank.fire())
-				{
-					(m_trauma < 0.5f) ? m_trauma += 0.5f : m_trauma = 1.0f;
-					m_shotsFired++;
-				}
-			}
-		}
-
 		if (sf::Event::KeyPressed == event.type)
 		{
-			if (sf::Keyboard::Space == event.key.code)
-			{
-				if (m_tank.fire())
-				{
-					(m_trauma < 0.5f) ? m_trauma += 0.5f : m_trauma = 1.0f;
-					m_shotsFired++;
-				}
-			}
-
 			if (sf::Keyboard::P == event.key.code)
 			{
 				m_gameState = GameState::Paused;
+				m_backgroundMusic.setVolume(40.0f);
 				m_gameClock.stop();
 			}
 
@@ -345,12 +443,14 @@ void Game::processGameEvents(sf::Event& event)
 			if (sf::Keyboard::P == event.key.code)
 			{
 				m_gameState = GameState::GamePlay;
+				m_backgroundMusic.setVolume(100.0f);
 				m_gameClock.start();
 			}
 		}
 	}
-	// GAME OVER
-	else if (GameState::GameOver == m_gameState)
+	// GAME OVER/WON
+	else if (GameState::GameOver == m_gameState ||
+			 GameState::GameWin == m_gameState)
 	{
 		if (sf::Event::KeyPressed == event.type)
 		{
@@ -396,13 +496,6 @@ void Game::handleKeyInput()
 
 void Game::update(sf::Time dt)
 {
-
-	if (m_targetsHit >= 10)
-	{
-		gameOver();
-	}
-
-
 	switch (m_gameState)
 	{
 	case GameState::Loading:
@@ -414,7 +507,22 @@ void Game::update(sf::Time dt)
 		getTurretRotation();
 
 		// Check for collisions with AI tank
-		if (m_aiTank.collidesWithPlayer(m_tank))
+		if (m_topLeftAI.collidesWithPlayer(m_tank) ||
+			m_topRightAI.collidesWithPlayer(m_tank) ||
+			m_bottomLeftAI.collidesWithPlayer(m_tank) ||
+			m_bottomRightAI.collidesWithPlayer(m_tank))
+		{ 
+			gameOver();
+		}
+
+		if (m_gameData.targetsCollected >= m_gameData.totalTargets)
+		{
+			m_gameState = GameState::GameWin;
+			m_victoryFanfareSound.play();
+			m_tank.reset();
+		}
+
+		if (m_tank.getHealth() <= 0.0f)
 		{
 			gameOver();
 		}
@@ -423,10 +531,19 @@ void Game::update(sf::Time dt)
 
 		m_tank.update(dt);
 
-		m_aiTank.update(m_tank, dt.asSeconds());
+		m_topLeftAI.update(m_tank, dt);
+		m_topRightAI.update(m_tank, dt);
+		m_bottomLeftAI.update(m_tank, dt);
+		m_bottomRightAI.update(m_tank, dt);
 
-		// Don't divide by 0!
-		m_accuracy = (m_shotsFired == 0) ? 0.0f : m_targetsHit / static_cast<float>(m_shotsFired);
+		// update game time for HUD
+		m_gameData.timeElapsed = m_gameClock.getElapsedTime().asSeconds();
+
+		// update player health for HUD
+		m_gameData.playerHealth = m_tank.getHealth();
+
+		// update player damage for HUD
+		m_gameData.tankDamage = m_tank.getDamage();
 
 		// reduce trauma linearly to zero
 		(m_trauma > 0.005f) ? m_trauma -= 0.005f : m_trauma = 0.0f;
@@ -438,12 +555,30 @@ void Game::update(sf::Time dt)
 
 		break;
 	case GameState::GameOver:
+		if (m_backgroundMusic.getVolume() > 0.2f)
+		{
+			m_backgroundMusic.setVolume(m_backgroundMusic.getVolume() * 0.95);
+		}
+		else
+		{
+			m_backgroundMusic.stop();
+		}
+		break;
+	case GameState::GameWin:
+		if (m_backgroundMusic.getVolume() > 0.2f)
+		{
+			m_backgroundMusic.setVolume(m_backgroundMusic.getVolume() * 0.95);
+		}
+		else
+		{
+			m_backgroundMusic.stop();
+		}
 		break;
 	default:
 		break;
 	}
 
-	m_HUD.update(m_gameState);
+	m_HUD.update();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -455,14 +590,17 @@ void Game::checkTargetsHit()
 	{
 		if (t.isHit())
 		{
-			// How long did it take the player to hit the targ4t?
+			// How long did it take the player to hit the target?
 			sf::Time targetTime{ m_targetClock.getElapsedTime() };
+			m_gameData.timePerTarget.push_back(targetTime.asSeconds());
+
 			m_targetClock.restart();
 
-			m_targetsHit++;
+			m_targetPickupSound.play();
+			m_gameData.targetsCollected++;
 
 			int deltaScore{ calculateScore(targetTime) };
-			m_score += deltaScore;
+			m_gameData.score += deltaScore;
 			
 			t.reset();
 
@@ -522,6 +660,18 @@ void Game::shakeScreen()
 	angleOffset *= MAX_ANGLE * (m_trauma * m_trauma);
 
 	view.setRotation(angleOffset);
+
+	// View target
+	sf::Vector2f target = (m_tank.getBase().getPosition());
+	
+	target = ((target * 0.75f) + (view.getCenter() * 0.25f));
+
+	// Center cannot go outside of the background
+	target.x = std::clamp(target.x, ScreenSize::s_width / 2.0f, ScreenSize::s_width * 1.5f);
+	target.y = std::clamp(target.y, ScreenSize::s_height / 2.0f, ScreenSize::s_height * 1.5f);
+
+	// Asymptotic average of target and current view; lazy camera
+	view.setCenter(target);
 
 	m_window.setView(view);
 }
@@ -585,13 +735,12 @@ void Game::render()
 
 		m_tank.render(m_window);
 
-		m_aiTank.render(m_window);
+		m_topLeftAI.render(m_window);
+		m_topRightAI.render(m_window);
+		m_bottomLeftAI.render(m_window);
+		m_bottomRightAI.render(m_window);
 
 		if (m_deltaScoreClock.getElapsedTime() < DELTA_SCORE_TIME) m_window.draw(m_deltaScoreText);
-
-		drawUI();
-
-		//m_window.draw(m_traumaMeter);
 
 		// PAUSED
 		if (GameState::Paused == m_gameState)
@@ -599,40 +748,18 @@ void Game::render()
 			drawPauseScreen();
 		}
 	}
-	else if (GameState::GameOver == m_gameState)
-	{
-		drawGameOverScreen();
-	}
 
+	// Store the current view transform
+	sf::View currentView = m_window.getView();
+
+	// we want to draw the HUD such that it ignores the global view transforms
+	m_window.setView(m_window.getDefaultView()); 
 	m_HUD.render(m_window);
+
+	// Restore the view transforms
+	m_window.setView(currentView);
+
 	m_window.display();
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////
-
-void Game::drawUI()
-{
-	m_text.setOrigin({ 0.0f,0.0f });
-	m_text.setCharacterSize(16U);
-	m_text.setOutlineThickness(0.0f);
-
-	// Score
-	m_text.setPosition({ 10.0f,8.0f });
-	m_text.setString("Score: " + std::to_string(m_score));
-	m_window.draw(m_text);
-
-	// Accuracy
-	m_text.setPosition({ 10.0f,28.0f });
-	m_text.setString("Accuracy: " + std::to_string(static_cast<int>(m_accuracy * 100.0f)) + "%");
-	m_window.draw(m_text);
-
-	// Remaining Time
-	//int timeRemaining = (m_maxGameTime - m_gameClock.getElapsedTime()).asSeconds();
-	//m_text.setString("Time Remaining: " + std::to_string(timeRemaining));
-
-	// Right-hand side of the screen, minus the width of our text plus a buffer of 15px
-	m_text.setPosition({ ScreenSize::s_width - (m_text.getLocalBounds().width + 15.0f), 8.0f });
-	m_window.draw(m_text);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -660,57 +787,11 @@ void Game::drawPauseScreen()
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
-void Game::drawGameOverScreen()
-{
-	m_window.draw(m_menuBackgroundSprite);
-
-	m_text.setCharacterSize(36U);
-	m_text.setOutlineColor(sf::Color::Black);
-	m_text.setOutlineThickness(2.0f);
-
-	// Score
-	m_text.setString("Score: " + std::to_string(m_score));
-	m_text.setOrigin(m_text.getLocalBounds().width, 0.0f);
-	m_text.setPosition({ (ScreenSize::s_width / 2.0f) - 100.0f, 350.0f });
-
-	m_window.draw(m_text);
-
-	// Accuracy
-	m_text.setString("Accuracy: " + std::to_string(static_cast<int>(m_accuracy * 100.0f)) + "%");
-	m_text.setOrigin(m_text.getLocalBounds().width, 0.0f);
-	m_text.setPosition({ (ScreenSize::s_width / 2.0f) - 100.0f, 400.0f });
-
-	m_window.draw(m_text);
-
-	// HighScore
-	m_text.setString("Highscore: " + std::to_string(m_highscore));
-	m_text.setOrigin(0.0f, 0.0f);
-	m_text.setPosition({ (ScreenSize::s_width / 2.0f) - 60.0f, 350.0f });
-
-	m_window.draw(m_text);
-
-	// Best Accuracy
-	m_text.setString("Best Accuracy: " + std::to_string(static_cast<int>(m_bestAccuracy * 100.0f)) + "%");
-	m_text.setOrigin(0.0f, 0.0f);
-	m_text.setPosition({ (ScreenSize::s_width / 2.0f) - 60.0f, 400.0f });
-
-	m_window.draw(m_text);
-
-	// Restart text
-	m_text.setString("Press [R] to Restart!");
-	m_text.setOrigin(m_text.getLocalBounds().width / 2.0f, 0.0f);
-	m_text.setPosition({ (ScreenSize::s_width / 2.0f), 800.0f });
-
-	m_window.draw(m_text);
-}
-
 void Game::gameOver()
 {
 	m_gameState = GameState::GameOver;
 
-	if (m_score > m_highscore) m_highscore = m_score;
-	if (m_accuracy > m_bestAccuracy) m_bestAccuracy = m_accuracy;
+	m_gameOverMusic.play();
 
 	m_tank.reset();
-	m_aiTank.init({ 720.0f,450.0f });
 }

@@ -55,7 +55,7 @@ void ProjectilePool::create(sf::Vector2f t_pos, sf::Vector2f t_vel, int t_timeTo
 	newProjectile->init(t_pos, t_vel, t_timeToLive);
 
 	// set rotation of our new projectile
-	newProjectile->m_rotation = (atan2(t_vel.y, t_vel.x)) * MathUtility::RAD_TO_DEG;
+	newProjectile->m_baseRotation = (atan2(t_vel.y, t_vel.x)) * MathUtility::RAD_TO_DEG;
 
 	std::cout << "FIRING" << std::endl;
 }
@@ -113,7 +113,7 @@ std::vector<sf::Vector2f> ProjectilePool::getActiveProjectilePos()
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
-void ProjectilePool::checkCollisions(std::vector<GameObject*>& t_gameObjVector, std::function<void(Tank*, sf::Vector2f)> t_smokeFunc, Tank* t_tank)
+void ProjectilePool::checkCollisions(std::vector<GameObject*>& t_gameObjVector, std::function<void(TankAi*, sf::Vector2f)> t_smokeFunc, TankAi* t_tank)
 {
 	for (Projectile& p : m_projectiles)
 	{
@@ -124,7 +124,7 @@ void ProjectilePool::checkCollisions(std::vector<GameObject*>& t_gameObjVector, 
 				// assign a temp sprite to this location for collisions
 				sf::Sprite* tempSprite = new sf::Sprite();
 				tempSprite->setPosition(p.m_position);
-				tempSprite->setRotation(p.m_rotation);
+				tempSprite->setRotation(p.m_baseRotation);
 
 				// if they collide
 				if (CollisionDetector::collision(*tempSprite, obj->getSprite()))
@@ -156,7 +156,7 @@ void ProjectilePool::render(sf::RenderWindow& t_window)
 		if (i.m_active)
 		{
 			m_sprite.setPosition(i.m_position);
-			m_sprite.setRotation(i.m_rotation);
+			m_sprite.setRotation(i.m_baseRotation);
 			t_window.draw(m_sprite);
 		}
 	}

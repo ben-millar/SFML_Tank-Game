@@ -1,33 +1,79 @@
 #include "Tank.h"
 #include "MathUtility.h"
-#include "Thor/Animations.hpp"
 #include <iostream>
 
-Tank::Tank(sf::Texture const& t_texture, std::map<int, std::list<GameObject*>>& t_obstacleMap, std::vector<Target>& t_targetVector, TankAi& t_enemyTank)
+Tank::Tank(sf::Texture const& t_texture, std::map<int, std::list<GameObject*>>& t_obstacleMap, std::vector<Target>& t_targetVector, TankAi& t_enemyTank, float& t_screenShake)
 	: m_texture(t_texture),
 	ref_obstacles(t_obstacleMap),
 	ref_targets(t_targetVector),
-	ref_enemyTank(t_enemyTank)
+	ref_enemyTank(t_enemyTank),
+	m_screenShake(t_screenShake)
 {
-	f_projectileImpact = &Tank::projectileImpact;
-	f_impactSmoke = &Tank::impactSmoke;
 	initSprites();
-	initParticles();
+	loadParticleTextures();
 
 	temp_debugInit();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
+void Tank::loadParticleTextures()
+{
+	try
+	{
+		if (!m_smokeTexture.loadFromFile(".\\resources\\images\\smoke.png"))
+		{
+			throw std::exception("Error loading 'smoke.png' from within Tank.cpp >> loadParticleTextures");
+		}
+
+		if (!m_sparkTexture.loadFromFile(".\\resources\\images\\spark.png"))
+		{
+			throw std::exception("Error loading 'spark.png' from within Tank.cpp >> loadParticleTextures");
+		}
+	}
+	catch (std::exception e)
+	{
+		std::cout << e.what() << std::endl;
+	}
+
+	thor::FadeAnimation fade{ 0.0f,1.0f };
+
+	m_smokeParticleSystem.setTexture(m_smokeTexture);
+	m_sparkParticleSystem.setTexture(m_sparkTexture);
+
+	// Spark effects
+	m_sparksEmitter.setEmissionRate(5);
+	m_sparksEmitter.setParticleVelocity(thor::Distributions::deflect({ 30.0f,30.0f }, 180.0f));
+	m_sparksEmitter.setParticleLifetime(thor::Distributions::uniform(sf::seconds(0.1f), sf::seconds(1.5f)));
+
+	m_sparkParticleSystem.addAffector(thor::AnimationAffector(fade));
+
+	// Smoke effects
+	m_smokeEmitter.setEmissionRate(m_smokeEmissionRate);
+	m_smokeEmitter.setParticleVelocity(thor::Distributions::deflect({ 30.0f,30.0f }, 360.0f));
+	m_smokeEmitter.setParticleLifetime(thor::Distributions::uniform(sf::seconds(0.1f), sf::seconds(1.5f)));
+
+	thor::ScaleAffector scale({ 1.1f,1.25f });
+	m_smokeParticleSystem.addAffector(scale);
+	m_smokeParticleSystem.addAffector(thor::AnimationAffector(fade));
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+
 void Tank::reset()
 {
-	setPosition({ 80.0f,80.0f });
+	setPosition({ 150.0f,170.0f });
+	m_health = MAX_HEALTH;
 	m_speed = 0.0;
+	m_smokeEmissionRate = 0;
 
 	m_smokeParticleSystem.clearEmitters();
 	m_sparkParticleSystem.clearEmitters();
 
-	m_projectilePool.reset();
+	m_smokeEmitter.setEmissionRate(0);
+
+	m_damageLevels.reset();
+	m_damageClock.reset();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -135,9 +181,9 @@ void Tank::adjustRotation()
 
 void Tank::increaseSpeed()
 {
-	if (m_speed < (M_MAX_SPEED - 1.0))
+	if (m_speed < (M_MAX_SPEED - 1.0f))
 	{
-		m_speed += 0.6;
+		m_speed += 0.6f;
 	}
 	else
 	{
@@ -150,9 +196,9 @@ void Tank::increaseSpeed()
 
 void Tank::decreaseSpeed()
 {
-	if (m_speed > (M_MIN_SPEED + 1.0))
+	if (m_speed > (M_MIN_SPEED + 1.0f))
 	{
-		m_speed -= 0.6;
+		m_speed -= 0.6f;
 	}
 	else
 	{
@@ -164,16 +210,22 @@ void Tank::decreaseSpeed()
 
 void Tank::increaseRotation()
 {
+	// Decrease turn rate if our track is damaged
+	double rotateBy{ (m_damageLevels.m_leftTrackDamaged || m_damageLevels.m_rightTrackDamaged) ? 0.5 : 1.0f };
+
 	m_previousBaseRotation = m_baseRotation;
-	(m_baseRotation > 360.0) ? m_baseRotation -= 360.0 : m_baseRotation += 1.0;
+	(m_baseRotation > 360.0) ? m_baseRotation -= 360.0 : m_baseRotation += rotateBy;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
 void Tank::decreaseRotation()
 {
+	// Decrease turn rate if our track is damaged
+	double rotateBy{ (m_damageLevels.m_leftTrackDamaged || m_damageLevels.m_rightTrackDamaged) ? 0.5 : 1.0f };
+
 	m_previousBaseRotation = m_baseRotation;
-	(m_baseRotation < 0.0) ? m_baseRotation += 360.0 : m_baseRotation -= 1.0;
+	(m_baseRotation < 0.0) ? m_baseRotation += 360.0 : m_baseRotation -= rotateBy;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -186,7 +238,7 @@ void Tank::setTurretHeading(float t_heading)
 	{
 		if (m_turretFree)
 		{
-			m_turretRotation = t_heading * MathUtility::RAD_TO_DEG;
+			m_turretRotation = thor::toDegree(t_heading);
 		}
 		else
 		{
@@ -202,117 +254,54 @@ void Tank::toggleTurretFree()
 	(m_turretFree) ? m_turretFree = false : m_turretFree = true;
 }
 
+
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
-bool Tank::fire()
+void Tank::hit()
 {
-	if (m_fireClock.getElapsedTime() > m_fireDelay)
+	std::cout << "I'm hit!" << std::endl;
+
+	(m_screenShake < 0.5f) ? m_screenShake += 0.5f : m_screenShake = 1.0f;
+
+	// Increase the amount of smoke coming from our tank
+	(m_smokeEmissionRate < 10) ? m_smokeEmissionRate++ : m_smokeEmissionRate = 10;
+	m_smokeEmitter.setEmissionRate(m_smokeEmissionRate);
+
+	m_health -= 10.0f;
+
+	// If neither track is damaged
+	if (!m_damageLevels.m_leftTrackDamaged && !m_damageLevels.m_rightTrackDamaged)
 	{
-		sf::Vector2f targetVector{
-			static_cast<float>(cos(MathUtility::DEG_TO_RAD * m_turretRotation)),
-			static_cast<float>(sin(MathUtility::DEG_TO_RAD * m_turretRotation))
-		};
+		// 1 in 3 chance of damaging a track
+		if (1 == rand() % 3)
+		{
+			// flip a coin to decide which side is damaged
+			if (1 == rand() % 2)
+			{
+				m_damageLevels.m_leftTrackDamaged = true;
+			}
+			else
+			{
+				m_damageLevels.m_rightTrackDamaged = true;
+			}
 
-		m_projectilePool.create(m_turret.getPosition(), targetVector, 180);
-
-		muzzleFlash(targetVector);
-
-		m_fireClock.restart();
-
-		return true;
+			// Restart the time to repair damage
+			m_damageClock.restart();
+		}
 	}
-
-	return false;
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////
-
-void Tank::muzzleFlash(sf::Vector2f t_fireDir)
-{
-	thor::FadeAnimation fade{ 0.0f,1.0f };
-
-	// Muzzle Flash/Sparks effects
-	m_sparksEmitter.setParticlePosition(m_tankBase.getPosition() + t_fireDir * 60.0f);
-	m_sparksEmitter.setEmissionRate(500);
-	m_sparksEmitter.setParticleVelocity(thor::Distributions::deflect(t_fireDir * 250.0f, 10.0f));
-	m_sparksEmitter.setParticleLifetime(thor::Distributions::uniform(sf::seconds(0.1f), sf::seconds(2.0f)));
-
-	m_sparkParticleSystem.addEmitter(m_sparksEmitter, sf::seconds(0.05f));
-	m_sparkParticleSystem.addAffector(thor::AnimationAffector(fade));
-
-	// Smoke/Dust effects
-	m_smokeEmitter.setParticlePosition(m_tankBase.getPosition() + t_fireDir * 60.0f);
-	m_smokeEmitter.setEmissionRate(500);
-	m_smokeEmitter.setParticleVelocity(thor::Distributions::deflect(t_fireDir * 60.0f, 120.0f));
-	m_smokeEmitter.setParticleLifetime(thor::Distributions::uniform(sf::seconds(0.1f), sf::seconds(1.5f)));
-
-	
-	thor::ScaleAffector scale({ 1.1f,1.1f });
-	m_smokeParticleSystem.addEmitter(m_smokeEmitter, sf::seconds(0.1f));
-	m_smokeParticleSystem.addAffector(thor::AnimationAffector(fade));
-	m_smokeParticleSystem.addAffector(scale, sf::seconds(1));
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////
-
-void Tank::projectileImpact(sf::Vector2f t_impactPos)
-{
-	if (nullptr != m_smokeThread)
-	{
-		std::cout << "Waiting for thread [" << m_smokeThread->get_id() << "] to finish... ";
-		m_smokeThread->join();
-
-		// deallocate memory occupied by old thread ptr
-		delete m_smokeThread;
-	}
-	
-	std::cout << "Creating thread [";
-	m_smokeThread = new std::thread(f_impactSmoke, this, t_impactPos);
-	std::cout << m_smokeThread->get_id() << "]" << std::endl;
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////
-
-void Tank::impactSmoke(sf::Vector2f t_impactPos)
-{
-	std::cout << "I'm making smoke!" << std::endl;
-
-	thor::FadeAnimation fade{ 0.0f,1.0f };
-
-	// Smoke/Dust effects
-	m_impactSmokeEmitter.setParticlePosition(t_impactPos);
-	m_impactSmokeEmitter.setEmissionRate(500);
-	m_impactSmokeEmitter.setParticleVelocity(thor::Distributions::deflect({ 40.0f,40.0f }, 360.0f));
-	m_impactSmokeEmitter.setParticleLifetime(thor::Distributions::uniform(sf::seconds(0.1f), sf::seconds(0.75f)));
-
-
-	thor::ScaleAffector scale({ 1.1f,1.1f });
-	m_impactParticleSystem.addEmitter(m_impactSmokeEmitter, sf::seconds(0.25f));
-	m_impactParticleSystem.addAffector(thor::AnimationAffector(fade));
-	m_impactParticleSystem.addAffector(scale, sf::seconds(1));
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
 void Tank::update(sf::Time dt)
 {
-	// update projectiles
-	m_projectilePool.update(dt);
-
-	m_projectilePool.checkCollisions(m_obstacles, f_projectileImpact, this);
-	m_projectilePool.checkCollisions(m_targets, f_projectileImpact, this);
-	m_projectilePool.checkCollisions(m_enemyTanks, f_projectileImpact, this);
-
-	// update particles
-	m_smokeParticleSystem.update(dt);
-	m_sparkParticleSystem.update(dt);
-	m_impactParticleSystem.update(dt);
+	updateParticles(dt);
 
 	// keep track of previous position
 	m_previousPosition = m_tankBase.getPosition();
 
-	float deltaX = cos(MathUtility::DEG_TO_RAD * m_baseRotation) * m_speed * dt.asSeconds();
-	float deltaY = sin(MathUtility::DEG_TO_RAD * m_baseRotation) * m_speed * dt.asSeconds();
+	float deltaX = cosf(thor::toRadian(m_baseRotation)) * m_speed * dt.asSeconds();
+	float deltaY = sinf(thor::toRadian(m_baseRotation)) * m_speed * dt.asSeconds();
 	m_tankBase.move(deltaX, deltaY);
 	m_turret.move(deltaX, deltaY);
 
@@ -333,32 +322,51 @@ void Tank::update(sf::Time dt)
 	// keep track of previous speed
 	m_previousSpeed = m_speed;
 
+	// if either track is damaged
+	if (m_damageLevels.m_leftTrackDamaged || m_damageLevels.m_rightTrackDamaged)
+	{
+		// if our time to repair has elapsed
+		if (m_damageClock.getElapsedTime() > m_damageTime)
+		{
+			// remove damage and stop clock
+			m_damageLevels.reset();
+			m_damageClock.reset();
+		}
+	}
+
+	// Pull the steering if one track is damaged
+	float steeringOffset{ 0.0f };
+
+	if (m_damageLevels.m_leftTrackDamaged)
+	{
+		steeringOffset = 0.2f;
+	}
+	else if (m_damageLevels.m_rightTrackDamaged)
+	{
+		steeringOffset = -0.2f;
+	}
+
 	if (m_speed > 0.0)
 	{
 		m_speed -= M_FRICTION;
+		m_baseRotation -= steeringOffset;
 	}
 
 	if (m_speed < 0.0)
 	{
 		m_speed += M_FRICTION;
+		m_baseRotation += steeringOffset;
 	}
 
 	updateGameObjects();
-
-	// Doesn't work very smoothly with acceleration :(
-	//m_speed = std::clamp(m_speed, M_MIN_SPEED, M_MAX_SPEED);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
 void Tank::render(sf::RenderWindow & window) 
 {
-	window.draw(m_impactParticleSystem);
 	window.draw(m_smokeParticleSystem);
 	window.draw(m_sparkParticleSystem);
-
-	// draw projectiles
-	m_projectilePool.render(window);
 
 	window.draw(m_tankBase);
 	window.draw(m_turret);	
@@ -391,34 +399,6 @@ void Tank::initSprites()
 	m_turret.setTextureRect(turretRect);
 	m_turret.setOrigin(turretRect.width / 3.0f, turretRect.height / 2.0f);
 	//m_turret.setPosition(pos);
-
-	m_projectilePool.setTexture(m_texture);
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////
-
-void Tank::initParticles()
-{
-	try
-	{
-		if (!m_smokeTexture.loadFromFile(".\\resources\\images\\smoke.png"))
-		{
-			throw std::exception("Error loading 'smoke.png' from within Tank.cpp >> initParticles");
-		}
-
-		if (!m_sparkTexture.loadFromFile(".\\resources\\images\\spark.png"))
-		{
-			throw std::exception("Error loading 'spark.png' from within Tank.cpp >> initParticles");
-		}
-	}
-	catch (std::exception e)
-	{
-		std::cout << e.what() << std::endl;
-	}
-
-	m_impactParticleSystem.setTexture(m_smokeTexture);
-	m_smokeParticleSystem.setTexture(m_smokeTexture);
-	m_sparkParticleSystem.setTexture(m_sparkTexture);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -455,17 +435,6 @@ void Tank::updateGameObjects()
 		m_activeCells.insert(gridPos);
 	}
 
-	// add positions of projectiles
-	for (sf::Vector2f pos : m_projectilePool.getActiveProjectilePos())
-	{
-		gridPos = CellResolution::getGridRef(pos);
-
-		// If we get an error value back, don't add to set
-		if (gridPos == -1) continue;
-
-		m_activeCells.insert(gridPos);
-	}
-
 	// populate our vector of obstacle pointers
 	for (int i : m_activeCells)
 	{
@@ -487,4 +456,36 @@ void Tank::updateGameObjects()
 
 	// populate our vector of tank pointers (right now it's just one!)
 	m_enemyTanks.push_back(&ref_enemyTank);
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+
+void Tank::updateParticles(sf::Time t_dt)
+{
+	// Update position for particle FX
+	if (m_damageLevels.m_leftTrackDamaged)
+	{
+		// 90 degrees off our rotation; portside of the tank
+		float deltaAngle{ thor::toRadian(m_baseRotation - 90.0f) };
+		sf::Vector2f leftTrack{ std::cos(deltaAngle) * 20.0f, std::sin(deltaAngle) * 20.0f };
+
+		m_sparksEmitter.setParticlePosition(m_turret.getPosition() + leftTrack);
+		m_sparkParticleSystem.addEmitter(m_sparksEmitter, sf::seconds(0.5f));
+	}
+	
+	if (m_damageLevels.m_rightTrackDamaged)
+	{
+		// 90 degrees off our rotation; starboard side of the tank
+		float deltaAngle = thor::toRadian(m_baseRotation + 90.0f);
+		sf::Vector2f rightTrack{ std::cos(deltaAngle) * 20.0f, std::sin(deltaAngle) * 20.0f };
+
+		m_sparksEmitter.setParticlePosition(m_turret.getPosition() + rightTrack);
+		m_sparkParticleSystem.addEmitter(m_sparksEmitter, sf::seconds(0.5f));
+	}
+
+	m_smokeEmitter.setParticlePosition(m_turret.getPosition());
+	m_smokeParticleSystem.addEmitter(m_smokeEmitter, sf::seconds(0.5f));
+
+	m_smokeParticleSystem.update(t_dt);
+	m_sparkParticleSystem.update(t_dt);
 }

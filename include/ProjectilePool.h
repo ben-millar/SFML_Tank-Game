@@ -5,7 +5,7 @@
 #include "GameObject.h"
 
 
-class Tank;
+class TankAi;
 
 class ProjectilePool
 {
@@ -44,7 +44,7 @@ public:
 	/// <param name="t_gameObjVector"></param>
 	/// <param name=""></param>
 	/// <param name="t_tank"></param>
-	void checkCollisions(std::vector<GameObject*>& t_gameObjVector, std::function<void(Tank*, sf::Vector2f)>, Tank* t_tank);
+	void checkCollisions(std::vector<GameObject*>& t_gameObjVector, std::function<void(TankAi*, sf::Vector2f)>, TankAi* t_tank);
 
 	/// <summary>
 	/// @brief Iterate through our projectile array and draw them

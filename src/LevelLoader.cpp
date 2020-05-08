@@ -13,7 +13,7 @@ void operator >> (const YAML::Node& t_obstacleNode, ObstacleData& t_obstacle)
 	t_obstacle.m_type = t_obstacleNode["type"].as<std::string>();
 	t_obstacle.m_position.x = t_obstacleNode["position"]["x"].as<float>();
 	t_obstacle.m_position.y = t_obstacleNode["position"]["y"].as<float>();
-	t_obstacle.m_rotation = t_obstacleNode["rotation"].as<double>();
+	t_obstacle.m_baseRotation = t_obstacleNode["rotation"].as<double>();
 }
 
 ////////////////////////////////////////////////////////////

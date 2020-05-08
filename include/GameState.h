@@ -9,6 +9,7 @@ enum class GameState
 	Loading,
 	GamePlay,
 	Paused,
+	GameWin,
 	GameOver
 };
 

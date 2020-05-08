@@ -1,13 +1,14 @@
 background:
-   file: ./resources/images/Background.jpg # Sample comment
+   file: ./resources/images/Background.png
 tank:
    max_projectiles: 10
    reload_time: 1000
    spawns: 
-      - pos: {x: 100, y: 100}
-      - pos: {x: 1300, y: 100}
-      - pos: {x: 100, y: 800}
-      - pos: {x: 1300, y: 800}
+      - pos: {x: 150, y: 170}
+      - pos: {x: 150, y: 170}
+      - pos: {x: 150, y: 170}
+      - pos: {x: 150, y: 170}
+# The top left spawn works nicely with my new camera system
 ai_tank:
    spawns:
       - pos: {x: 400, y: 700}
@@ -20,23 +21,23 @@ targets:
    - type: bullseye
      position: {x: 200, y: 400, randomOffset: 40}
    - type: bullseye
-     position: {x: 450, y: 600, randomOffset: 40}
+     position: {x: 1000, y: 300, randomOffset: 40}
    - type: bullseye
-     position: {x: 1060, y: 250, randomOffset: 40}
+     position: {x: 1450, y: 650, randomOffset: 40}
    - type: bullseye
-     position: {x: 350, y: 650, randomOffset: 40}
+     position: {x: 1820, y: 550, randomOffset: 40}
    - type: bullseye
-     position: {x: 1000, y: 550, randomOffset: 40}
+     position: {x: 1050, y: 800, randomOffset: 40}
    - type: bullseye
-     position: {x: 850, y: 200, randomOffset: 40}
+     position: {x: 1450, y: 1000, randomOffset: 40}
    - type: bullseye
-     position: {x: 1100, y: 100, randomOffset: 40}
+     position: {x: 700, y: 1150, randomOffset: 40}
    - type: bullseye
-     position: {x: 900, y: 250, randomOffset: 40}
-   - type: bullseye
-     position: {x: 500, y: 500, randomOffset: 40}
+     position: {x: 200, y: 1300, randomOffset: 40}
    - type: bullseye
      position: {x: 700, y: 850, randomOffset: 40}
+   - type: bullseye
+     position: {x: 750, y: 400, randomOffset: 40}
 obstacles: 
    - type: wall
      position: {x: 100, y: 660}
@@ -87,10 +88,10 @@ obstacles:
      position: {x: 400, y: 233}
      rotation: 90
    - type: wall
-     position: {x: 400, y: 266}
+     position: {x: 410, y: 266}
      rotation: 90
    - type: wall
-     position: {x: 400, y: 299}
+     position: {x: 390, y: 299}
      rotation: 90
    - type: wall
      position: {x: 400, y: 332}
@@ -105,8 +106,226 @@ obstacles:
      position: {x: 966, y: 632}
      rotation: 0
    - type: wall
-     position: {x: 999, y: 632}
+     position: {x: 999, y: 642}
      rotation: 0
    - type: wall
-     position: {x: 1032, y: 632}
+     position: {x: 1032, y: 652}
      rotation: 0
+## END OF TOP LEFT
+   - type: wall
+     position: {x: 1960, y: 0}
+     rotation: 0
+   - type: wall
+     position: {x: 1960, y: 40}
+     rotation: 0
+   - type: wall
+     position: {x: 1960, y: 80}
+     rotation: 0
+   - type: wall
+     position: {x: 1960, y: 120}
+     rotation: 0
+   - type: wall
+     position: {x: 1960, y: 160}
+     rotation: 0
+   - type: wall
+     position: {x: 1960, y: 200}
+     rotation: 0
+   - type: wall
+     position: {x: 1960, y: 240}
+     rotation: 0
+   - type: wall
+     position: {x: 1970, y: 280}
+     rotation: 0
+   - type: wall
+     position: {x: 1980, y: 320}
+     rotation: 0
+   - type: wall
+     position: {x: 1990, y: 360}
+     rotation: 0
+   - type: wall
+     position: {x: 2000, y: 400}
+     rotation: 0
+   - type: wall
+     position: {x: 2400, y: 790}
+     rotation: 0
+   - type: wall
+     position: {x: 2440, y: 810}
+     rotation: 0
+   - type: wall
+     position: {x: 2480, y: 830}
+     rotation: 0
+   - type: wall
+     position: {x: 2520, y: 850}
+     rotation: 0
+   - type: wall
+     position: {x: 2560, y: 870}
+     rotation: 0
+   - type: wall
+     position: {x: 2600, y: 890}
+     rotation: 0
+   - type: wall
+     position: {x: 2640, y: 890}
+     rotation: 0
+   - type: wall
+     position: {x: 2680, y: 890}
+     rotation: 0
+   - type: wall
+     position: {x: 2720, y: 890}
+     rotation: 0
+   - type: wall
+     position: {x: 2760, y: 890}
+     rotation: 0
+   - type: wall
+     position: {x: 2800, y: 880}
+     rotation: 0
+   - type: wall
+     position: {x: 2840, y: 870}
+     rotation: 0
+   - type: wall
+     position: {x: 2880, y: 860}
+     rotation: 0
+## END OF TOP RIGHT
+   - type: wall
+     position: {x: 100, y: 1560}
+     rotation: 0
+   - type: wall
+     position: {x: 134, y: 1562}
+     rotation: 10
+   - type: wall
+     position: {x: 167, y: 1570}
+     rotation: 20
+   - type: wall
+     position: {x: 198, y: 1585}
+     rotation: 30
+   - type: wall
+     position: {x: 227, y: 1604}
+     rotation: 40
+   - type: wall
+     position: {x: 251, y: 1629}
+     rotation: 50
+   - type: wall
+     position: {x: 272, y: 1657}
+     rotation: 60
+   - type: wall
+     position: {x: 1340, y: 1140}
+     rotation: 0
+   - type: wall
+     position: {x: 1306, y: 1138}
+     rotation: 10
+   - type: wall
+     position: {x: 1273, y: 1130}
+     rotation: 20
+   - type: wall
+     position: {x: 1242, y: 1115}
+     rotation: 30
+   - type: wall
+     position: {x: 1213, y: 1096}
+     rotation: 40
+   - type: wall
+     position: {x: 1189, y: 1071}
+     rotation: 50
+   - type: wall
+     position: {x: 1168, y: 1043}
+     rotation: 60
+   - type: wall
+     position: {x: 370, y: 1100}
+     rotation: 90
+   - type: wall
+     position: {x: 400, y: 1133}
+     rotation: 90
+   - type: wall
+     position: {x: 400, y: 1166}
+     rotation: 90
+   - type: wall
+     position: {x: 400, y: 1199}
+     rotation: 90
+   - type: wall
+     position: {x: 430, y: 1232}
+     rotation: 90
+   - type: wall
+     position: {x: 900, y: 1532}
+     rotation: 0
+   - type: wall
+     position: {x: 933, y: 1562}
+     rotation: 0
+   - type: wall
+     position: {x: 966, y: 1592}
+     rotation: 0
+   - type: wall
+     position: {x: 999, y: 1622}
+     rotation: 0
+   - type: wall
+     position: {x: 1032, y: 1652}
+     rotation: 0
+   - type: wall
+     position: {x: 1540, y: 1560}
+     rotation: 0
+   - type: wall
+     position: {x: 1574, y: 1562}
+     rotation: 10
+   - type: wall
+     position: {x: 1607, y: 1570}
+     rotation: 20
+   - type: wall
+     position: {x: 1638, y: 1585}
+     rotation: 30
+   - type: wall
+     position: {x: 1667, y: 1604}
+     rotation: 40
+   - type: wall
+     position: {x: 1691, y: 1629}
+     rotation: 50
+   - type: wall
+     position: {x: 1712, y: 1657}
+     rotation: 60
+   - type: wall
+     position: {x: 2780, y: 1240}
+     rotation: 0
+   - type: wall
+     position: {x: 2746, y: 1238}
+     rotation: 10
+   - type: wall
+     position: {x: 2713, y: 1230}
+     rotation: 20
+   - type: wall
+     position: {x: 2682, y: 1215}
+     rotation: 30
+   - type: wall
+     position: {x: 2653, y: 1196}
+     rotation: 40
+   - type: wall
+     position: {x: 2629, y: 1171}
+     rotation: 50
+   - type: wall
+     position: {x: 2608, y: 1143}
+     rotation: 60
+   - type: wall
+     position: {x: 1840, y: 1100}
+     rotation: 90
+   - type: wall
+     position: {x: 1840, y: 1133}
+     rotation: 90
+   - type: wall
+     position: {x: 1840, y: 1166}
+     rotation: 90
+   - type: wall
+     position: {x: 1840, y: 1199}
+     rotation: 90
+   - type: wall
+     position: {x: 1840, y: 1232}
+     rotation: 90
+   - type: wall
+     position: {x: 2340, y: 1532}
+     rotation: 0
+   - type: wall
+     position: {x: 2373, y: 1552}
+     rotation: 0
+   - type: wall
+     position: {x: 2406, y: 1572}
+     rotation: 0
+   - type: wall
+     position: {x: 2439, y: 1592}
+     rotation: 0
+   - type: wall
+     position: {x: 2472, y: 1612}
+     rotation: 0 ## END OF BOTTOM RIGHT

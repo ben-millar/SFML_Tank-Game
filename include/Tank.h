@@ -2,13 +2,17 @@
 #define DEBUG
 
 #include <SFML/Graphics.hpp>
-#include <Thor/Particles.hpp>
 #include <Thor/Math.hpp>
-#include <thread>
+#include <Thor/Time.hpp>
+#include <Thor/Particles.hpp>
+#include <Thor/Animations.hpp>
+
 #include "CollisionDetector.h"
 #include "CellResolution.h"
-#include "ProjectilePool.h"
+
 #include "GameState.h"
+#include "GameObject.h"
+#include "TankDamage.h"
 
 #include "Obstacle.h"
 #include "Target.h"
@@ -21,7 +25,7 @@ class TankAi;
 /// 
 /// This class will manage all tank movement and rotations.
 /// </summary>
-class Tank
+class Tank : public GameObject
 {
 public:	
 /// <summary>
@@ -34,7 +38,8 @@ public:
 	Tank(sf::Texture const & t_texture, 
 		std::map<int, std::list<GameObject*>>& t_obstacleMap, 
 		std::vector<Target>& t_targetVector,
-		TankAi& t_enemyTank);
+		TankAi& t_enemyTank,
+		float& t_screenShake);
 
 	inline sf::Vector2f position() const { return m_tankBase.getPosition(); }
 
@@ -80,21 +85,39 @@ public:
 	void toggleTurretFree();
 
 	/// <summary>
-	/// 
+	/// @brief Get the tank turret sprite
 	/// </summary>
-	/// <returns></returns>
+	/// <returns>SF::Sprite object for tank turret</returns>
 	inline sf::Sprite const getTurret() const { return m_turret; }
 
 	/// <summary>
-	/// 
+	/// @brief Get the tank base sprite
 	/// </summary>
-	/// <returns></returns>
+	/// <returns>SF::Sprite object for tank base</returns>
 	inline sf::Sprite const getBase() const { return m_tankBase; }
 
 	/// <summary>
-	/// @brief Fires a projectile
+	/// @brief Get the players health value
 	/// </summary>
-	bool fire();
+	/// <returns>Tank's health as a float</returns>
+	inline float getHealth() const { return m_health; }
+
+	/// <summary>
+	/// @brief Get the players damage data
+	/// </summary>
+	/// <returns>TankDamage struct</returns>
+	inline TankDamage getDamage() const { return m_damageLevels; }
+
+	/// <summary>
+	/// @brief Called when the player tank is hit by a projectile
+	/// </summary>
+	void hit() override;
+
+	/// <summary>
+	/// @brief Overload of game object base function
+	/// </summary>
+	/// <returns>A reference to our base sprite</returns>
+	sf::Sprite& getSprite() override { return m_tankBase; }
 
 	void update(sf::Time dt);
 	void render(sf::RenderWindow & window);
@@ -140,64 +163,14 @@ private:
 	void initSprites();
 
 	/// <summary>
-	/// @brief Set up THOR particle system/emitters
+	/// @brief Loads particle textures from file
 	/// </summary>
-	void initParticles();
+	void loadParticleTextures();
 
 	/// <summary>
 	/// @brief Updates the game objects that are in our current grid space (spacially partitioned)
 	/// </summary>
 	void updateGameObjects();
-
-	/// <summary>
-	/// @brief Handles turret firing effects
-	/// </summary>
-	void muzzleFlash(sf::Vector2f t_fireDir);
-
-	/// <summary>
-	/// @brief Handles impact smoke effects
-	/// </summary>
-	/// <param name="t_impactPos">location of impact</param>
-	void projectileImpact(sf::Vector2f t_impactPos);
-
-	/// <summary>
-	/// @brief Alias for projectileImpact function
-	/// </summary>
-	std::function<void(Tank*, sf::Vector2f)> f_projectileImpact;
-
-	/// <summary>
-	/// 
-	/// </summary>
-	/// <param name="t_impactPos"></param>
-	void impactSmoke(sf::Vector2f t_impactPos);
-
-	/// <summary>
-	/// @brief Alias for impactSmoke function
-	/// </summary>
-	std::function<void(Tank*, sf::Vector2f)> f_impactSmoke;
-
-	// ############# THREADS ##############
-
-	std::thread* m_smokeThread;
-
-	// ####################################
-	
-
-	// ########## THOR PARTICLES ##########
-	
-	sf::Texture m_smokeTexture;
-	sf::Texture m_sparkTexture;
-
-	thor::ParticleSystem m_smokeParticleSystem;
-	thor::ParticleSystem m_sparkParticleSystem;
-
-	thor::UniversalEmitter m_sparksEmitter = thor::UniversalEmitter();
-	thor::UniversalEmitter m_smokeEmitter = thor::UniversalEmitter();
-
-	thor::ParticleSystem m_impactParticleSystem;
-	thor::UniversalEmitter m_impactSmokeEmitter;
-
-	// ####################################
 
 
 	// ####### SPRITES AND TEXTURES #######
@@ -221,25 +194,52 @@ private:
 	// ####################################
 
 
-	// ########### PROJECTILES ############
 
-	ProjectilePool m_projectilePool = ProjectilePool();
+	// ########## THOR PARTICLES ##########
+
+	void updateParticles(sf::Time t_dt);
+
+	sf::Texture m_smokeTexture;
+	sf::Texture m_sparkTexture;
+
+	int m_smokeEmissionRate{ 0 };
+
+	thor::ParticleSystem m_smokeParticleSystem;
+	thor::ParticleSystem m_sparkParticleSystem;
+
+	thor::UniversalEmitter m_sparksEmitter = thor::UniversalEmitter();
+	thor::UniversalEmitter m_smokeEmitter = thor::UniversalEmitter();
 
 	// ####################################
 
 
+
 	// ########## TANK ATTRIBUTES #########
+
+	// #### DAMAGE ####
+
+	TankDamage m_damageLevels;
+
+	// How long have we been damaged for?
+	thor::StopWatch m_damageClock;
+	// How long should we be damaged for before it's repaired?
+	sf::Time m_damageTime{ sf::seconds(7.5f) };
+
+	// ################
 	
-	static constexpr double M_MAX_SPEED = 100.0;
-	static constexpr double M_MIN_SPEED = -100.0;
-	static constexpr double M_FRICTION = 0.2;
+	static constexpr float M_MAX_SPEED = 100.0f;
+	static constexpr float M_MIN_SPEED = -100.0f;
+	static constexpr float M_FRICTION = 0.2f;
+
+	const float MAX_HEALTH{ 100.0f };
+	float m_health{MAX_HEALTH};
 
 	// Fire clock 
 	sf::Clock m_fireClock;
 	sf::Time m_fireDelay{ sf::seconds(1.0f) };
 
 	// The tank speed.
-	double m_speed{ 0.0 };
+	float m_speed{ 0.0 };
 
 	// can our tank rotate?
 	bool m_enableRotation{ true };
@@ -248,25 +248,25 @@ private:
 	bool m_turretFree{ false };
 
 	// The current rotation as applied to tank base.
-	double m_baseRotation{ 0.0 };
-	double m_previousBaseRotation{ 0.0 };
+	float m_baseRotation{ 0.0 };
+	float m_previousBaseRotation{ 0.0 };
 
 	// The current rotation as applied to turret base.
-	double m_turretRotation{ 0.0 };
-	double m_previousTurretRotation{ 0.0 };
+	float m_turretRotation{ 0.0 };
+	float m_previousTurretRotation{ 0.0 };
 
 	// rolling storage of our last position
 	sf::Vector2f m_previousPosition{ 0.0f,0.0f };
 	
 	// rolling storage of our last speed
-	double m_previousSpeed;
-
+	float m_previousSpeed;
 
 	std::set<int> m_activeCells;
 
 	// ####################################
 
-
+	// Linked to the game trauma variable, controls amount of screenshake
+	float& m_screenShake;
 
 	// ############# DEBUGGING ############
 

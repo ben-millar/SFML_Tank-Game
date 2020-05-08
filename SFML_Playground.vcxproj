@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClInclude Include="include\CellResolution.h" />
     <ClInclude Include="include\Game.h" />
+    <ClInclude Include="include\GameData.h" />
     <ClInclude Include="include\GameObject.h" />
     <ClInclude Include="include\GameState.h" />
     <ClInclude Include="include\HUD.h" />
@@ -32,6 +33,7 @@
     <ClInclude Include="include\ScreenSize.h" />
     <ClInclude Include="include\Tank.h" />
     <ClInclude Include="include\TankAI.h" />
+    <ClInclude Include="include\TankDamage.h" />
     <ClInclude Include="include\Target.h" />
   </ItemGroup>
   <ItemGroup>
